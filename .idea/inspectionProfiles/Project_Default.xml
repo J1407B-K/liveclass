@@ -1,0 +1,10 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
+      <methods>
+        <method importPath="liveclass/idl/kitex_gen/user/userservice" receiver="Client" name="Register" />
+      </methods>
+    </inspection_tool>
+  </profile>
+</component>
