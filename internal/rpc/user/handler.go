@@ -7,8 +7,8 @@ import (
 	"liveclass/idl/kitex_gen/common"
 	"liveclass/idl/kitex_gen/user"
 	"liveclass/internal/rpc/user/dao"
-	"liveclass/internal/rpc/user/hash"
 	"liveclass/internal/utils/cut"
+	"liveclass/internal/utils/hash"
 	"log"
 	"strconv"
 )

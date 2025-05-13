@@ -10,7 +10,6 @@ func MysqlAutoMigrate(db *gorm.DB) {
 	err := db.Set("gorm:table_options", "ENGINE=InnoDB").
 		AutoMigrate(
 			&model.User{},
-			&model.Lesson{},
 		)
 	if err != nil {
 		log.Println("建表失败")

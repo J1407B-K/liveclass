@@ -20,7 +20,7 @@ struct LoginReq{
 }
 
 struct LoginResp{
-    1: common.resp resp
+    1: common.resp resp,
 }
 
 struct GetUserInfoReq{
