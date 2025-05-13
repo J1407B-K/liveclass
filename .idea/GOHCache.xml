@@ -76,6 +76,7 @@
         <entry key="Lesson">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/model/lesson.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/model/lesson.go" />
             </set>
           </value>
@@ -362,7 +363,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064190703" />
+              <option name="lastModified" value="1747106366927" />
             </ScannedPath>
           </value>
         </entry>
@@ -376,7 +377,7 @@
         <entry key="file://$PROJECT_DIR$/internal/code/code.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1746965725802" />
+              <option name="lastModified" value="1747106366906" />
             </ScannedPath>
           </value>
         </entry>
@@ -408,6 +409,18 @@
               <option name="schema">
                 <list>
                   <option value="Clients" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/model/lesson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747106620713" />
+              <option name="schema">
+                <list>
+                  <option value="Lesson" />
                 </list>
               </option>
             </ScannedPath>
@@ -453,7 +466,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747060896931" />
+              <option name="lastModified" value="1747107070154" />
             </ScannedPath>
           </value>
         </entry>
@@ -486,7 +499,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747063453059" />
+              <option name="lastModified" value="1747107070178" />
               <option name="schema">
                 <list>
                   <option value="UserServiceImpl" />
@@ -526,7 +539,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/model/lesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747059209464" />
+              <option name="lastModified" value="1747106836588" />
               <option name="schema">
                 <list>
                   <option value="Lesson" />
@@ -544,6 +557,13 @@
                   <option value="User" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/service.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747107070345" />
             </ScannedPath>
           </value>
         </entry>
@@ -571,7 +591,7 @@
         <entry key="file://$PROJECT_DIR$/internal/utils/jwt/jwt.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747060920780" />
+              <option name="lastModified" value="1747106392780" />
             </ScannedPath>
           </value>
         </entry>

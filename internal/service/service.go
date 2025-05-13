@@ -1,4 +1,4 @@
-package handler
+package service
 
 import (
 	"context"
@@ -19,7 +19,7 @@ func Register(c context.Context, ctx *app.RequestContext) {
 	if err != nil {
 		ctx.JSON(http.StatusBadGateway, utils.H{
 			"resp": model.Response{
-				Code: code.BadGateway,
+				Code: code.BadRequest,
 				Msg:  err.Error() + "参数错误",
 				Data: "nil",
 			},

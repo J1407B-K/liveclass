@@ -13,9 +13,6 @@ import (
 type Client interface {
 	Register(ctx context.Context, req *user.RegisterReq, callOptions ...callopt.Option) (r *user.RegisterResp, err error)
 	Login(ctx context.Context, req *user.LoginReq, callOptions ...callopt.Option) (r *user.LoginResp, err error)
-	CreateLesson(ctx context.Context, req *user.CreateLessonReq, callOptions ...callopt.Option) (r *user.CreateLessonResp, err error)
-	AddStudent(ctx context.Context, req *user.AddStudentReq, callOptions ...callopt.Option) (r *user.AddStudentResp, err error)
-	DeleteStudent(ctx context.Context, req *user.DeleteStudentReq, callOptions ...callopt.Option) (r *user.DeleteStudentResp, err error)
 	GetUserInfo(ctx context.Context, req *user.GetUserInfoReq, callOptions ...callopt.Option) (r *user.GetUserInfoResp, err error)
 }
 
@@ -56,21 +53,6 @@ func (p *kUserServiceClient) Register(ctx context.Context, req *user.RegisterReq
 func (p *kUserServiceClient) Login(ctx context.Context, req *user.LoginReq, callOptions ...callopt.Option) (r *user.LoginResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.Login(ctx, req)
-}
-
-func (p *kUserServiceClient) CreateLesson(ctx context.Context, req *user.CreateLessonReq, callOptions ...callopt.Option) (r *user.CreateLessonResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.CreateLesson(ctx, req)
-}
-
-func (p *kUserServiceClient) AddStudent(ctx context.Context, req *user.AddStudentReq, callOptions ...callopt.Option) (r *user.AddStudentResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.AddStudent(ctx, req)
-}
-
-func (p *kUserServiceClient) DeleteStudent(ctx context.Context, req *user.DeleteStudentReq, callOptions ...callopt.Option) (r *user.DeleteStudentResp, err error) {
-	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.DeleteStudent(ctx, req)
 }
 
 func (p *kUserServiceClient) GetUserInfo(ctx context.Context, req *user.GetUserInfoReq, callOptions ...callopt.Option) (r *user.GetUserInfoResp, err error) {

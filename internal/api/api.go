@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
-	"liveclass/internal/handler"
+	"liveclass/internal/service"
 	"liveclass/internal/utils/jwt"
 	"log"
 )
@@ -17,7 +17,7 @@ func InitRouter() {
 
 	v1 := h.Group("/")
 	{
-		v1.POST("/register", handler.Register)
+		v1.POST("/register", service.Register)
 		v1.POST("/login", authMiddlewire.LoginHandler)
 	}
 	v2 := h.Group("/")

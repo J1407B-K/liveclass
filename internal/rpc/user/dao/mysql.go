@@ -7,19 +7,6 @@ import (
 	"liveclass/internal/utils/cut"
 )
 
-func CreateLesson(db *gorm.DB, name, code string) error {
-	// 创建用户
-	u := model.Lesson{
-		Name: name,
-		Code: code,
-	}
-
-	if err := db.Create(&u).Error; err != nil {
-		return err
-	}
-	return nil
-}
-
 func SaveUser(db *gorm.DB, req *user.RegisterReq) error {
 	// 创建用户
 	u := model.User{

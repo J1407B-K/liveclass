@@ -27,27 +27,6 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
-	"CreateLesson": kitex.NewMethodInfo(
-		createLessonHandler,
-		newUserServiceCreateLessonArgs,
-		newUserServiceCreateLessonResult,
-		false,
-		kitex.WithStreamingMode(kitex.StreamingNone),
-	),
-	"AddStudent": kitex.NewMethodInfo(
-		addStudentHandler,
-		newUserServiceAddStudentArgs,
-		newUserServiceAddStudentResult,
-		false,
-		kitex.WithStreamingMode(kitex.StreamingNone),
-	),
-	"DeleteStudent": kitex.NewMethodInfo(
-		deleteStudentHandler,
-		newUserServiceDeleteStudentArgs,
-		newUserServiceDeleteStudentResult,
-		false,
-		kitex.WithStreamingMode(kitex.StreamingNone),
-	),
 	"GetUserInfo": kitex.NewMethodInfo(
 		getUserInfoHandler,
 		newUserServiceGetUserInfoArgs,
@@ -157,60 +136,6 @@ func newUserServiceLoginResult() interface{} {
 	return user.NewUserServiceLoginResult()
 }
 
-func createLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*user.UserServiceCreateLessonArgs)
-	realResult := result.(*user.UserServiceCreateLessonResult)
-	success, err := handler.(user.UserService).CreateLesson(ctx, realArg.Req)
-	if err != nil {
-		return err
-	}
-	realResult.Success = success
-	return nil
-}
-func newUserServiceCreateLessonArgs() interface{} {
-	return user.NewUserServiceCreateLessonArgs()
-}
-
-func newUserServiceCreateLessonResult() interface{} {
-	return user.NewUserServiceCreateLessonResult()
-}
-
-func addStudentHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*user.UserServiceAddStudentArgs)
-	realResult := result.(*user.UserServiceAddStudentResult)
-	success, err := handler.(user.UserService).AddStudent(ctx, realArg.Req)
-	if err != nil {
-		return err
-	}
-	realResult.Success = success
-	return nil
-}
-func newUserServiceAddStudentArgs() interface{} {
-	return user.NewUserServiceAddStudentArgs()
-}
-
-func newUserServiceAddStudentResult() interface{} {
-	return user.NewUserServiceAddStudentResult()
-}
-
-func deleteStudentHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*user.UserServiceDeleteStudentArgs)
-	realResult := result.(*user.UserServiceDeleteStudentResult)
-	success, err := handler.(user.UserService).DeleteStudent(ctx, realArg.Req)
-	if err != nil {
-		return err
-	}
-	realResult.Success = success
-	return nil
-}
-func newUserServiceDeleteStudentArgs() interface{} {
-	return user.NewUserServiceDeleteStudentArgs()
-}
-
-func newUserServiceDeleteStudentResult() interface{} {
-	return user.NewUserServiceDeleteStudentResult()
-}
-
 func getUserInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
 	realArg := arg.(*user.UserServiceGetUserInfoArgs)
 	realResult := result.(*user.UserServiceGetUserInfoResult)
@@ -254,36 +179,6 @@ func (p *kClient) Login(ctx context.Context, req *user.LoginReq) (r *user.LoginR
 	_args.Req = req
 	var _result user.UserServiceLoginResult
 	if err = p.c.Call(ctx, "Login", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
-
-func (p *kClient) CreateLesson(ctx context.Context, req *user.CreateLessonReq) (r *user.CreateLessonResp, err error) {
-	var _args user.UserServiceCreateLessonArgs
-	_args.Req = req
-	var _result user.UserServiceCreateLessonResult
-	if err = p.c.Call(ctx, "CreateLesson", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
-
-func (p *kClient) AddStudent(ctx context.Context, req *user.AddStudentReq) (r *user.AddStudentResp, err error) {
-	var _args user.UserServiceAddStudentArgs
-	_args.Req = req
-	var _result user.UserServiceAddStudentResult
-	if err = p.c.Call(ctx, "AddStudent", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
-
-func (p *kClient) DeleteStudent(ctx context.Context, req *user.DeleteStudentReq) (r *user.DeleteStudentResp, err error) {
-	var _args user.UserServiceDeleteStudentArgs
-	_args.Req = req
-	var _result user.UserServiceDeleteStudentResult
-	if err = p.c.Call(ctx, "DeleteStudent", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

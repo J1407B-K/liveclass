@@ -11,3 +11,16 @@ services:
       - TZ=Asia/Shanghai
       - ALLOW_NONE_AUTHENTICATION=yes
       - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+
+  livego:
+    image: gwuhaolin/livego
+    container_name: livego
+    ports:
+      - "1935:1935"   # RTMP 端口
+      - "7001:7001"   # HTTP-API 或其他服务端口
+      - "7002:7002"   # 可选端口
+      - "8090:8090"   # Web 页面端口
+    restart: unless-stopped
+    # 如果你需要挂载配置文件，可以在此添加 volumes
+    # volumes:
+    #   - ./config:/app/config

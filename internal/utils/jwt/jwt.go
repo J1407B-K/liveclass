@@ -5,8 +5,8 @@ import (
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/hertz-contrib/jwt"
-	"liveclass/internal/handler"
 	"liveclass/internal/model"
+	"liveclass/internal/service"
 	"log"
 	"net/http"
 	"time"
@@ -35,7 +35,7 @@ func NewMiddle() (*jwt.HertzJWTMiddleware, error) {
 			}
 			return nil // 避免 nil 指针
 		},
-		Authenticator: handler.Login,
+		Authenticator: service.Login,
 		Unauthorized: func(ctx context.Context, c *app.RequestContext, code int, message string) {
 			c.JSON(http.StatusUnauthorized, utils.H{
 				"code":    code,
