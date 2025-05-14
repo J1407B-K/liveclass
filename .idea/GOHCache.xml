@@ -583,6 +583,13 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/dao/mysql.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747247636132" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/global/global.go">
           <value>
             <ScannedPath>
@@ -593,7 +600,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747245522547" />
+              <option name="lastModified" value="1747247636174" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -677,7 +684,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747244863720" />
+              <option name="lastModified" value="1747247494063" />
             </ScannedPath>
           </value>
         </entry>
@@ -710,7 +717,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747244863705" />
+              <option name="lastModified" value="1747247494470" />
               <option name="schema">
                 <list>
                   <option value="UserServiceImpl" />
@@ -752,10 +759,24 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/live.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747247526623" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/service.go">
           <value>
             <ScannedPath>
               <option name="lastModified" value="1747207872950" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/user.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747247526607" />
             </ScannedPath>
           </value>
         </entry>
@@ -769,7 +790,7 @@
         <entry key="file://$PROJECT_DIR$/internal/utils/cut/cut.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747244864267" />
+              <option name="lastModified" value="1747246941516" />
             </ScannedPath>
           </value>
         </entry>
