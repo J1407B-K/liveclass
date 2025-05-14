@@ -5,9 +5,8 @@ import (
 	"errors"
 	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/common"
-	"liveclass/idl/kitex_gen/user"
+	user "liveclass/idl/kitex_gen/user"
 	"liveclass/internal/rpc/user/dao"
-	"liveclass/internal/utils/cut"
 	"liveclass/internal/utils/hash"
 	"log"
 	"strconv"
@@ -46,7 +45,7 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReq) (
 // Login implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginReq) (resp *user.LoginResp, err error) {
 	//获得userinfo
-	userinfo, err := dao.SelectUsername(s.DB, req.Username)
+	userinfo, err := dao.SelectUserByUsername(s.DB, req.Username)
 	if err != nil {
 		return nil, err
 	}
@@ -66,14 +65,29 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginReq) (resp *
 }
 
 // GetUserInfo implements the UserServiceImpl interface.
+// 主要是鉴权之后rpc使用(id搜索)
 func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfoReq) (resp *user.GetUserInfoResp, err error) {
-	userinfo, err := dao.SelectUsername(s.DB, req.Username)
+	userinfo, err := dao.SelectUser(s.DB, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
 	return &user.GetUserInfoResp{
 		Resp: &common.Resp{
-			Data: userinfo.Username + "\n" + userinfo.Auth + "\n" + cut.OutputLessons(userinfo.Lessons)},
+			Data: userinfo.Username + "/" + userinfo.Auth},
+	}, nil
+}
+
+// GetUserInfoByname implements the UserServiceImpl interface.
+// 主要是对外提供api
+func (s *UserServiceImpl) GetUserInfoByname(ctx context.Context, req *user.GetUserInfoByNameReq) (resp *user.GetUserInfoByNameResp, err error) {
+	userinfo, err := dao.SelectUserByUsername(s.DB, req.Username)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user.GetUserInfoByNameResp{
+		Resp: &common.Resp{
+			Data: userinfo.Username + "/" + userinfo.Auth},
 	}, nil
 }

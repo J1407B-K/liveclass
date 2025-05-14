@@ -4,7 +4,7 @@ include "common.thrift"
 
 struct CreateLiveReq {
     1: string livename,
-    2: string username,
+    2: string userid,
     3: string description,
 }
 
@@ -14,7 +14,7 @@ struct CreateLiveResp {
 
 struct CloseLiveReq {
     1: string livename,
-    2: string username,
+    2: string userid,
 }
 
 struct CloseLiveResp {
@@ -23,7 +23,7 @@ struct CloseLiveResp {
 
 struct AddUserInLiveReq {
     1: string livename,
-    2: string username,
+    2: string userid,
 }
 
 struct AddUserInLiveResp {
@@ -32,17 +32,16 @@ struct AddUserInLiveResp {
 
 struct DelUserInLiveReq {
     1: string livename,
-    2: string username,
+    2: string userid,
 }
 
 struct DelUserInLiveResp {
-    1: string livename,
-    2: string username,
+    1: common.resp resp,
 }
 
 service LiveService {
     CreateLiveResp CreateLive(1: CreateLiveReq req),
-    CloseLiveResp  CoseLive(1:CloseLiveReq req),
+    CloseLiveResp  CloseLive(1:CloseLiveReq req),
     AddUserInLiveResp AddUserInLive(1:AddUserInLiveReq req),
     DelUserInLiveResp DelUserInlive(1:DelUserInLiveReq req),
 }

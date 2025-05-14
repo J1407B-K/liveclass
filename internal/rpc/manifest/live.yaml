@@ -7,3 +7,4 @@ RedisConfig:
   Addr: "localhost:6379"
   Password: ""
   DB: 0
+GetLiveKeyAddr: "http://localhost:8090/control/get?room="

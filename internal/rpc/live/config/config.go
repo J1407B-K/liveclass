@@ -3,6 +3,7 @@ package config
 type Config struct {
 	MysqlConfig
 	RedisConfig
+	GetLiveKeyAddr string
 }
 
 type MysqlConfig struct {

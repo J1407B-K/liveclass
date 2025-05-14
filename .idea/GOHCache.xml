@@ -159,6 +159,13 @@
             </set>
           </value>
         </entry>
+        <entry key="Livegojson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/model/livegojson.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="LoginReq">
           <value>
             <set>
@@ -185,6 +192,13 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/user/flag/option.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RedisConfig">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
             </set>
           </value>
         </entry>
@@ -292,6 +306,13 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/client.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="livegojson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/model/livegojson.go" />
             </set>
           </value>
         </entry>
@@ -551,11 +572,12 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747154898812" />
+              <option name="lastModified" value="1747243944364" />
               <option name="schema">
                 <list>
                   <option value="Config" />
                   <option value="MysqlConfig" />
+                  <option value="RedisConfig" />
                 </list>
               </option>
             </ScannedPath>
@@ -571,7 +593,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747155581542" />
+              <option name="lastModified" value="1747245522547" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -580,10 +602,24 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/initialize/GetLiveKeyAddr.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747244235202" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/initialize/mysql.go">
           <value>
             <ScannedPath>
               <option name="lastModified" value="1747155191673" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/initialize/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747208791545" />
             </ScannedPath>
           </value>
         </entry>
@@ -597,17 +633,29 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747155581382" />
+              <option name="lastModified" value="1747244235249" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747207969429" />
+              <option name="lastModified" value="1747208120885" />
               <option name="schema">
                 <list>
                   <option value="Lesson" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/model/livegojson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747245229314" />
+              <option name="schema">
+                <list>
+                  <option value="Livegojson" />
                 </list>
               </option>
             </ScannedPath>
@@ -629,7 +677,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747107070154" />
+              <option name="lastModified" value="1747244863720" />
             </ScannedPath>
           </value>
         </entry>
@@ -662,7 +710,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747155163704" />
+              <option name="lastModified" value="1747244863705" />
               <option name="schema">
                 <list>
                   <option value="UserServiceImpl" />
@@ -695,7 +743,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/model/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747060610106" />
+              <option name="lastModified" value="1747244863735" />
               <option name="schema">
                 <list>
                   <option value="User" />
@@ -711,10 +759,17 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/test/utils/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747245002311" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/utils/cut/cut.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747060896916" />
+              <option name="lastModified" value="1747244864267" />
             </ScannedPath>
           </value>
         </entry>
@@ -729,6 +784,13 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1747106392780" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/test/utils/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747244861642" />
             </ScannedPath>
           </value>
         </entry>
@@ -761,10 +823,12 @@
         <entry key="live_service_del_user_inlive_args" value="LiveServiceDelUserInliveArgs" />
         <entry key="live_service_del_user_inlive_result" value="LiveServiceDelUserInliveResult" />
         <entry key="live_service_impl" value="LiveServiceImpl" />
+        <entry key="livegojson" value="Livegojson" />
         <entry key="login_req" value="LoginReq" />
         <entry key="login_resp" value="LoginResp" />
         <entry key="mysql_config" value="MysqlConfig" />
         <entry key="option" value="Option" />
+        <entry key="redis_config" value="RedisConfig" />
         <entry key="register_req" value="RegisterReq" />
         <entry key="register_resp" value="RegisterResp" />
         <entry key="resp" value="Resp" />

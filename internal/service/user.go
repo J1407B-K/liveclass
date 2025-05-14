@@ -85,6 +85,7 @@ func Login(c context.Context, ctx *app.RequestContext) (interface{}, error) {
 	return rpcResp.Resp.Data, nil
 }
 
+// 实际上是用的对外api
 func GetUserInfo(c context.Context, ctx *app.RequestContext) {
 	var user model.User
 
@@ -99,7 +100,7 @@ func GetUserInfo(c context.Context, ctx *app.RequestContext) {
 		})
 	}
 
-	rpcResp, err := global.Clients.UserClient.GetUserInfo(c, &userrpc.GetUserInfoReq{
+	rpcResp, err := global.Clients.UserClient.GetUserInfoByname(c, &userrpc.GetUserInfoByNameReq{
 		Username: user.Username,
 	})
 
@@ -120,3 +121,5 @@ func GetUserInfo(c context.Context, ctx *app.RequestContext) {
 		},
 	})
 }
+
+//对内id查询不对外

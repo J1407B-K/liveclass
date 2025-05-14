@@ -20,10 +20,10 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
-	"CoseLive": kitex.NewMethodInfo(
-		coseLiveHandler,
-		newLiveServiceCoseLiveArgs,
-		newLiveServiceCoseLiveResult,
+	"CloseLive": kitex.NewMethodInfo(
+		closeLiveHandler,
+		newLiveServiceCloseLiveArgs,
+		newLiveServiceCloseLiveResult,
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
@@ -125,22 +125,22 @@ func newLiveServiceCreateLiveResult() interface{} {
 	return live.NewLiveServiceCreateLiveResult()
 }
 
-func coseLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*live.LiveServiceCoseLiveArgs)
-	realResult := result.(*live.LiveServiceCoseLiveResult)
-	success, err := handler.(live.LiveService).CoseLive(ctx, realArg.Req)
+func closeLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceCloseLiveArgs)
+	realResult := result.(*live.LiveServiceCloseLiveResult)
+	success, err := handler.(live.LiveService).CloseLive(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
 	realResult.Success = success
 	return nil
 }
-func newLiveServiceCoseLiveArgs() interface{} {
-	return live.NewLiveServiceCoseLiveArgs()
+func newLiveServiceCloseLiveArgs() interface{} {
+	return live.NewLiveServiceCloseLiveArgs()
 }
 
-func newLiveServiceCoseLiveResult() interface{} {
-	return live.NewLiveServiceCoseLiveResult()
+func newLiveServiceCloseLiveResult() interface{} {
+	return live.NewLiveServiceCloseLiveResult()
 }
 
 func addUserInLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
@@ -199,11 +199,11 @@ func (p *kClient) CreateLive(ctx context.Context, req *live.CreateLiveReq) (r *l
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) CoseLive(ctx context.Context, req *live.CloseLiveReq) (r *live.CloseLiveResp, err error) {
-	var _args live.LiveServiceCoseLiveArgs
+func (p *kClient) CloseLive(ctx context.Context, req *live.CloseLiveReq) (r *live.CloseLiveResp, err error) {
+	var _args live.LiveServiceCloseLiveArgs
 	_args.Req = req
-	var _result live.LiveServiceCoseLiveResult
-	if err = p.c.Call(ctx, "CoseLive", &_args, &_result); err != nil {
+	var _result live.LiveServiceCloseLiveResult
+	if err = p.c.Call(ctx, "CloseLive", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

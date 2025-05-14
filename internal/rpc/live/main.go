@@ -14,6 +14,7 @@ func main() {
 	initialize.SetupViper()
 	db := initialize.InitGormDB()
 	rdb := initialize.InitRedisDB()
+	getLiveKeyAddr := initialize.InitKeyAddr()
 
 	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
 	if err != nil {
@@ -26,7 +27,7 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9002")
-	svr := live.NewServer(&LiveServiceImpl{DB: db, RDB: rdb, userCli: userCli},
+	svr := live.NewServer(&LiveServiceImpl{DB: db, RDB: rdb, userCli: userCli, GetLiveKeyAddr: getLiveKeyAddr},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{

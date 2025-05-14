@@ -34,6 +34,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"GetUserInfoByname": kitex.NewMethodInfo(
+		getUserInfoBynameHandler,
+		newUserServiceGetUserInfoBynameArgs,
+		newUserServiceGetUserInfoBynameResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -154,6 +161,24 @@ func newUserServiceGetUserInfoResult() interface{} {
 	return user.NewUserServiceGetUserInfoResult()
 }
 
+func getUserInfoBynameHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*user.UserServiceGetUserInfoBynameArgs)
+	realResult := result.(*user.UserServiceGetUserInfoBynameResult)
+	success, err := handler.(user.UserService).GetUserInfoByname(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newUserServiceGetUserInfoBynameArgs() interface{} {
+	return user.NewUserServiceGetUserInfoBynameArgs()
+}
+
+func newUserServiceGetUserInfoBynameResult() interface{} {
+	return user.NewUserServiceGetUserInfoBynameResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -189,6 +214,16 @@ func (p *kClient) GetUserInfo(ctx context.Context, req *user.GetUserInfoReq) (r 
 	_args.Req = req
 	var _result user.UserServiceGetUserInfoResult
 	if err = p.c.Call(ctx, "GetUserInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetUserInfoByname(ctx context.Context, req *user.GetUserInfoByNameReq) (r *user.GetUserInfoByNameResp, err error) {
+	var _args user.UserServiceGetUserInfoBynameArgs
+	_args.Req = req
+	var _result user.UserServiceGetUserInfoBynameResult
+	if err = p.c.Call(ctx, "GetUserInfoByname", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

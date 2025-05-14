@@ -12,7 +12,7 @@ import (
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
 type Client interface {
 	CreateLive(ctx context.Context, req *live.CreateLiveReq, callOptions ...callopt.Option) (r *live.CreateLiveResp, err error)
-	CoseLive(ctx context.Context, req *live.CloseLiveReq, callOptions ...callopt.Option) (r *live.CloseLiveResp, err error)
+	CloseLive(ctx context.Context, req *live.CloseLiveReq, callOptions ...callopt.Option) (r *live.CloseLiveResp, err error)
 	AddUserInLive(ctx context.Context, req *live.AddUserInLiveReq, callOptions ...callopt.Option) (r *live.AddUserInLiveResp, err error)
 	DelUserInlive(ctx context.Context, req *live.DelUserInLiveReq, callOptions ...callopt.Option) (r *live.DelUserInLiveResp, err error)
 }
@@ -51,9 +51,9 @@ func (p *kLiveServiceClient) CreateLive(ctx context.Context, req *live.CreateLiv
 	return p.kClient.CreateLive(ctx, req)
 }
 
-func (p *kLiveServiceClient) CoseLive(ctx context.Context, req *live.CloseLiveReq, callOptions ...callopt.Option) (r *live.CloseLiveResp, err error) {
+func (p *kLiveServiceClient) CloseLive(ctx context.Context, req *live.CloseLiveReq, callOptions ...callopt.Option) (r *live.CloseLiveResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.CoseLive(ctx, req)
+	return p.kClient.CloseLive(ctx, req)
 }
 
 func (p *kLiveServiceClient) AddUserInLive(ctx context.Context, req *live.AddUserInLiveReq, callOptions ...callopt.Option) (r *live.AddUserInLiveResp, err error) {

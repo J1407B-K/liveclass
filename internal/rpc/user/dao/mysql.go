@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/user"
 	"liveclass/internal/rpc/user/model"
-	"liveclass/internal/utils/cut"
 )
 
 func SaveUser(db *gorm.DB, req *user.RegisterReq) error {
@@ -13,7 +12,6 @@ func SaveUser(db *gorm.DB, req *user.RegisterReq) error {
 		Username: req.Username,
 		Password: req.Password,
 		Auth:     req.Auth,
-		Lessons:  cut.OutputLessons(req.Lessons),
 	}
 
 	if err := db.Create(&u).Error; err != nil {
@@ -22,49 +20,20 @@ func SaveUser(db *gorm.DB, req *user.RegisterReq) error {
 	return nil
 }
 
-// true add/false delete
-func UpdateUserLessons(db *gorm.DB, k, v string, o bool) (*model.User, error) {
+func SelectUser(db *gorm.DB, k string) (*model.User, error) {
 	var u model.User
 
-	err := db.Where("username = ?", k).First(&u).Error
-	if err != nil {
-		return nil, err
-	}
-
-	l := u.Lessons
-	sl := cut.CutLessons(l)
-	if o {
-		sl = append(sl, v)
-		u.Lessons = cut.CombineLessons(sl)
-	} else {
-		var newS []string
-		for _, e := range sl {
-			if e != v {
-				newS = append(newS, v)
-			}
-		}
-		u.Lessons = cut.CombineLessons(newS)
-	}
-
-	db.Save(&u)
-
-	return &u, nil
-}
-
-func SelectUsername(db *gorm.DB, k string) (*model.User, error) {
-	var u model.User
-
-	err := db.Where("username = ?", k).First(&u).Error
+	err := db.Where("user_id = ?", k).First(&u).Error
 	if err != nil {
 		return nil, err
 	}
 	return &u, nil
 }
 
-func SelectUserid(db *gorm.DB, k int) (*model.User, error) {
+func SelectUserByUsername(db *gorm.DB, username string) (*model.User, error) {
 	var u model.User
 
-	err := db.Where("userid = ?", k).First(&u).Error
+	err := db.Where("username = ?", username).First(&u).Error
 	if err != nil {
 		return nil, err
 	}
