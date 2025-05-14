@@ -31,7 +31,6 @@ func Register(c context.Context, ctx *app.RequestContext) {
 		Username: user.Username,
 		Password: user.Password,
 		Auth:     user.Auth,
-		Lessons:  "",
 	})
 
 	if err != nil {
@@ -84,4 +83,40 @@ func Login(c context.Context, ctx *app.RequestContext) (interface{}, error) {
 	}
 
 	return rpcResp.Resp.Data, nil
+}
+
+func GetUserInfo(c context.Context, ctx *app.RequestContext) {
+	var user model.User
+
+	err := ctx.BindJSON(&user)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.H{
+			"resp": model.Response{
+				Code: code.BadRequest,
+				Msg:  err.Error() + "参数错误",
+				Data: "nil",
+			},
+		})
+	}
+
+	rpcResp, err := global.Clients.UserClient.GetUserInfo(c, &userrpc.GetUserInfoReq{
+		Username: user.Username,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error() + "userRpc error",
+			},
+		})
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: rpcResp.Resp.Data,
+		},
+	})
 }

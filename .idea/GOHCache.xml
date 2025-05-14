@@ -3,17 +3,17 @@
   <component name="GoORMHelperCache">
     <option name="schemaMapping">
       <map>
-        <entry key="AddStudentReq">
+        <entry key="AddUserInLiveReq">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
-        <entry key="AddStudentResp">
+        <entry key="AddUserInLiveResp">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
@@ -24,38 +24,53 @@
             </set>
           </value>
         </entry>
+        <entry key="CloseLiveReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CloseLiveResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="Config">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
             </set>
           </value>
         </entry>
-        <entry key="CreateLessonReq">
+        <entry key="CreateLiveReq">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
-        <entry key="CreateLessonResp">
+        <entry key="CreateLiveResp">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
-        <entry key="DeleteStudentReq">
+        <entry key="DelUserInLiveReq">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
-        <entry key="DeleteStudentResp">
+        <entry key="DelUserInLiveResp">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
@@ -77,7 +92,70 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/model/lesson.go" />
-              <option value="file://$PROJECT_DIR$/internal/rpc/user/model/lesson.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceAddUserInLiveArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceAddUserInLiveResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceCoseLiveArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceCoseLiveResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceCreateLiveArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceCreateLiveResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceDelUserInliveArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceDelUserInliveResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/handler.go" />
             </set>
           </value>
         </entry>
@@ -98,6 +176,7 @@
         <entry key="MysqlConfig">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
             </set>
           </value>
@@ -142,48 +221,6 @@
             <set>
               <option value="file://$PROJECT_DIR$/internal/model/user.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/model/user.go" />
-            </set>
-          </value>
-        </entry>
-        <entry key="UserServiceAddStudentArgs">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
-            </set>
-          </value>
-        </entry>
-        <entry key="UserServiceAddStudentResult">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
-            </set>
-          </value>
-        </entry>
-        <entry key="UserServiceCreateLessonArgs">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
-            </set>
-          </value>
-        </entry>
-        <entry key="UserServiceCreateLessonResult">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
-            </set>
-          </value>
-        </entry>
-        <entry key="UserServiceDeleteStudentArgs">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
-            </set>
-          </value>
-        </entry>
-        <entry key="UserServiceDeleteStudentResult">
-          <value>
-            <set>
-              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
             </set>
           </value>
         </entry>
@@ -239,7 +276,15 @@
         <entry key="kClient">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go" />
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/userservice.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="kLiveServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/client.go" />
             </set>
           </value>
         </entry>
@@ -257,7 +302,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386689" />
+              <option name="lastModified" value="1747154661255" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -269,59 +314,119 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386739" />
+              <option name="lastModified" value="1747154661290" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386737" />
+              <option name="lastModified" value="1747154661290" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-consts.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154661291" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-live.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154661299" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154661287" />
+              <option name="schema">
+                <list>
+                  <option value="CreateLiveReq" />
+                  <option value="CreateLiveResp" />
+                  <option value="CloseLiveReq" />
+                  <option value="CloseLiveResp" />
+                  <option value="AddUserInLiveReq" />
+                  <option value="AddUserInLiveResp" />
+                  <option value="DelUserInLiveReq" />
+                  <option value="DelUserInLiveResp" />
+                  <option value="LiveServiceCreateLiveArgs" />
+                  <option value="LiveServiceCreateLiveResult" />
+                  <option value="LiveServiceCoseLiveArgs" />
+                  <option value="LiveServiceCoseLiveResult" />
+                  <option value="LiveServiceAddUserInLiveArgs" />
+                  <option value="LiveServiceAddUserInLiveResult" />
+                  <option value="LiveServiceDelUserInliveArgs" />
+                  <option value="LiveServiceDelUserInliveResult" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/client.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154661288" />
+              <option name="schema">
+                <list>
+                  <option value="kLiveServiceClient" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154661290" />
+              <option name="schema">
+                <list>
+                  <option value="kClient" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/server.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154661289" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386739" />
+              <option name="lastModified" value="1747106959297" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/k-user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386764" />
+              <option name="lastModified" value="1747106959304" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386731" />
+              <option name="lastModified" value="1747106959293" />
               <option name="schema">
                 <list>
                   <option value="RegisterReq" />
                   <option value="RegisterResp" />
                   <option value="LoginReq" />
                   <option value="LoginResp" />
-                  <option value="CreateLessonReq" />
-                  <option value="CreateLessonResp" />
                   <option value="GetUserInfoReq" />
                   <option value="GetUserInfoResp" />
-                  <option value="AddStudentReq" />
-                  <option value="AddStudentResp" />
-                  <option value="DeleteStudentReq" />
-                  <option value="DeleteStudentResp" />
                   <option value="UserServiceRegisterArgs" />
                   <option value="UserServiceRegisterResult" />
                   <option value="UserServiceLoginArgs" />
                   <option value="UserServiceLoginResult" />
-                  <option value="UserServiceCreateLessonArgs" />
-                  <option value="UserServiceCreateLessonResult" />
-                  <option value="UserServiceAddStudentArgs" />
-                  <option value="UserServiceAddStudentResult" />
-                  <option value="UserServiceDeleteStudentArgs" />
-                  <option value="UserServiceDeleteStudentResult" />
                   <option value="UserServiceGetUserInfoArgs" />
                   <option value="UserServiceGetUserInfoResult" />
                 </list>
@@ -332,7 +437,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386733" />
+              <option name="lastModified" value="1747106959294" />
               <option name="schema">
                 <list>
                   <option value="kUserServiceClient" />
@@ -344,14 +449,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386734" />
+              <option name="lastModified" value="1747106959294" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/userservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747064386737" />
+              <option name="lastModified" value="1747106959296" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -363,7 +468,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747106366927" />
+              <option name="lastModified" value="1747207872894" />
             </ScannedPath>
           </value>
         </entry>
@@ -377,7 +482,7 @@
         <entry key="file://$PROJECT_DIR$/internal/code/code.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747106366906" />
+              <option name="lastModified" value="1747207872660" />
             </ScannedPath>
           </value>
         </entry>
@@ -385,13 +490,6 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1746962957162" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/handler/handler.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1747064943670" />
             </ScannedPath>
           </value>
         </entry>
@@ -417,7 +515,7 @@
         <entry key="file://$PROJECT_DIR$/internal/model/lesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747106620713" />
+              <option name="lastModified" value="1747207969220" />
               <option name="schema">
                 <list>
                   <option value="Lesson" />
@@ -441,10 +539,75 @@
         <entry key="file://$PROJECT_DIR$/internal/model/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1746965282285" />
+              <option name="lastModified" value="1747207872834" />
               <option name="schema">
                 <list>
                   <option value="User" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/config/config.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747154898812" />
+              <option name="schema">
+                <list>
+                  <option value="Config" />
+                  <option value="MysqlConfig" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/global/global.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747155163689" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747155581542" />
+              <option name="schema">
+                <list>
+                  <option value="LiveServiceImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/initialize/mysql.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747155191673" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/initialize/viper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747155581124" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747155581382" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747207969429" />
+              <option name="schema">
+                <list>
+                  <option value="Lesson" />
                 </list>
               </option>
             </ScannedPath>
@@ -473,7 +636,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/flag/automigrate.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747059068506" />
+              <option name="lastModified" value="1747154898106" />
             </ScannedPath>
           </value>
         </entry>
@@ -499,19 +662,12 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747107070178" />
+              <option name="lastModified" value="1747155163704" />
               <option name="schema">
                 <list>
                   <option value="UserServiceImpl" />
                 </list>
               </option>
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/rpc/user/hash/hash.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1746957851074" />
             </ScannedPath>
           </value>
         </entry>
@@ -536,18 +692,6 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/rpc/user/model/lesson.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1747106836588" />
-              <option name="schema">
-                <list>
-                  <option value="Lesson" />
-                </list>
-              </option>
-            </ScannedPath>
-          </value>
-        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/model/user.go">
           <value>
             <ScannedPath>
@@ -563,14 +707,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/service.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747107070345" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/cut.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1747060610087" />
+              <option name="lastModified" value="1747207872950" />
             </ScannedPath>
           </value>
         </entry>
@@ -581,10 +718,10 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/jwt.go">
+        <entry key="file://$PROJECT_DIR$/internal/utils/hash/hash.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1746965725828" />
+              <option name="lastModified" value="1746957851074" />
             </ScannedPath>
           </value>
         </entry>
@@ -599,19 +736,31 @@
     </option>
     <option name="tableStructMapping">
       <map>
-        <entry key="add_student_req" value="AddStudentReq" />
-        <entry key="add_student_resp" value="AddStudentResp" />
+        <entry key="add_user_in_live_req" value="AddUserInLiveReq" />
+        <entry key="add_user_in_live_resp" value="AddUserInLiveResp" />
         <entry key="clients" value="Clients" />
+        <entry key="close_live_req" value="CloseLiveReq" />
+        <entry key="close_live_resp" value="CloseLiveResp" />
         <entry key="config" value="Config" />
-        <entry key="create_lesson_req" value="CreateLessonReq" />
-        <entry key="create_lesson_resp" value="CreateLessonResp" />
-        <entry key="delete_student_req" value="DeleteStudentReq" />
-        <entry key="delete_student_resp" value="DeleteStudentResp" />
+        <entry key="create_live_req" value="CreateLiveReq" />
+        <entry key="create_live_resp" value="CreateLiveResp" />
+        <entry key="del_user_in_live_req" value="DelUserInLiveReq" />
+        <entry key="del_user_in_live_resp" value="DelUserInLiveResp" />
         <entry key="get_user_info_req" value="GetUserInfoReq" />
         <entry key="get_user_info_resp" value="GetUserInfoResp" />
         <entry key="k_client" value="kClient" />
+        <entry key="k_live_service_client" value="kLiveServiceClient" />
         <entry key="k_user_service_client" value="kUserServiceClient" />
         <entry key="lesson" value="Lesson" />
+        <entry key="live_service_add_user_in_live_args" value="LiveServiceAddUserInLiveArgs" />
+        <entry key="live_service_add_user_in_live_result" value="LiveServiceAddUserInLiveResult" />
+        <entry key="live_service_cose_live_args" value="LiveServiceCoseLiveArgs" />
+        <entry key="live_service_cose_live_result" value="LiveServiceCoseLiveResult" />
+        <entry key="live_service_create_live_args" value="LiveServiceCreateLiveArgs" />
+        <entry key="live_service_create_live_result" value="LiveServiceCreateLiveResult" />
+        <entry key="live_service_del_user_inlive_args" value="LiveServiceDelUserInliveArgs" />
+        <entry key="live_service_del_user_inlive_result" value="LiveServiceDelUserInliveResult" />
+        <entry key="live_service_impl" value="LiveServiceImpl" />
         <entry key="login_req" value="LoginReq" />
         <entry key="login_resp" value="LoginResp" />
         <entry key="mysql_config" value="MysqlConfig" />
@@ -621,12 +770,6 @@
         <entry key="resp" value="Resp" />
         <entry key="response" value="Response" />
         <entry key="user" value="User" />
-        <entry key="user_service_add_student_args" value="UserServiceAddStudentArgs" />
-        <entry key="user_service_add_student_result" value="UserServiceAddStudentResult" />
-        <entry key="user_service_create_lesson_args" value="UserServiceCreateLessonArgs" />
-        <entry key="user_service_create_lesson_result" value="UserServiceCreateLessonResult" />
-        <entry key="user_service_delete_student_args" value="UserServiceDeleteStudentArgs" />
-        <entry key="user_service_delete_student_result" value="UserServiceDeleteStudentResult" />
         <entry key="user_service_get_user_info_args" value="UserServiceGetUserInfoArgs" />
         <entry key="user_service_get_user_info_result" value="UserServiceGetUserInfoResult" />
         <entry key="user_service_impl" value="UserServiceImpl" />
@@ -636,6 +779,6 @@
         <entry key="user_service_register_result" value="UserServiceRegisterResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1747057247873" />
+    <option name="lastTimeChecked" value="1747207514311" />
   </component>
 </project>

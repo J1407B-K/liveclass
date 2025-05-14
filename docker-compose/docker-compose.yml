@@ -21,6 +21,5 @@ services:
       - "7002:7002"   # 可选端口
       - "8090:8090"   # Web 页面端口
     restart: unless-stopped
-    # 如果你需要挂载配置文件，可以在此添加 volumes
-    # volumes:
-    #   - ./config:/app/config
+
+  #mysql和redis暂时没加

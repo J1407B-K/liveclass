@@ -4,6 +4,7 @@
     <inspection_tool class="GoDfaErrorMayBeNotNil" enabled="true" level="WARNING" enabled_by_default="true">
       <methods>
         <method importPath="liveclass/idl/kitex_gen/user/userservice" receiver="Client" name="Register" />
+        <method importPath="liveclass/idl/kitex_gen/user/userservice" receiver="Client" name="GetUserInfo" />
       </methods>
     </inspection_tool>
   </profile>

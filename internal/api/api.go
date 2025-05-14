@@ -19,7 +19,9 @@ func InitRouter() {
 	{
 		v1.POST("/register", service.Register)
 		v1.POST("/login", authMiddlewire.LoginHandler)
+		v1.GET("/userinfo", service.GetUserInfo)
 	}
+
 	v2 := h.Group("/")
 	v2.Use(authMiddlewire.MiddlewareFunc())
 	{
