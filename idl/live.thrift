@@ -21,27 +21,39 @@ struct CloseLiveResp {
     1: common.resp resp,
 }
 
-struct AddUserInLiveReq {
+struct ChangeUserInLiveReq {
     1: string livename,
     2: string userid,
+    3:string options,
 }
 
-struct AddUserInLiveResp {
+struct ChangeUserInLiveResp {
     1: common.resp resp,
 }
 
-struct DelUserInLiveReq {
-    1: string livename,
-    2: string userid,
+
+struct SelectLessonInfoReq{
+    1: string lessonname,
+    2: string teacher,
 }
 
-struct DelUserInLiveResp {
+struct SelectLessonInfoResp {
+    1: common.resp resp,
+}
+
+struct GetLessonInfoReq {
+    1: string lessonname,
+    2: string teacher,
+}
+
+struct GetLessonInfoResp {
     1: common.resp resp,
 }
 
 service LiveService {
     CreateLiveResp CreateLive(1: CreateLiveReq req),
     CloseLiveResp  CloseLive(1:CloseLiveReq req),
-    AddUserInLiveResp AddUserInLive(1:AddUserInLiveReq req),
-    DelUserInLiveResp DelUserInlive(1:DelUserInLiveReq req),
+   ChangeUserInLiveResp ChangeUserInLive(1: ChangeUserInLiveReq req),
+   SelectLessonInfoResp SelectLessonInfo(1:SelectLessonInfoReq req),
+   GetLessonInfoResp    GetLessonInfo(1:GetLessonInfoReq req),
 }

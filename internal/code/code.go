@@ -4,4 +4,5 @@ const (
 	InternalError = 5000 + iota
 	BadRequest
 	RPCError
+	AuthError
 )

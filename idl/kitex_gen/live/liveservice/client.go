@@ -13,8 +13,9 @@ import (
 type Client interface {
 	CreateLive(ctx context.Context, req *live.CreateLiveReq, callOptions ...callopt.Option) (r *live.CreateLiveResp, err error)
 	CloseLive(ctx context.Context, req *live.CloseLiveReq, callOptions ...callopt.Option) (r *live.CloseLiveResp, err error)
-	AddUserInLive(ctx context.Context, req *live.AddUserInLiveReq, callOptions ...callopt.Option) (r *live.AddUserInLiveResp, err error)
-	DelUserInlive(ctx context.Context, req *live.DelUserInLiveReq, callOptions ...callopt.Option) (r *live.DelUserInLiveResp, err error)
+	ChangeUserInLive(ctx context.Context, req *live.ChangeUserInLiveReq, callOptions ...callopt.Option) (r *live.ChangeUserInLiveResp, err error)
+	SelectLessonInfo(ctx context.Context, req *live.SelectLessonInfoReq, callOptions ...callopt.Option) (r *live.SelectLessonInfoResp, err error)
+	GetLessonInfo(ctx context.Context, req *live.GetLessonInfoReq, callOptions ...callopt.Option) (r *live.GetLessonInfoResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -56,12 +57,17 @@ func (p *kLiveServiceClient) CloseLive(ctx context.Context, req *live.CloseLiveR
 	return p.kClient.CloseLive(ctx, req)
 }
 
-func (p *kLiveServiceClient) AddUserInLive(ctx context.Context, req *live.AddUserInLiveReq, callOptions ...callopt.Option) (r *live.AddUserInLiveResp, err error) {
+func (p *kLiveServiceClient) ChangeUserInLive(ctx context.Context, req *live.ChangeUserInLiveReq, callOptions ...callopt.Option) (r *live.ChangeUserInLiveResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.AddUserInLive(ctx, req)
+	return p.kClient.ChangeUserInLive(ctx, req)
 }
 
-func (p *kLiveServiceClient) DelUserInlive(ctx context.Context, req *live.DelUserInLiveReq, callOptions ...callopt.Option) (r *live.DelUserInLiveResp, err error) {
+func (p *kLiveServiceClient) SelectLessonInfo(ctx context.Context, req *live.SelectLessonInfoReq, callOptions ...callopt.Option) (r *live.SelectLessonInfoResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.DelUserInlive(ctx, req)
+	return p.kClient.SelectLessonInfo(ctx, req)
+}
+
+func (p *kLiveServiceClient) GetLessonInfo(ctx context.Context, req *live.GetLessonInfoReq, callOptions ...callopt.Option) (r *live.GetLessonInfoResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetLessonInfo(ctx, req)
 }

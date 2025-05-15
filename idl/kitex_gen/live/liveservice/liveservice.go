@@ -27,17 +27,24 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
-	"AddUserInLive": kitex.NewMethodInfo(
-		addUserInLiveHandler,
-		newLiveServiceAddUserInLiveArgs,
-		newLiveServiceAddUserInLiveResult,
+	"ChangeUserInLive": kitex.NewMethodInfo(
+		changeUserInLiveHandler,
+		newLiveServiceChangeUserInLiveArgs,
+		newLiveServiceChangeUserInLiveResult,
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
-	"DelUserInlive": kitex.NewMethodInfo(
-		delUserInliveHandler,
-		newLiveServiceDelUserInliveArgs,
-		newLiveServiceDelUserInliveResult,
+	"SelectLessonInfo": kitex.NewMethodInfo(
+		selectLessonInfoHandler,
+		newLiveServiceSelectLessonInfoArgs,
+		newLiveServiceSelectLessonInfoResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetLessonInfo": kitex.NewMethodInfo(
+		getLessonInfoHandler,
+		newLiveServiceGetLessonInfoArgs,
+		newLiveServiceGetLessonInfoResult,
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
@@ -143,40 +150,58 @@ func newLiveServiceCloseLiveResult() interface{} {
 	return live.NewLiveServiceCloseLiveResult()
 }
 
-func addUserInLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*live.LiveServiceAddUserInLiveArgs)
-	realResult := result.(*live.LiveServiceAddUserInLiveResult)
-	success, err := handler.(live.LiveService).AddUserInLive(ctx, realArg.Req)
+func changeUserInLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceChangeUserInLiveArgs)
+	realResult := result.(*live.LiveServiceChangeUserInLiveResult)
+	success, err := handler.(live.LiveService).ChangeUserInLive(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
 	realResult.Success = success
 	return nil
 }
-func newLiveServiceAddUserInLiveArgs() interface{} {
-	return live.NewLiveServiceAddUserInLiveArgs()
+func newLiveServiceChangeUserInLiveArgs() interface{} {
+	return live.NewLiveServiceChangeUserInLiveArgs()
 }
 
-func newLiveServiceAddUserInLiveResult() interface{} {
-	return live.NewLiveServiceAddUserInLiveResult()
+func newLiveServiceChangeUserInLiveResult() interface{} {
+	return live.NewLiveServiceChangeUserInLiveResult()
 }
 
-func delUserInliveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*live.LiveServiceDelUserInliveArgs)
-	realResult := result.(*live.LiveServiceDelUserInliveResult)
-	success, err := handler.(live.LiveService).DelUserInlive(ctx, realArg.Req)
+func selectLessonInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceSelectLessonInfoArgs)
+	realResult := result.(*live.LiveServiceSelectLessonInfoResult)
+	success, err := handler.(live.LiveService).SelectLessonInfo(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
 	realResult.Success = success
 	return nil
 }
-func newLiveServiceDelUserInliveArgs() interface{} {
-	return live.NewLiveServiceDelUserInliveArgs()
+func newLiveServiceSelectLessonInfoArgs() interface{} {
+	return live.NewLiveServiceSelectLessonInfoArgs()
 }
 
-func newLiveServiceDelUserInliveResult() interface{} {
-	return live.NewLiveServiceDelUserInliveResult()
+func newLiveServiceSelectLessonInfoResult() interface{} {
+	return live.NewLiveServiceSelectLessonInfoResult()
+}
+
+func getLessonInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceGetLessonInfoArgs)
+	realResult := result.(*live.LiveServiceGetLessonInfoResult)
+	success, err := handler.(live.LiveService).GetLessonInfo(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceGetLessonInfoArgs() interface{} {
+	return live.NewLiveServiceGetLessonInfoArgs()
+}
+
+func newLiveServiceGetLessonInfoResult() interface{} {
+	return live.NewLiveServiceGetLessonInfoResult()
 }
 
 type kClient struct {
@@ -209,21 +234,31 @@ func (p *kClient) CloseLive(ctx context.Context, req *live.CloseLiveReq) (r *liv
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) AddUserInLive(ctx context.Context, req *live.AddUserInLiveReq) (r *live.AddUserInLiveResp, err error) {
-	var _args live.LiveServiceAddUserInLiveArgs
+func (p *kClient) ChangeUserInLive(ctx context.Context, req *live.ChangeUserInLiveReq) (r *live.ChangeUserInLiveResp, err error) {
+	var _args live.LiveServiceChangeUserInLiveArgs
 	_args.Req = req
-	var _result live.LiveServiceAddUserInLiveResult
-	if err = p.c.Call(ctx, "AddUserInLive", &_args, &_result); err != nil {
+	var _result live.LiveServiceChangeUserInLiveResult
+	if err = p.c.Call(ctx, "ChangeUserInLive", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
 }
 
-func (p *kClient) DelUserInlive(ctx context.Context, req *live.DelUserInLiveReq) (r *live.DelUserInLiveResp, err error) {
-	var _args live.LiveServiceDelUserInliveArgs
+func (p *kClient) SelectLessonInfo(ctx context.Context, req *live.SelectLessonInfoReq) (r *live.SelectLessonInfoResp, err error) {
+	var _args live.LiveServiceSelectLessonInfoArgs
 	_args.Req = req
-	var _result live.LiveServiceDelUserInliveResult
-	if err = p.c.Call(ctx, "DelUserInlive", &_args, &_result); err != nil {
+	var _result live.LiveServiceSelectLessonInfoResult
+	if err = p.c.Call(ctx, "SelectLessonInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetLessonInfo(ctx context.Context, req *live.GetLessonInfoReq) (r *live.GetLessonInfoResp, err error) {
+	var _args live.LiveServiceGetLessonInfoArgs
+	_args.Req = req
+	var _result live.LiveServiceGetLessonInfoResult
+	if err = p.c.Call(ctx, "GetLessonInfo", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

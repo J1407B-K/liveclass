@@ -8,3 +8,6 @@ RedisConfig:
   Password: ""
   DB: 0
 GetLiveKeyAddr: "http://localhost:8090/control/get?room="
+RTMPPlayAddr: "rtmp://localhost:1935/live/"
+FLVPlayAddr: "http://127.0.0.1:7001/live/"
+HLSPlayAddr: "http://127.0.0.1:7002/live/"
