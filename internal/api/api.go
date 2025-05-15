@@ -25,8 +25,11 @@ func InitRouter() {
 	v2 := h.Group("/")
 	v2.Use(authMiddlewire.MiddlewareFunc())
 	{
-		v2.POST("/createlive", service.CreateLive)
-		v2.POST("/closelive", service.CloseLive)
+		v2.POST("/create_live", service.CreateLive)
+		v2.POST("/close_live", service.CloseLive)
+		v2.PUT("/change_user_in_live", service.ChangeUserInLive)
+		v2.GET("/select_lesson", service.SelectLessonInfo)
+		v2.GET("/get_lesson", service.GetLessonInfo)
 	}
 
 	h.Spin()

@@ -174,7 +174,15 @@ func (s *LiveServiceImpl) ChangeUserInLive(ctx context.Context, req *live.Change
 	//拿到信息
 	username, auth := cut.SplitInfo(info.Resp.Data)
 
-	_, err = s.RDB.Eval(ctx, s.countsha, []string{req.Livename + ":" + username + ":count"}, 1).Result()
+	var c int
+	if req.Options == "add" {
+		c = 1
+	} else {
+		c = -1
+	}
+
+	//暂时只设计了+1/-1
+	_, err = s.RDB.Eval(ctx, s.countsha, []string{req.Livename + ":" + username + ":count"}, c).Result()
 	if err != nil {
 		return nil, err
 	}
