@@ -87,21 +87,10 @@ func Login(c context.Context, ctx *app.RequestContext) (interface{}, error) {
 
 // 实际上是用的对外api
 func GetUserInfo(c context.Context, ctx *app.RequestContext) {
-	var user model.User
-
-	err := ctx.BindJSON(&user)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.H{
-			"resp": model.Response{
-				Code: code.BadRequest,
-				Msg:  err.Error() + "参数错误",
-				Data: "nil",
-			},
-		})
-	}
+	username := ctx.PostForm("username")
 
 	rpcResp, err := global.Clients.UserClient.GetUserInfoByname(c, &userrpc.GetUserInfoByNameReq{
-		Username: user.Username,
+		Username: username,
 	})
 
 	if err != nil {

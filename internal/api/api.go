@@ -26,9 +26,11 @@ func InitRouter() {
 	v2.Use(authMiddlewire.MiddlewareFunc())
 	{
 		v2.POST("/create_live", service.CreateLive)
-		v2.POST("/close_live", service.CloseLive)
+		v2.DELETE("/close_live", service.CloseLive)
 		v2.PUT("/change_user_in_live", service.ChangeUserInLive)
+		//这个是直播间在线人数信息
 		v2.GET("/select_lesson", service.SelectLessonInfo)
+		//MYSQL中课程信息
 		v2.GET("/get_lesson", service.GetLessonInfo)
 	}
 

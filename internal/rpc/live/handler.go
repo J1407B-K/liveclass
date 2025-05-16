@@ -120,7 +120,7 @@ func (s *LiveServiceImpl) CloseLive(ctx context.Context, req *live.CloseLiveReq)
 			}
 
 			//直接删除两个redis kv
-			_, err = s.RDB.Eval(ctx, s.delsha, []string{lesson.Name + ":" + username + ":count", lesson.Name + ":" + username + ":member"}).Result()
+			_, err = s.RDB.EvalSha(ctx, s.delsha, []string{lesson.Name + ":" + username + ":count", lesson.Name + ":" + username + ":member"}).Result()
 			if err != nil {
 				return nil, err
 			}
@@ -139,7 +139,7 @@ func (s *LiveServiceImpl) CloseLive(ctx context.Context, req *live.CloseLiveReq)
 // SelectLessonInfo implements the LiveServiceImpl interface.
 // 获取人数等信息
 func (s *LiveServiceImpl) SelectLessonInfo(ctx context.Context, req *live.SelectLessonInfoReq) (resp *live.SelectLessonInfoResp, err error) {
-	r, err := s.RDB.Eval(ctx, s.selectsha, []string{req.Lessonname + ":" + req.Teacher + ":count", req.Lessonname + ":" + req.Teacher + ":member"}).Result()
+	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{req.Lessonname + ":" + req.Teacher + ":count", req.Lessonname + ":" + req.Teacher + ":member"}).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +154,12 @@ func (s *LiveServiceImpl) SelectLessonInfo(ctx context.Context, req *live.Select
 	// 解析成员列表
 	var membersStr string
 	for i := 1; i < len(ar); i++ {
-		membersStr += ar[i].(string) + "$"
+		membersStr += ar[i].(string)
+		if i%2 == 0 {
+			membersStr += "  "
+		} else {
+			membersStr += "$"
+		}
 	}
 
 	return &live.SelectLessonInfoResp{
@@ -182,11 +187,11 @@ func (s *LiveServiceImpl) ChangeUserInLive(ctx context.Context, req *live.Change
 	}
 
 	//暂时只设计了+1/-1
-	_, err = s.RDB.Eval(ctx, s.countsha, []string{req.Livename + ":" + username + ":count"}, c).Result()
+	_, err = s.RDB.EvalSha(ctx, s.countsha, []string{req.Livename + ":" + username + ":count"}, c).Result()
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.RDB.Eval(ctx, s.membersha, []string{req.Livename + ":" + username + ":member"}, req.Options, username, auth).Result()
+	_, err = s.RDB.EvalSha(ctx, s.membersha, []string{req.Livename + ":" + username + ":member"}, req.Options, username, auth).Result()
 	if err != nil {
 		return nil, err
 	}

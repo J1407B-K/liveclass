@@ -12,9 +12,11 @@ local auth     = ARGV[3]
 if action == "add" then
     -- 添加或更新用户
     redis.call("HSET", hashKey, user, auth)
+    return "OK"
 elseif action == "del" then
     -- 删除用户
     redis.call("HDEL", hashKey, user)
+    return "OK"
 else
     return redis.error_reply("invalid action: " .. tostring(action))
 end

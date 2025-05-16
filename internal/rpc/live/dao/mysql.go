@@ -30,7 +30,7 @@ func DeleteLesson(db *gorm.DB, livename, username string) error {
 
 func SelectLessonByTeacher(db *gorm.DB, username string) ([]model.Lesson, error) {
 	var lessons []model.Lesson
-	err := db.Where("teacher = ?", username).Find(lessons).Error
+	err := db.Where("teacher = ?", username).Find(&lessons).Error
 	if err != nil {
 		return nil, err
 	}

@@ -6,8 +6,8 @@ local memberKey = KEYS[2]
 -- 1. 获取 count（如果 key 不存在，则返回 nil，可在客户端处理）
 local count = redis.call("GET", countKey)
 
--- 2. 获取所有 member（返回一个表，可能为空表）
-local members = redis.call("SMEMBERS", memberKey)
+-- 2. 获取所有 member
+local members = redis.call("HGETALL", memberKey) -- 获取哈希中所有字段和值
 
 -- 3. 把 count 与 members 合并到一个数组里
 local result = {}

@@ -88,6 +88,6 @@ func (s *UserServiceImpl) GetUserInfoByname(ctx context.Context, req *user.GetUs
 
 	return &user.GetUserInfoByNameResp{
 		Resp: &common.Resp{
-			Data: userinfo.Username + "/" + userinfo.Auth},
+			Data: strconv.Itoa(userinfo.Userid) + "/" + userinfo.Username + "/" + userinfo.Auth},
 	}, nil
 }
