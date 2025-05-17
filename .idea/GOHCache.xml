@@ -572,6 +572,20 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/global/rpc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1746962957162" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/global/ws.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747388265218" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/initialize/initialize.go">
           <value>
             <ScannedPath>
@@ -600,6 +614,13 @@
                   <option value="Lesson" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/model/quiz.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747388285200" />
             </ScannedPath>
           </value>
         </entry>
@@ -846,7 +867,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747328071443" />
+              <option name="lastModified" value="1747388265244" />
             </ScannedPath>
           </value>
         </entry>

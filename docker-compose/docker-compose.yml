@@ -22,4 +22,15 @@ services:
       - "8090:8090"   # Web 页面端口
     restart: unless-stopped
 
+  nginx:
+    image: nginx:stable-alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      # 挂载主配置文件到容器
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: always
+
   #mysql和redis暂时没加
+

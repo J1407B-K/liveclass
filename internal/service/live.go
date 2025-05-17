@@ -29,24 +29,13 @@ func CreateLive(c context.Context, ctx *app.RequestContext) {
 
 	userid := data.(*model.User).UserId
 
-	var lesson model.Lesson
-
-	err := ctx.BindJSON(&lesson)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, utils.H{
-			"resp": model.Response{
-				Code: code.BadRequest,
-				Msg:  err.Error(),
-				Data: "nil",
-			},
-		})
-		return
-	}
+	lessonName := ctx.PostForm("lesson_name")
+	desc := ctx.PostForm("description")
 
 	resp, err := global.Clients.LiveClient.CreateLive(c, &live.CreateLiveReq{
-		Livename:    lesson.Name,
+		Livename:    lessonName,
 		Userid:      userid,
-		Description: lesson.Description,
+		Description: desc,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
