@@ -11,11 +11,11 @@ import (
 )
 
 type CreateQuestionReq struct {
-	LessonName string   `thrift:"LessonName,1" frugal:"1,default,string" json:"LessonName"`
-	Userid     string   `thrift:"Userid,2" frugal:"2,default,string" json:"Userid"`
-	Content    string   `thrift:"Content,3" frugal:"3,default,string" json:"Content"`
-	Options    []string `thrift:"Options,4" frugal:"4,default,list<string>" json:"Options"`
-	Answer     string   `thrift:"Answer,5" frugal:"5,default,string" json:"Answer"`
+	LessonId string   `thrift:"LessonId,1" frugal:"1,default,string" json:"LessonId"`
+	Userid   string   `thrift:"Userid,2" frugal:"2,default,string" json:"Userid"`
+	Content  string   `thrift:"Content,3" frugal:"3,default,string" json:"Content"`
+	Options  []string `thrift:"Options,4" frugal:"4,default,list<string>" json:"Options"`
+	Answer   string   `thrift:"Answer,5" frugal:"5,default,string" json:"Answer"`
 }
 
 func NewCreateQuestionReq() *CreateQuestionReq {
@@ -25,8 +25,8 @@ func NewCreateQuestionReq() *CreateQuestionReq {
 func (p *CreateQuestionReq) InitDefault() {
 }
 
-func (p *CreateQuestionReq) GetLessonName() (v string) {
-	return p.LessonName
+func (p *CreateQuestionReq) GetLessonId() (v string) {
+	return p.LessonId
 }
 
 func (p *CreateQuestionReq) GetUserid() (v string) {
@@ -44,8 +44,8 @@ func (p *CreateQuestionReq) GetOptions() (v []string) {
 func (p *CreateQuestionReq) GetAnswer() (v string) {
 	return p.Answer
 }
-func (p *CreateQuestionReq) SetLessonName(val string) {
-	p.LessonName = val
+func (p *CreateQuestionReq) SetLessonId(val string) {
+	p.LessonId = val
 }
 func (p *CreateQuestionReq) SetUserid(val string) {
 	p.Userid = val
@@ -61,7 +61,7 @@ func (p *CreateQuestionReq) SetAnswer(val string) {
 }
 
 var fieldIDToName_CreateQuestionReq = map[int16]string{
-	1: "LessonName",
+	1: "LessonId",
 	2: "Userid",
 	3: "Content",
 	4: "Options",
@@ -164,7 +164,7 @@ func (p *CreateQuestionReq) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.LessonName = _field
+	p.LessonId = _field
 	return nil
 }
 func (p *CreateQuestionReq) ReadField2(iprot thrift.TProtocol) error {
@@ -270,10 +270,10 @@ WriteStructEndError:
 }
 
 func (p *CreateQuestionReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("LessonName", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("LessonId", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.LessonName); err != nil {
+	if err := oprot.WriteString(p.LessonId); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -376,7 +376,7 @@ func (p *CreateQuestionReq) DeepEqual(ano *CreateQuestionReq) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.LessonName) {
+	if !p.Field1DeepEqual(ano.LessonId) {
 		return false
 	}
 	if !p.Field2DeepEqual(ano.Userid) {
@@ -396,7 +396,7 @@ func (p *CreateQuestionReq) DeepEqual(ano *CreateQuestionReq) bool {
 
 func (p *CreateQuestionReq) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.LessonName, src) != 0 {
+	if strings.Compare(p.LessonId, src) != 0 {
 		return false
 	}
 	return true
@@ -1058,346 +1058,10 @@ func (p *TorFAnswerResp) Field1DeepEqual(src *common.Resp) bool {
 	return true
 }
 
-type ListAllUserQuizReq struct {
-	Userid string `thrift:"Userid,1" frugal:"1,default,string" json:"Userid"`
-}
-
-func NewListAllUserQuizReq() *ListAllUserQuizReq {
-	return &ListAllUserQuizReq{}
-}
-
-func (p *ListAllUserQuizReq) InitDefault() {
-}
-
-func (p *ListAllUserQuizReq) GetUserid() (v string) {
-	return p.Userid
-}
-func (p *ListAllUserQuizReq) SetUserid(val string) {
-	p.Userid = val
-}
-
-var fieldIDToName_ListAllUserQuizReq = map[int16]string{
-	1: "Userid",
-}
-
-func (p *ListAllUserQuizReq) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRING {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_ListAllUserQuizReq[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *ListAllUserQuizReq) ReadField1(iprot thrift.TProtocol) error {
-
-	var _field string
-	if v, err := iprot.ReadString(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.Userid = _field
-	return nil
-}
-
-func (p *ListAllUserQuizReq) Write(oprot thrift.TProtocol) (err error) {
-
-	var fieldId int16
-	if err = oprot.WriteStructBegin("ListAllUserQuizReq"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *ListAllUserQuizReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("Userid", thrift.STRING, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteString(p.Userid); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *ListAllUserQuizReq) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ListAllUserQuizReq(%+v)", *p)
-
-}
-
-func (p *ListAllUserQuizReq) DeepEqual(ano *ListAllUserQuizReq) bool {
-	if p == ano {
-		return true
-	} else if p == nil || ano == nil {
-		return false
-	}
-	if !p.Field1DeepEqual(ano.Userid) {
-		return false
-	}
-	return true
-}
-
-func (p *ListAllUserQuizReq) Field1DeepEqual(src string) bool {
-
-	if strings.Compare(p.Userid, src) != 0 {
-		return false
-	}
-	return true
-}
-
-type ListAllUserQuizResp struct {
-	Resp *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
-}
-
-func NewListAllUserQuizResp() *ListAllUserQuizResp {
-	return &ListAllUserQuizResp{}
-}
-
-func (p *ListAllUserQuizResp) InitDefault() {
-}
-
-var ListAllUserQuizResp_Resp_DEFAULT *common.Resp
-
-func (p *ListAllUserQuizResp) GetResp() (v *common.Resp) {
-	if !p.IsSetResp() {
-		return ListAllUserQuizResp_Resp_DEFAULT
-	}
-	return p.Resp
-}
-func (p *ListAllUserQuizResp) SetResp(val *common.Resp) {
-	p.Resp = val
-}
-
-var fieldIDToName_ListAllUserQuizResp = map[int16]string{
-	1: "resp",
-}
-
-func (p *ListAllUserQuizResp) IsSetResp() bool {
-	return p.Resp != nil
-}
-
-func (p *ListAllUserQuizResp) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_ListAllUserQuizResp[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *ListAllUserQuizResp) ReadField1(iprot thrift.TProtocol) error {
-	_field := common.NewResp()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Resp = _field
-	return nil
-}
-
-func (p *ListAllUserQuizResp) Write(oprot thrift.TProtocol) (err error) {
-
-	var fieldId int16
-	if err = oprot.WriteStructBegin("ListAllUserQuizResp"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *ListAllUserQuizResp) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("resp", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Resp.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *ListAllUserQuizResp) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("ListAllUserQuizResp(%+v)", *p)
-
-}
-
-func (p *ListAllUserQuizResp) DeepEqual(ano *ListAllUserQuizResp) bool {
-	if p == ano {
-		return true
-	} else if p == nil || ano == nil {
-		return false
-	}
-	if !p.Field1DeepEqual(ano.Resp) {
-		return false
-	}
-	return true
-}
-
-func (p *ListAllUserQuizResp) Field1DeepEqual(src *common.Resp) bool {
-
-	if !p.Resp.DeepEqual(src) {
-		return false
-	}
-	return true
-}
-
 type QuizService interface {
 	CreateQuestion(ctx context.Context, req *CreateQuestionReq) (r *CreateQuestionResp, err error)
 
 	TorFAnswer(ctx context.Context, req *TorFAnswerReq) (r *TorFAnswerResp, err error)
-
-	ListAllUserQuiz(ctx context.Context, req *ListAllUserQuizReq) (r *ListAllUserQuizResp, err error)
 }
 
 type QuizServiceCreateQuestionArgs struct {
@@ -2077,348 +1741,6 @@ func (p *QuizServiceTorFAnswerResult) DeepEqual(ano *QuizServiceTorFAnswerResult
 }
 
 func (p *QuizServiceTorFAnswerResult) Field0DeepEqual(src *TorFAnswerResp) bool {
-
-	if !p.Success.DeepEqual(src) {
-		return false
-	}
-	return true
-}
-
-type QuizServiceListAllUserQuizArgs struct {
-	Req *ListAllUserQuizReq `thrift:"req,1" frugal:"1,default,ListAllUserQuizReq" json:"req"`
-}
-
-func NewQuizServiceListAllUserQuizArgs() *QuizServiceListAllUserQuizArgs {
-	return &QuizServiceListAllUserQuizArgs{}
-}
-
-func (p *QuizServiceListAllUserQuizArgs) InitDefault() {
-}
-
-var QuizServiceListAllUserQuizArgs_Req_DEFAULT *ListAllUserQuizReq
-
-func (p *QuizServiceListAllUserQuizArgs) GetReq() (v *ListAllUserQuizReq) {
-	if !p.IsSetReq() {
-		return QuizServiceListAllUserQuizArgs_Req_DEFAULT
-	}
-	return p.Req
-}
-func (p *QuizServiceListAllUserQuizArgs) SetReq(val *ListAllUserQuizReq) {
-	p.Req = val
-}
-
-var fieldIDToName_QuizServiceListAllUserQuizArgs = map[int16]string{
-	1: "req",
-}
-
-func (p *QuizServiceListAllUserQuizArgs) IsSetReq() bool {
-	return p.Req != nil
-}
-
-func (p *QuizServiceListAllUserQuizArgs) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 1:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField1(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_QuizServiceListAllUserQuizArgs[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *QuizServiceListAllUserQuizArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewListAllUserQuizReq()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Req = _field
-	return nil
-}
-
-func (p *QuizServiceListAllUserQuizArgs) Write(oprot thrift.TProtocol) (err error) {
-
-	var fieldId int16
-	if err = oprot.WriteStructBegin("ListAllUserQuiz_args"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField1(oprot); err != nil {
-			fieldId = 1
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *QuizServiceListAllUserQuizArgs) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := p.Req.Write(oprot); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
-}
-
-func (p *QuizServiceListAllUserQuizArgs) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("QuizServiceListAllUserQuizArgs(%+v)", *p)
-
-}
-
-func (p *QuizServiceListAllUserQuizArgs) DeepEqual(ano *QuizServiceListAllUserQuizArgs) bool {
-	if p == ano {
-		return true
-	} else if p == nil || ano == nil {
-		return false
-	}
-	if !p.Field1DeepEqual(ano.Req) {
-		return false
-	}
-	return true
-}
-
-func (p *QuizServiceListAllUserQuizArgs) Field1DeepEqual(src *ListAllUserQuizReq) bool {
-
-	if !p.Req.DeepEqual(src) {
-		return false
-	}
-	return true
-}
-
-type QuizServiceListAllUserQuizResult struct {
-	Success *ListAllUserQuizResp `thrift:"success,0,optional" frugal:"0,optional,ListAllUserQuizResp" json:"success,omitempty"`
-}
-
-func NewQuizServiceListAllUserQuizResult() *QuizServiceListAllUserQuizResult {
-	return &QuizServiceListAllUserQuizResult{}
-}
-
-func (p *QuizServiceListAllUserQuizResult) InitDefault() {
-}
-
-var QuizServiceListAllUserQuizResult_Success_DEFAULT *ListAllUserQuizResp
-
-func (p *QuizServiceListAllUserQuizResult) GetSuccess() (v *ListAllUserQuizResp) {
-	if !p.IsSetSuccess() {
-		return QuizServiceListAllUserQuizResult_Success_DEFAULT
-	}
-	return p.Success
-}
-func (p *QuizServiceListAllUserQuizResult) SetSuccess(x interface{}) {
-	p.Success = x.(*ListAllUserQuizResp)
-}
-
-var fieldIDToName_QuizServiceListAllUserQuizResult = map[int16]string{
-	0: "success",
-}
-
-func (p *QuizServiceListAllUserQuizResult) IsSetSuccess() bool {
-	return p.Success != nil
-}
-
-func (p *QuizServiceListAllUserQuizResult) Read(iprot thrift.TProtocol) (err error) {
-
-	var fieldTypeId thrift.TType
-	var fieldId int16
-
-	if _, err = iprot.ReadStructBegin(); err != nil {
-		goto ReadStructBeginError
-	}
-
-	for {
-		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
-		if err != nil {
-			goto ReadFieldBeginError
-		}
-		if fieldTypeId == thrift.STOP {
-			break
-		}
-
-		switch fieldId {
-		case 0:
-			if fieldTypeId == thrift.STRUCT {
-				if err = p.ReadField0(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		default:
-			if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
-		}
-		if err = iprot.ReadFieldEnd(); err != nil {
-			goto ReadFieldEndError
-		}
-	}
-	if err = iprot.ReadStructEnd(); err != nil {
-		goto ReadStructEndError
-	}
-
-	return nil
-ReadStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
-ReadFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
-ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_QuizServiceListAllUserQuizResult[fieldId]), err)
-SkipFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
-
-ReadFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
-ReadStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
-}
-
-func (p *QuizServiceListAllUserQuizResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewListAllUserQuizResp()
-	if err := _field.Read(iprot); err != nil {
-		return err
-	}
-	p.Success = _field
-	return nil
-}
-
-func (p *QuizServiceListAllUserQuizResult) Write(oprot thrift.TProtocol) (err error) {
-
-	var fieldId int16
-	if err = oprot.WriteStructBegin("ListAllUserQuiz_result"); err != nil {
-		goto WriteStructBeginError
-	}
-	if p != nil {
-		if err = p.writeField0(oprot); err != nil {
-			fieldId = 0
-			goto WriteFieldError
-		}
-	}
-	if err = oprot.WriteFieldStop(); err != nil {
-		goto WriteFieldStopError
-	}
-	if err = oprot.WriteStructEnd(); err != nil {
-		goto WriteStructEndError
-	}
-	return nil
-WriteStructBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
-WriteFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
-WriteFieldStopError:
-	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
-WriteStructEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
-}
-
-func (p *QuizServiceListAllUserQuizResult) writeField0(oprot thrift.TProtocol) (err error) {
-	if p.IsSetSuccess() {
-		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
-			goto WriteFieldBeginError
-		}
-		if err := p.Success.Write(oprot); err != nil {
-			return err
-		}
-		if err = oprot.WriteFieldEnd(); err != nil {
-			goto WriteFieldEndError
-		}
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
-}
-
-func (p *QuizServiceListAllUserQuizResult) String() string {
-	if p == nil {
-		return "<nil>"
-	}
-	return fmt.Sprintf("QuizServiceListAllUserQuizResult(%+v)", *p)
-
-}
-
-func (p *QuizServiceListAllUserQuizResult) DeepEqual(ano *QuizServiceListAllUserQuizResult) bool {
-	if p == ano {
-		return true
-	} else if p == nil || ano == nil {
-		return false
-	}
-	if !p.Field0DeepEqual(ano.Success) {
-		return false
-	}
-	return true
-}
-
-func (p *QuizServiceListAllUserQuizResult) Field0DeepEqual(src *ListAllUserQuizResp) bool {
 
 	if !p.Success.DeepEqual(src) {
 		return false

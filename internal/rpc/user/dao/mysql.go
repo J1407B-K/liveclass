@@ -14,10 +14,7 @@ func SaveUser(db *gorm.DB, req *user.RegisterReq) error {
 		Auth:     req.Auth,
 	}
 
-	if err := db.Create(&u).Error; err != nil {
-		return err
-	}
-	return nil
+	return db.Create(&u).Error
 }
 
 func SelectUser(db *gorm.DB, k string) (*model.User, error) {

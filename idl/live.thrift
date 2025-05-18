@@ -50,10 +50,19 @@ struct GetLessonInfoResp {
     1: common.resp resp,
 }
 
+struct GetLessonInfoByIdReq{
+    1: string lessonid
+}
+
+struct GetLessonInfoByIdResp{
+    1: common.resp resp,
+}
+
 service LiveService {
     CreateLiveResp CreateLive(1: CreateLiveReq req),
     CloseLiveResp  CloseLive(1:CloseLiveReq req),
    ChangeUserInLiveResp ChangeUserInLive(1: ChangeUserInLiveReq req),
    SelectLessonInfoResp SelectLessonInfo(1:SelectLessonInfoReq req),
    GetLessonInfoResp    GetLessonInfo(1:GetLessonInfoReq req),
+   GetLessonInfoByIdResp GetLessonInfoById(1:GetLessonInfoByIdReq req)
 }

@@ -27,13 +27,6 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
-	"ListAllUserQuiz": kitex.NewMethodInfo(
-		listAllUserQuizHandler,
-		newQuizServiceListAllUserQuizArgs,
-		newQuizServiceListAllUserQuizResult,
-		false,
-		kitex.WithStreamingMode(kitex.StreamingNone),
-	),
 }
 
 var (
@@ -136,24 +129,6 @@ func newQuizServiceTorFAnswerResult() interface{} {
 	return quiz.NewQuizServiceTorFAnswerResult()
 }
 
-func listAllUserQuizHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*quiz.QuizServiceListAllUserQuizArgs)
-	realResult := result.(*quiz.QuizServiceListAllUserQuizResult)
-	success, err := handler.(quiz.QuizService).ListAllUserQuiz(ctx, realArg.Req)
-	if err != nil {
-		return err
-	}
-	realResult.Success = success
-	return nil
-}
-func newQuizServiceListAllUserQuizArgs() interface{} {
-	return quiz.NewQuizServiceListAllUserQuizArgs()
-}
-
-func newQuizServiceListAllUserQuizResult() interface{} {
-	return quiz.NewQuizServiceListAllUserQuizResult()
-}
-
 type kClient struct {
 	c client.Client
 }
@@ -179,16 +154,6 @@ func (p *kClient) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerReq) (r *q
 	_args.Req = req
 	var _result quiz.QuizServiceTorFAnswerResult
 	if err = p.c.Call(ctx, "TorFAnswer", &_args, &_result); err != nil {
-		return
-	}
-	return _result.GetSuccess(), nil
-}
-
-func (p *kClient) ListAllUserQuiz(ctx context.Context, req *quiz.ListAllUserQuizReq) (r *quiz.ListAllUserQuizResp, err error) {
-	var _args quiz.QuizServiceListAllUserQuizArgs
-	_args.Req = req
-	var _result quiz.QuizServiceListAllUserQuizResult
-	if err = p.c.Call(ctx, "ListAllUserQuiz", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

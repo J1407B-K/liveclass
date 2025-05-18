@@ -1,21 +1,21 @@
 package global
 
 import (
-	"github.com/gorilla/websocket"
-	"net/http"
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/hertz-contrib/websocket"
 	"sync"
 )
 
 var (
 	//websocket升级器
-	Upgrader = websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
+	Upgrader = websocket.HertzUpgrader{
+		CheckOrigin: func(c *app.RequestContext) bool {
 			return true
 		},
 	}
 
-	//储存连接的map
-	WsConns = make(map[*websocket.Conn]bool)
+	//储存连接的map(string应为lessonName)
+	WsConns = make(map[*websocket.Conn]string)
 	//锁
 	Mux = sync.Mutex{}
 )

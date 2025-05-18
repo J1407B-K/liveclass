@@ -5,4 +5,6 @@ const (
 	BadRequest
 	RPCError
 	AuthError
+	UpgraderError
+	BroadCastError
 )

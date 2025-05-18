@@ -45,3 +45,12 @@ func SelectLessonByNandT(db *gorm.DB, name, teacher string) (model.Lesson, error
 	}
 	return lesson, nil
 }
+
+func SelectLessonById(db *gorm.DB, id int) (*model.Lesson, error) {
+	var lesson model.Lesson
+	err := db.Where("lesson_id = ?", id).Find(&lesson).Error
+	if err != nil {
+		return nil, err
+	}
+	return &lesson, nil
+}

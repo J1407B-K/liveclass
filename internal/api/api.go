@@ -9,6 +9,7 @@ import (
 
 func InitRouter() {
 	h := server.New(server.WithHostPorts(":8080"))
+	h.NoHijackConnPool = true
 
 	authMiddlewire, err := jwt.NewMiddle()
 	if err != nil {
@@ -32,6 +33,12 @@ func InitRouter() {
 		v2.GET("/select_lesson", service.SelectLessonInfo)
 		//MYSQL中课程信息
 		v2.GET("/get_lesson", service.GetLessonInfo)
+
+		v2.POST("/create_question", service.CreateQuestion)
+	}
+	v3 := h.Group("/ws")
+	{
+		v3.GET("/conn", service.ListenConnection)
 	}
 
 	h.Spin()

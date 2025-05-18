@@ -3,7 +3,7 @@ namespace go quiz
 include "common.thrift"
 
 struct CreateQuestionReq {
-    1: string LessonName,
+    1: string LessonId,
     2: string Userid,
     3: string Content,
     4: list<string> Options,
@@ -24,16 +24,7 @@ struct TorFAnswerResp {
     1: common.resp resp,
 }
 
-struct ListAllUserQuizReq {
-    1: string Userid
-}
-
-struct ListAllUserQuizResp {
-    1: common.resp resp,
-}
-
 service QuizService {
     CreateQuestionResp CreateQuestion(1: CreateQuestionReq req),
     TorFAnswerResp     TorFAnswer(1: TorFAnswerReq req),
-    ListAllUserQuizResp  ListAllUserQuiz(1:ListAllUserQuizReq req),
 }

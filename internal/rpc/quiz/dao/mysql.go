@@ -14,9 +14,23 @@ func SaveQuestion(db *gorm.DB, lessonId int, req *quiz.CreateQuestionReq) error 
 		Answer:   req.Answer,
 	}
 
-	err := db.Create(&question).Error
+	return db.Create(&question).Error
+}
+
+func GetQuestionId(db *gorm.DB, Content string) (int, error) {
+	var q model.Question
+
+	err := db.Where(&model.Question{Content: Content}).First(&q).Error
 	if err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return q.LessonId, nil
+}
+func GetQuestion(db *gorm.DB, qId int) (*model.Question, error) {
+	var q model.Question
+	err := db.Where("id = ?", qId).First(&q).Error
+	if err != nil {
+		return nil, err
+	}
+	return &q, nil
 }

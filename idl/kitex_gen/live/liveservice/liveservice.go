@@ -48,6 +48,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"GetLessonInfoById": kitex.NewMethodInfo(
+		getLessonInfoByIdHandler,
+		newLiveServiceGetLessonInfoByIdArgs,
+		newLiveServiceGetLessonInfoByIdResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -204,6 +211,24 @@ func newLiveServiceGetLessonInfoResult() interface{} {
 	return live.NewLiveServiceGetLessonInfoResult()
 }
 
+func getLessonInfoByIdHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceGetLessonInfoByIdArgs)
+	realResult := result.(*live.LiveServiceGetLessonInfoByIdResult)
+	success, err := handler.(live.LiveService).GetLessonInfoById(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceGetLessonInfoByIdArgs() interface{} {
+	return live.NewLiveServiceGetLessonInfoByIdArgs()
+}
+
+func newLiveServiceGetLessonInfoByIdResult() interface{} {
+	return live.NewLiveServiceGetLessonInfoByIdResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -259,6 +284,16 @@ func (p *kClient) GetLessonInfo(ctx context.Context, req *live.GetLessonInfoReq)
 	_args.Req = req
 	var _result live.LiveServiceGetLessonInfoResult
 	if err = p.c.Call(ctx, "GetLessonInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetLessonInfoById(ctx context.Context, req *live.GetLessonInfoByIdReq) (r *live.GetLessonInfoByIdResp, err error) {
+	var _args live.LiveServiceGetLessonInfoByIdArgs
+	_args.Req = req
+	var _result live.LiveServiceGetLessonInfoByIdResult
+	if err = p.c.Call(ctx, "GetLessonInfoById", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

@@ -4,7 +4,8 @@ import (
 	"context"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
-	"github.com/hertz-contrib/jwt"
+	jwtt "github.com/golang-jwt/jwt/v4"
+	jwt "github.com/hertz-contrib/jwt"
 	"liveclass/internal/model"
 	"liveclass/internal/service"
 	"log"
@@ -13,11 +14,12 @@ import (
 )
 
 var identityKey = "userid"
+var jwtSecret = []byte("by_kq")
 
 func NewMiddle() (*jwt.HertzJWTMiddleware, error) {
 	authMiddlewire, err := jwt.New(&jwt.HertzJWTMiddleware{
 		Realm:       "Hertz",
-		Key:         []byte("by_kq"),
+		Key:         jwtSecret,
 		Timeout:     24 * time.Hour,
 		IdentityKey: identityKey,
 		PayloadFunc: func(data interface{}) jwt.MapClaims {
@@ -42,6 +44,7 @@ func NewMiddle() (*jwt.HertzJWTMiddleware, error) {
 				"message": message,
 			})
 		},
+		ParseOptions: []jwtt.ParserOption{jwtt.WithValidMethods([]string{"HS256"})},
 	})
 	if err != nil {
 		log.Fatal("JWT Error:" + err.Error())

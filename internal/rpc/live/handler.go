@@ -203,7 +203,7 @@ func (s *LiveServiceImpl) ChangeUserInLive(ctx context.Context, req *live.Change
 }
 
 // GetLessonInfo implements the LiveServiceImpl interface.
-// 这个是获取在mysql中lesson的信息
+// 获取在mysql中lesson的信息(用name和teacher)
 func (s *LiveServiceImpl) GetLessonInfo(ctx context.Context, req *live.GetLessonInfoReq) (resp *live.GetLessonInfoResp, err error) {
 	lesson, err := dao.SelectLessonByNandT(s.DB, req.Lessonname, req.Teacher)
 	if err != nil {
@@ -212,6 +212,27 @@ func (s *LiveServiceImpl) GetLessonInfo(ctx context.Context, req *live.GetLesson
 	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + lesson.Code
 
 	return &live.GetLessonInfoResp{
+		Resp: &common.Resp{
+			Data: info,
+		},
+	}, nil
+}
+
+// GetLessonInfoById implements the LiveServiceImpl interface.
+// 用id获取
+func (s *LiveServiceImpl) GetLessonInfoById(ctx context.Context, req *live.GetLessonInfoByIdReq) (resp *live.GetLessonInfoByIdResp, err error) {
+	id, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	lesson, err := dao.SelectLessonById(s.DB, id)
+	if err != nil {
+		return nil, err
+	}
+
+	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + lesson.Code
+
+	return &live.GetLessonInfoByIdResp{
 		Resp: &common.Resp{
 			Data: info,
 		},

@@ -21,9 +21,9 @@ func SplitInfo(info string) (string, string) {
 	return username, teacher
 }
 
-func SplitToLessonID(info string) string {
+func SplitToLessonID(info string) []string {
 	slice := strings.Split(info, "$")
-	return slice[0]
+	return slice
 }
 
 func CombineAddr(rtmp, flv, hls, key string) map[string]string {
