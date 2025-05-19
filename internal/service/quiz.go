@@ -43,11 +43,12 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 	}
 
 	resp, err := global.Clients.QuizClient.CreateQuestion(c, &quiz.CreateQuestionReq{
-		LessonId: question.LessonId,
-		Userid:   userid,
-		Content:  question.Content,
-		Options:  question.Options,
-		Answer:   question.Answer,
+		LessonId:   question.LessonId,
+		Userid:     userid,
+		Content:    question.Content,
+		OptionsNum: int32(question.OptionNums),
+		Options:    question.Options,
+		Answer:     question.Answer,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
@@ -60,7 +61,7 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	err = broadcast(question.LessonId, utils.H{
+	err = broadcastToTeacher(question.LessonId, utils.H{
 		"Content": question.Content,
 		"Options": question.Options,
 	})
@@ -75,6 +76,47 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func DelQuestion(c context.Context, ctx *app.RequestContext) {
+	//鉴权获得userid
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	uid := data.(*model.User).UserId
+	qid := ctx.PostForm("question_id")
+
+	resp, err := global.Clients.QuizClient.DelQuestion(c, &quiz.DelQuestionReq{
+		Userid:     uid,
+		QuestionId: qid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
 	ctx.JSON(http.StatusOK, utils.H{
 		"resp": model.Response{
 			Code: 0,

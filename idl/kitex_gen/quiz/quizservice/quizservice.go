@@ -27,6 +27,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"DelQuestion": kitex.NewMethodInfo(
+		delQuestionHandler,
+		newQuizServiceDelQuestionArgs,
+		newQuizServiceDelQuestionResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -129,6 +136,24 @@ func newQuizServiceTorFAnswerResult() interface{} {
 	return quiz.NewQuizServiceTorFAnswerResult()
 }
 
+func delQuestionHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*quiz.QuizServiceDelQuestionArgs)
+	realResult := result.(*quiz.QuizServiceDelQuestionResult)
+	success, err := handler.(quiz.QuizService).DelQuestion(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newQuizServiceDelQuestionArgs() interface{} {
+	return quiz.NewQuizServiceDelQuestionArgs()
+}
+
+func newQuizServiceDelQuestionResult() interface{} {
+	return quiz.NewQuizServiceDelQuestionResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -154,6 +179,16 @@ func (p *kClient) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerReq) (r *q
 	_args.Req = req
 	var _result quiz.QuizServiceTorFAnswerResult
 	if err = p.c.Call(ctx, "TorFAnswer", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) DelQuestion(ctx context.Context, req *quiz.DelQuestionReq) (r *quiz.DelQuestionResp, err error) {
+	var _args quiz.QuizServiceDelQuestionArgs
+	_args.Req = req
+	var _result quiz.QuizServiceDelQuestionResult
+	if err = p.c.Call(ctx, "DelQuestion", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

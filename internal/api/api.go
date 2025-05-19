@@ -21,6 +21,7 @@ func InitRouter() {
 		v1.POST("/register", service.Register)
 		v1.POST("/login", authMiddlewire.LoginHandler)
 		v1.GET("/userinfo", service.GetUserInfo)
+		v1.GET("/is_stu_in_lesson", service.IsStudentInLesson)
 	}
 
 	v2 := h.Group("/")
@@ -33,12 +34,14 @@ func InitRouter() {
 		v2.GET("/select_lesson", service.SelectLessonInfo)
 		//MYSQL中课程信息
 		v2.GET("/get_lesson", service.GetLessonInfo)
-
 		v2.POST("/create_question", service.CreateQuestion)
+		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)
+		v2.DELETE("/del_question", service.DelQuestion)
+
 	}
 	v3 := h.Group("/ws")
 	{
-		v3.GET("/conn", service.ListenConnection)
+		v3.GET("/conn", service.QuizConnection)
 	}
 
 	h.Spin()

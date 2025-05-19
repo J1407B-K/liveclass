@@ -13,6 +13,7 @@ import (
 type Client interface {
 	CreateQuestion(ctx context.Context, req *quiz.CreateQuestionReq, callOptions ...callopt.Option) (r *quiz.CreateQuestionResp, err error)
 	TorFAnswer(ctx context.Context, req *quiz.TorFAnswerReq, callOptions ...callopt.Option) (r *quiz.TorFAnswerResp, err error)
+	DelQuestion(ctx context.Context, req *quiz.DelQuestionReq, callOptions ...callopt.Option) (r *quiz.DelQuestionResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -52,4 +53,9 @@ func (p *kQuizServiceClient) CreateQuestion(ctx context.Context, req *quiz.Creat
 func (p *kQuizServiceClient) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerReq, callOptions ...callopt.Option) (r *quiz.TorFAnswerResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.TorFAnswer(ctx, req)
+}
+
+func (p *kQuizServiceClient) DelQuestion(ctx context.Context, req *quiz.DelQuestionReq, callOptions ...callopt.Option) (r *quiz.DelQuestionResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.DelQuestion(ctx, req)
 }

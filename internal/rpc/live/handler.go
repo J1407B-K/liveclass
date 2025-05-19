@@ -238,3 +238,60 @@ func (s *LiveServiceImpl) GetLessonInfoById(ctx context.Context, req *live.GetLe
 		},
 	}, nil
 }
+
+// ChangeUserToLesson implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) ChangeUserToLesson(ctx context.Context, req *live.ChangeUserToLessonReq) (resp *live.ChangeUserToLessonResp, err error) {
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != req.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	if req.Option != "add" && req.Option != "del" {
+		return nil, errors.New("invalid options")
+	}
+
+	err = dao.ChangeUserToLesson(s.DB, req.Studentid, req.Lessonname, req.Teacher, req.Option)
+	if err != nil {
+		return nil, err
+	}
+	return &live.ChangeUserToLessonResp{
+		Resp: &common.Resp{
+			Data: "success",
+		},
+	}, nil
+}
+
+// IsStudentInLesson implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) IsStudentInLesson(ctx context.Context, req *live.IsStudentInLessonReq) (resp *live.IsStudentInLessonResp, err error) {
+	info, err := dao.CheckStudentInLesson(s.DB, req.Studentid, req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	if info == "in" {
+		return &live.IsStudentInLessonResp{
+			Resp: &common.Resp{
+				Data: "the student in the lesson",
+			},
+		}, nil
+	} else if info == "not_in" {
+		return &live.IsStudentInLessonResp{
+			Resp: &common.Resp{
+				Data: "the student not in the lesson",
+			},
+		}, nil
+	}
+
+	return &live.IsStudentInLessonResp{
+		Resp: &common.Resp{
+			Data: errors.New("unknown error happened").Error(),
+		},
+	}, nil
+}

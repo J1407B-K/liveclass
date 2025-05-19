@@ -65,17 +65,27 @@ func (s *QuizServiceImpl) CreateQuestion(ctx context.Context, req *quiz.CreateQu
 		return nil, errors.New("权限不够！你不是当前课程老师！")
 	}
 
-	id, err := strconv.Atoi(req.LessonId)
+	lid, err := strconv.Atoi(req.LessonId)
 	if err != nil {
 		return nil, err
 	}
 
-	err = dao.SaveQuestion(s.DB, id, req)
+	uid, err := strconv.Atoi(req.Userid)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dao.SaveQuestion(s.DB, lid, uid, req)
 	if err != nil {
 		return nil, err
 	}
 
 	qid, err := dao.GetQuestionId(s.DB, req.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dao.CreateAnswer(s.DB, qid, int(req.OptionsNum), req.Answer)
 	if err != nil {
 		return nil, err
 	}
@@ -89,34 +99,92 @@ func (s *QuizServiceImpl) CreateQuestion(ctx context.Context, req *quiz.CreateQu
 
 // TorFAnswer implements the QuizServiceImpl interface.
 func (s *QuizServiceImpl) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerReq) (resp *quiz.TorFAnswerResp, err error) {
-	id, err := strconv.Atoi(req.QuestionId)
-	if err != nil {
-		return nil, err
-	}
-	q, err := dao.GetQuestion(s.DB, id)
+	qid, err := strconv.Atoi(req.QuestionId)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	uid, err := strconv.Atoi(req.Userid)
 	if err != nil {
 		return nil, err
 	}
-	//拿到信息
-	username, _ := cut.SplitInfo(info.Resp.Data)
 
-	if q.Answer == req.UserAnswer {
-		return &quiz.TorFAnswerResp{
-			Resp: &common.Resp{
-				Data: "right by" + username,
-			},
-		}, nil
-	} else {
-		return &quiz.TorFAnswerResp{
-			Resp: &common.Resp{
-				Data: "wrong by" + username,
-			},
-		}, nil
+	_, aid, err := dao.SelectAnswer(s.DB, qid)
+	if err != nil {
+		return nil, err
 	}
 
+	for _, id := range aid {
+		suid, _ := strconv.Atoi(id)
+		if suid == uid {
+			return nil, errors.New("你已经回答过此问题！！！")
+		}
+	}
+
+	q, err := dao.GetQuestion(s.DB, qid)
+	if err != nil {
+		return nil, err
+	}
+
+	err = dao.AddAnswerWithDefaultTx(s.DB, uid, qid, req.UserAnswer)
+	if err != nil {
+		return nil, err
+	}
+
+	so, _, err := dao.SelectAnswer(s.DB, qid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &quiz.TorFAnswerResp{
+		Resp: &common.Resp{
+			Data: strconv.Itoa(q.TeacherId) + "$" + cut.ShowOptions(so) + "|right answer:" + q.Answer,
+		},
+	}, nil
+}
+
+// DelQuestion implements the QuizServiceImpl interface.
+func (s *QuizServiceImpl) DelQuestion(ctx context.Context, req *quiz.DelQuestionReq) (resp *quiz.DelQuestionResp, err error) {
+	userresp, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//分割userinfo
+	username, auth := cut.SplitInfo(userresp.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！你不是老师")
+	}
+
+	qid, err := strconv.Atoi(req.QuestionId)
+	if err != nil {
+		return nil, err
+	}
+
+	q, err := dao.GetQuestion(s.DB, qid)
+	if err != nil {
+		return nil, err
+	}
+
+	liveresp, err := s.liveCli.GetLessonInfoById(ctx, &live.GetLessonInfoByIdReq{Lessonid: strconv.Itoa(q.LessonId)})
+	if err != nil {
+		return nil, err
+	}
+
+	//分割lessoninfo
+	slice := cut.SplitToLessonID(liveresp.Resp.Data)
+	if username != slice[2] {
+		return nil, errors.New("权限不够！你不是当前课程老师！")
+	}
+
+	err = dao.DelQuestionAndAnswer(s.DB, qid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &quiz.DelQuestionResp{
+		Resp: &common.Resp{
+			Data: "success",
+		},
+	}, nil
 }

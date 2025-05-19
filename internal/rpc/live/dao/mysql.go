@@ -11,6 +11,7 @@ func SaveLesson(db *gorm.DB, livename, desc, username, code string) error {
 		Description: desc,
 		Teacher:     username,
 		Code:        code,
+		StudentID:   []string{},
 	}
 
 	if err := db.Create(&l).Error; err != nil {
@@ -53,4 +54,87 @@ func SelectLessonById(db *gorm.DB, id int) (*model.Lesson, error) {
 		return nil, err
 	}
 	return &lesson, nil
+}
+
+func ChangeUserToLesson(db *gorm.DB, studentId, lessonName, teacher, option string) error {
+	// 开启事务（默认使用 MySQL 的 autocommit=false 模式）
+	tx := db.Begin()
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	// 确保结束时提交或回滚
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+
+	var lesson model.Lesson
+
+	if err := tx.
+		Where("name = ? and teacher = ?", lessonName, teacher).
+		First(&lesson).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if option == "add" {
+		lesson.StudentID = append(lesson.StudentID, studentId)
+		err := tx.Save(&lesson).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	} else {
+		var newStudentId []string
+		for _, id := range lesson.StudentID {
+			if id == studentId {
+				continue
+			}
+			newStudentId = append(newStudentId, id)
+		}
+		lesson.StudentID = newStudentId
+
+		err := tx.Save(&lesson).Error
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+	return tx.Commit().Error
+}
+
+func CheckStudentInLesson(db *gorm.DB, studentId, lessonid string) (string, error) {
+	tx := db.Begin()
+	if tx.Error != nil {
+		return "", tx.Error
+	}
+
+	// 确保结束时提交或回滚
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+
+	var lesson model.Lesson
+
+	if err := tx.
+		Where("lesson_id = ?", lessonid).
+		First(&lesson).Error; err != nil {
+		tx.Rollback()
+		return "", err
+	}
+
+	for _, id := range lesson.StudentID {
+		if id == studentId {
+			tx.Commit()
+			return "in", nil
+		}
+	}
+
+	return "not_in", nil
 }

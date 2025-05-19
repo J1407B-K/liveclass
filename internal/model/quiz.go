@@ -1,10 +1,11 @@
 package model
 
 type Question struct {
-	LessonId string   `json:"lesson_id"`
-	Content  string   `json:"content"`
-	Options  []string `json:"options"`
-	Answer   string   `json:"answer"`
+	LessonId   string   `json:"lesson_id"`
+	Content    string   `json:"content"`
+	OptionNums int      `json:"option_nums"`
+	Options    []string `json:"options"`
+	Answer     string   `json:"answer"`
 }
 
 type Answer struct {

@@ -24,7 +24,7 @@ struct CloseLiveResp {
 struct ChangeUserInLiveReq {
     1: string livename,
     2: string userid,
-    3:string options,
+    3: string options,
 }
 
 struct ChangeUserInLiveResp {
@@ -58,11 +58,34 @@ struct GetLessonInfoByIdResp{
     1: common.resp resp,
 }
 
+struct ChangeUserToLessonReq {
+    1: string userid,
+    2: string lessonname,
+    3: string teacher,
+    4: string option,
+    5: string studentid,
+}
+
+struct ChangeUserToLessonResp {
+    1: common.resp resp,
+}
+
+struct IsStudentInLessonReq {
+    1: string studentid,
+    2: string lessonid,
+}
+
+struct IsStudentInLessonResp {
+    1:common.resp resp,
+}
+
 service LiveService {
     CreateLiveResp CreateLive(1: CreateLiveReq req),
     CloseLiveResp  CloseLive(1:CloseLiveReq req),
    ChangeUserInLiveResp ChangeUserInLive(1: ChangeUserInLiveReq req),
    SelectLessonInfoResp SelectLessonInfo(1:SelectLessonInfoReq req),
    GetLessonInfoResp    GetLessonInfo(1:GetLessonInfoReq req),
-   GetLessonInfoByIdResp GetLessonInfoById(1:GetLessonInfoByIdReq req)
+   GetLessonInfoByIdResp GetLessonInfoById(1:GetLessonInfoByIdReq req),
+   ChangeUserToLessonResp   ChangeUserToLesson(1:ChangeUserToLessonReq req),
+   IsStudentInLessonResp IsStudentInLesson(1:IsStudentInLessonReq req),
 }

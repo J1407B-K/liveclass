@@ -204,3 +204,77 @@ func GetLessonInfo(c context.Context, ctx *app.RequestContext) {
 		},
 	})
 }
+
+func ChangeUserToLesson(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	ln := ctx.PostForm("lesson_name")
+	t := ctx.PostForm("teacher")
+	o := ctx.PostForm("option")
+	stuId := ctx.PostForm("student_id")
+
+	resp, err := global.Clients.LiveClient.ChangeUserToLesson(c, &live.ChangeUserToLessonReq{
+		Userid:     userid,
+		Lessonname: ln,
+		Teacher:    t,
+		Option:     o,
+		Studentid:  stuId,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func IsStudentInLesson(c context.Context, ctx *app.RequestContext) {
+	sid := ctx.PostForm("student_id")
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.LiveClient.IsStudentInLesson(c, &live.IsStudentInLessonReq{
+		Studentid: sid,
+		Lessonid:  lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}

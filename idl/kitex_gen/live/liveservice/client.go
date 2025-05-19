@@ -17,6 +17,8 @@ type Client interface {
 	SelectLessonInfo(ctx context.Context, req *live.SelectLessonInfoReq, callOptions ...callopt.Option) (r *live.SelectLessonInfoResp, err error)
 	GetLessonInfo(ctx context.Context, req *live.GetLessonInfoReq, callOptions ...callopt.Option) (r *live.GetLessonInfoResp, err error)
 	GetLessonInfoById(ctx context.Context, req *live.GetLessonInfoByIdReq, callOptions ...callopt.Option) (r *live.GetLessonInfoByIdResp, err error)
+	ChangeUserToLesson(ctx context.Context, req *live.ChangeUserToLessonReq, callOptions ...callopt.Option) (r *live.ChangeUserToLessonResp, err error)
+	IsStudentInLesson(ctx context.Context, req *live.IsStudentInLessonReq, callOptions ...callopt.Option) (r *live.IsStudentInLessonResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -76,4 +78,14 @@ func (p *kLiveServiceClient) GetLessonInfo(ctx context.Context, req *live.GetLes
 func (p *kLiveServiceClient) GetLessonInfoById(ctx context.Context, req *live.GetLessonInfoByIdReq, callOptions ...callopt.Option) (r *live.GetLessonInfoByIdResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.GetLessonInfoById(ctx, req)
+}
+
+func (p *kLiveServiceClient) ChangeUserToLesson(ctx context.Context, req *live.ChangeUserToLessonReq, callOptions ...callopt.Option) (r *live.ChangeUserToLessonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ChangeUserToLesson(ctx, req)
+}
+
+func (p *kLiveServiceClient) IsStudentInLesson(ctx context.Context, req *live.IsStudentInLessonReq, callOptions ...callopt.Option) (r *live.IsStudentInLessonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.IsStudentInLesson(ctx, req)
 }

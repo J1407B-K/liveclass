@@ -55,6 +55,20 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"ChangeUserToLesson": kitex.NewMethodInfo(
+		changeUserToLessonHandler,
+		newLiveServiceChangeUserToLessonArgs,
+		newLiveServiceChangeUserToLessonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"IsStudentInLesson": kitex.NewMethodInfo(
+		isStudentInLessonHandler,
+		newLiveServiceIsStudentInLessonArgs,
+		newLiveServiceIsStudentInLessonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -229,6 +243,42 @@ func newLiveServiceGetLessonInfoByIdResult() interface{} {
 	return live.NewLiveServiceGetLessonInfoByIdResult()
 }
 
+func changeUserToLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceChangeUserToLessonArgs)
+	realResult := result.(*live.LiveServiceChangeUserToLessonResult)
+	success, err := handler.(live.LiveService).ChangeUserToLesson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceChangeUserToLessonArgs() interface{} {
+	return live.NewLiveServiceChangeUserToLessonArgs()
+}
+
+func newLiveServiceChangeUserToLessonResult() interface{} {
+	return live.NewLiveServiceChangeUserToLessonResult()
+}
+
+func isStudentInLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceIsStudentInLessonArgs)
+	realResult := result.(*live.LiveServiceIsStudentInLessonResult)
+	success, err := handler.(live.LiveService).IsStudentInLesson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceIsStudentInLessonArgs() interface{} {
+	return live.NewLiveServiceIsStudentInLessonArgs()
+}
+
+func newLiveServiceIsStudentInLessonResult() interface{} {
+	return live.NewLiveServiceIsStudentInLessonResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -294,6 +344,26 @@ func (p *kClient) GetLessonInfoById(ctx context.Context, req *live.GetLessonInfo
 	_args.Req = req
 	var _result live.LiveServiceGetLessonInfoByIdResult
 	if err = p.c.Call(ctx, "GetLessonInfoById", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ChangeUserToLesson(ctx context.Context, req *live.ChangeUserToLessonReq) (r *live.ChangeUserToLessonResp, err error) {
+	var _args live.LiveServiceChangeUserToLessonArgs
+	_args.Req = req
+	var _result live.LiveServiceChangeUserToLessonResult
+	if err = p.c.Call(ctx, "ChangeUserToLesson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) IsStudentInLesson(ctx context.Context, req *live.IsStudentInLessonReq) (r *live.IsStudentInLessonResp, err error) {
+	var _args live.LiveServiceIsStudentInLessonArgs
+	_args.Req = req
+	var _result live.LiveServiceIsStudentInLessonResult
+	if err = p.c.Call(ctx, "IsStudentInLesson", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil
