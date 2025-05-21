@@ -32,5 +32,22 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     restart: always
 
+
+  redis-stack:
+    image: redis/redis-stack:latest
+    container_name: redis-stack
+    ports:
+      - "6380:6379"  # Redis port
+      - "8001:8001"  # RedisInsight port
+    volumes:
+      - ./data/redis:/data
+    environment:
+      - REDIS_ARGS=--dir /data --appendonly no --save 1800 1
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
   #mysql和redis暂时没加
 

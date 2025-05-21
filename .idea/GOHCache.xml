@@ -70,9 +70,18 @@
         <entry key="Config">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Conversation">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../agent/pkg/mem/simple.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/memory/memory.go" />
             </set>
           </value>
         </entry>
@@ -335,6 +344,14 @@
             </set>
           </value>
         </entry>
+        <entry key="Memory">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../agent/pkg/mem/simple.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/memory/memory.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="MysqlConfig">
           <value>
             <set>
@@ -417,6 +434,13 @@
             </set>
           </value>
         </entry>
+        <entry key="RedisVectorStoreConfig">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../agent/cmd/knowledgeindexing/main.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="RegisterReq">
           <value>
             <set>
@@ -459,6 +483,29 @@
             </set>
           </value>
         </entry>
+        <entry key="SimpleMemory">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../agent/pkg/mem/simple.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/memory/memory.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SimpleMemoryConfig">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/../agent/pkg/mem/simple.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/memory/memory.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="TemplateConfig">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/type/template_config.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="TorFAnswerReq">
           <value>
             <set>
@@ -478,6 +525,14 @@
             <set>
               <option value="file://$PROJECT_DIR$/internal/model/user.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/model/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserMessage">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/type/user_messages.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/user_messages.go" />
             </set>
           </value>
         </entry>
@@ -578,6 +633,53 @@
     </option>
     <option name="scannedPathMapping">
       <map>
+        <entry key="file://$PROJECT_DIR$/../agent/cmd/knowledgeindexing/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747842927620" />
+              <option name="schema">
+                <list>
+                  <option value="RedisVectorStoreConfig" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/../agent/eino/einoagent/orchestration.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849747309" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/../agent/eino/einoagent/retriever.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747847597970" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/../agent/eino/knowledgeindexing/orchestration.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747841520714" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/../agent/pkg/mem/simple.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747850069506" />
+              <option name="schema">
+                <list>
+                  <option value="SimpleMemoryConfig" />
+                  <option value="SimpleMemory" />
+                  <option value="Conversation" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
@@ -918,6 +1020,201 @@
               <option name="schema">
                 <list>
                   <option value="User" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/cmd/indexer/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747843957993" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/config/config.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747835251568" />
+              <option name="schema">
+                <list>
+                  <option value="Config" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/const/const.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849746060" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/chatmodel.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747846654529" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/embedding.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747844846966" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/lambdas.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849746075" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/orchestration.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849746673" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/prompt.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747845762349" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/reactagent.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747847598596" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/retriever.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849746561" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/tools.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747847598535" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/type/template_config.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747845762411" />
+              <option name="schema">
+                <list>
+                  <option value="TemplateConfig" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/type/user_messages.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747845216172" />
+              <option name="schema">
+                <list>
+                  <option value="UserMessage" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/user_messages.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747845039279" />
+              <option name="schema">
+                <list>
+                  <option value="UserMessage" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/indexer/embedding.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747834952956" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/indexer/indexer.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747848007028" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/indexer/loader.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747838068511" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/indexer/orchestration.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849746964" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/indexer/transformer.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747838275291" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/global/global.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747848006516" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/initialize/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747848006988" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/initialize/viper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747834408789" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/memory/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747849742739" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/memory/memory.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747850854500" />
+              <option name="schema">
+                <list>
+                  <option value="SimpleMemoryConfig" />
+                  <option value="SimpleMemory" />
+                  <option value="Conversation" />
                 </list>
               </option>
             </ScannedPath>
@@ -1296,6 +1593,13 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/test/utils/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747769594980" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/utils/cut/cut.go">
           <value>
             <ScannedPath>
@@ -1317,6 +1621,13 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/redis/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747835219675" />
+            </ScannedPath>
+          </value>
+        </entry>
       </map>
     </option>
     <option name="tableStructMapping">
@@ -1331,6 +1642,7 @@
         <entry key="close_live_req" value="CloseLiveReq" />
         <entry key="close_live_resp" value="CloseLiveResp" />
         <entry key="config" value="Config" />
+        <entry key="conversation" value="Conversation" />
         <entry key="create_live_req" value="CreateLiveReq" />
         <entry key="create_live_resp" value="CreateLiveResp" />
         <entry key="create_question_req" value="CreateQuestionReq" />
@@ -1372,6 +1684,7 @@
         <entry key="livegojson" value="Livegojson" />
         <entry key="login_req" value="LoginReq" />
         <entry key="login_resp" value="LoginResp" />
+        <entry key="memory" value="Memory" />
         <entry key="mysql_config" value="MysqlConfig" />
         <entry key="option" value="Option" />
         <entry key="question" value="Question" />
@@ -1383,15 +1696,20 @@
         <entry key="quiz_service_tor_f_answer_args" value="QuizServiceTorFAnswerArgs" />
         <entry key="quiz_service_tor_f_answer_result" value="QuizServiceTorFAnswerResult" />
         <entry key="redis_config" value="RedisConfig" />
+        <entry key="redis_vector_store_config" value="RedisVectorStoreConfig" />
         <entry key="register_req" value="RegisterReq" />
         <entry key="register_resp" value="RegisterResp" />
         <entry key="resp" value="Resp" />
         <entry key="response" value="Response" />
         <entry key="select_lesson_info_req" value="SelectLessonInfoReq" />
         <entry key="select_lesson_info_resp" value="SelectLessonInfoResp" />
+        <entry key="simple_memory" value="SimpleMemory" />
+        <entry key="simple_memory_config" value="SimpleMemoryConfig" />
+        <entry key="template_config" value="TemplateConfig" />
         <entry key="tor_f_answer_req" value="TorFAnswerReq" />
         <entry key="tor_f_answer_resp" value="TorFAnswerResp" />
         <entry key="user" value="User" />
+        <entry key="user_message" value="UserMessage" />
         <entry key="user_service_get_user_info_args" value="UserServiceGetUserInfoArgs" />
         <entry key="user_service_get_user_info_byname_args" value="UserServiceGetUserInfoBynameArgs" />
         <entry key="user_service_get_user_info_byname_result" value="UserServiceGetUserInfoBynameResult" />
@@ -1403,6 +1721,6 @@
         <entry key="user_service_register_result" value="UserServiceRegisterResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1747669325127" />
+    <option name="lastTimeChecked" value="1747760404185" />
   </component>
 </project>
