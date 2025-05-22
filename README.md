@@ -134,4 +134,4 @@ MCP:简易使用了SSE以及自身实现的如hash、加减乘除计算器、获
 
 工作室中AI巨佬学长的看法:
 
-![IMG_20250523_012143](https://github.com/J1407B-K/liveclass/blob/master/home/kq/GolandProjects/liveclass/images/IMG_20250523_012143.png)
+![IMG_20250523_012143](images/IMG_20250523_012143.png)
