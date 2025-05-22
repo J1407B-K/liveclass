@@ -20,6 +20,20 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"ListAllUserConv": kitex.NewMethodInfo(
+		listAllUserConvHandler,
+		newAgentServiceListAllUserConvArgs,
+		newAgentServiceListAllUserConvResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"DelAllUserConv": kitex.NewMethodInfo(
+		delAllUserConvHandler,
+		newAgentServiceDelAllUserConvArgs,
+		newAgentServiceDelAllUserConvResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -104,6 +118,42 @@ func newAgentServiceChatWithAgentResult() interface{} {
 	return agent.NewAgentServiceChatWithAgentResult()
 }
 
+func listAllUserConvHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*agent.AgentServiceListAllUserConvArgs)
+	realResult := result.(*agent.AgentServiceListAllUserConvResult)
+	success, err := handler.(agent.AgentService).ListAllUserConv(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newAgentServiceListAllUserConvArgs() interface{} {
+	return agent.NewAgentServiceListAllUserConvArgs()
+}
+
+func newAgentServiceListAllUserConvResult() interface{} {
+	return agent.NewAgentServiceListAllUserConvResult()
+}
+
+func delAllUserConvHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*agent.AgentServiceDelAllUserConvArgs)
+	realResult := result.(*agent.AgentServiceDelAllUserConvResult)
+	success, err := handler.(agent.AgentService).DelAllUserConv(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newAgentServiceDelAllUserConvArgs() interface{} {
+	return agent.NewAgentServiceDelAllUserConvArgs()
+}
+
+func newAgentServiceDelAllUserConvResult() interface{} {
+	return agent.NewAgentServiceDelAllUserConvResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -119,6 +169,26 @@ func (p *kClient) ChatWithAgent(ctx context.Context, req *agent.ChatWithAgentReq
 	_args.Req = req
 	var _result agent.AgentServiceChatWithAgentResult
 	if err = p.c.Call(ctx, "ChatWithAgent", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ListAllUserConv(ctx context.Context, req *agent.ListAllUserConvReq) (r *agent.ListAllUserConvResp, err error) {
+	var _args agent.AgentServiceListAllUserConvArgs
+	_args.Req = req
+	var _result agent.AgentServiceListAllUserConvResult
+	if err = p.c.Call(ctx, "ListAllUserConv", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) DelAllUserConv(ctx context.Context, req *agent.DelAllUserConvReq) (r *agent.DelAllUserConvResp, err error) {
+	var _args agent.AgentServiceDelAllUserConvArgs
+	_args.Req = req
+	var _result agent.AgentServiceDelAllUserConvResult
+	if err = p.c.Call(ctx, "DelAllUserConv", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

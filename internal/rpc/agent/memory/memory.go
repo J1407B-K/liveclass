@@ -12,7 +12,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-//eino-examples中的简易内存
+//examples中的简易内存示例，自己修修改改了些，还不错
+//和我之前的memory实现差不多欸嘿嘿
 
 // 默认设置
 func GetDefaultMemory() *SimpleMemory {
@@ -28,11 +29,26 @@ type SimpleMemoryConfig struct {
 	MaxWindowSize int    //最大返回窗口大小
 }
 
+type SimpleMemory struct {
+	mu            sync.Mutex
+	dir           string
+	maxWindowSize int
+	conversations map[string]*Conversation
+}
+
+type Conversation struct {
+	mu sync.Mutex
+
+	ID string `json:"id"`
+	//每一条对话是一个message
+	Messages []*schema.Message `json:"messages"`
+
+	filePath      string
+	maxWindowSize int
+}
+
 // 创建存储目录、对话map
 func NewSimpleMemory(cfg SimpleMemoryConfig) *SimpleMemory {
-	if cfg.Dir == "" {
-		cfg.Dir = "/tmp/eino/memory"
-	}
 	if err := os.MkdirAll(cfg.Dir, 0755); err != nil {
 		return nil
 	}
@@ -42,14 +58,6 @@ func NewSimpleMemory(cfg SimpleMemoryConfig) *SimpleMemory {
 		maxWindowSize: cfg.MaxWindowSize,
 		conversations: make(map[string]*Conversation),
 	}
-}
-
-// simple memory can store messages of each conversation
-type SimpleMemory struct {
-	mu            sync.Mutex
-	dir           string
-	maxWindowSize int
-	conversations map[string]*Conversation
 }
 
 // 获取对话
@@ -121,17 +129,6 @@ func (m *SimpleMemory) DeleteConversation(id string) error {
 
 	delete(m.conversations, id)
 	return nil
-}
-
-type Conversation struct {
-	mu sync.Mutex
-
-	ID       string            `json:"id"`
-	Messages []*schema.Message `json:"messages"`
-
-	filePath string
-
-	maxWindowSize int
 }
 
 func (c *Conversation) Append(msg *schema.Message) {

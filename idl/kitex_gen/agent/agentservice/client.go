@@ -12,6 +12,8 @@ import (
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
 type Client interface {
 	ChatWithAgent(ctx context.Context, req *agent.ChatWithAgentReq, callOptions ...callopt.Option) (r *agent.ChatWithAgentResp, err error)
+	ListAllUserConv(ctx context.Context, req *agent.ListAllUserConvReq, callOptions ...callopt.Option) (r *agent.ListAllUserConvResp, err error)
+	DelAllUserConv(ctx context.Context, req *agent.DelAllUserConvReq, callOptions ...callopt.Option) (r *agent.DelAllUserConvResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -46,4 +48,14 @@ type kAgentServiceClient struct {
 func (p *kAgentServiceClient) ChatWithAgent(ctx context.Context, req *agent.ChatWithAgentReq, callOptions ...callopt.Option) (r *agent.ChatWithAgentResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.ChatWithAgent(ctx, req)
+}
+
+func (p *kAgentServiceClient) ListAllUserConv(ctx context.Context, req *agent.ListAllUserConvReq, callOptions ...callopt.Option) (r *agent.ListAllUserConvResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ListAllUserConv(ctx, req)
+}
+
+func (p *kAgentServiceClient) DelAllUserConv(ctx context.Context, req *agent.DelAllUserConvReq, callOptions ...callopt.Option) (r *agent.DelAllUserConvResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.DelAllUserConv(ctx, req)
 }

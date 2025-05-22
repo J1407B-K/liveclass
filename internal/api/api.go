@@ -38,6 +38,9 @@ func InitRouter() {
 		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)
 		v2.DELETE("/del_question", service.DelQuestion)
 
+		v2.POST("/chat_agent", service.ChatWithAgent)
+		v2.GET("/list_user_conv", service.ListAllUserConv)
+		v2.DELETE("/del_user_conv", service.DelAllUserConv)
 	}
 	v3 := h.Group("/ws")
 	{

@@ -29,5 +29,5 @@ const (
 	DistanceField = "distance"
 
 	//最大重试次数
-	MAXRETRY = 5
+	MAXRETRY = 20
 )

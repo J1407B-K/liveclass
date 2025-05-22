@@ -11,6 +11,24 @@ struct ChatWithAgentResp {
     1:common.resp resp,
 }
 
+struct ListAllUserConvReq {
+    1: string userid,
+}
+
+struct ListAllUserConvResp{
+    1:common.resp resp,
+}
+
+struct DelAllUserConvReq {
+    1: string userid,
+}
+
+struct DelAllUserConvResp {
+    1:common.resp resp,
+}
+
 service AgentService{
      ChatWithAgentResp ChatWithAgent(1: ChatWithAgentReq req),
+    ListAllUserConvResp ListAllUserConv(1: ListAllUserConvReq req),
+    DelAllUserConvResp DelAllUserConv(1: DelAllUserConvReq req),
 }
