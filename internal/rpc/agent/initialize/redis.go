@@ -13,7 +13,8 @@ import (
 func InitRedisStackIndex() error {
 	ctx := context.Background()
 	rClient := redis.NewClient(&redis.Options{
-		Addr: global.Config.RedisAddr,
+		Addr:     global.Config.RedisAddr,
+		Protocol: 2,
 	})
 
 	if err := rClient.Ping(ctx).Err(); err != nil {

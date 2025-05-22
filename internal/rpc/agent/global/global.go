@@ -7,7 +7,7 @@ import (
 var (
 	Config = &config.Config{
 		APIKey:         "2971fb58-cb1f-4070-86a9-355a5936bb1a",
-		ChatModel:      "ep-20250521012014-nh79b",
+		ChatModel:      "ep-20250522205440-jb8s2",
 		EmbeddingModel: "ep-20250521012113-f6twd",
 		RedisAddr:      "127.0.0.1:6380",
 	}

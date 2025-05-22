@@ -1,8 +1,8 @@
 module liveclass
 
-go 1.22.0
+go 1.23
 
-toolchain go1.22.5
+toolchain go1.23.9
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
@@ -15,6 +15,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/ark v0.1.8
 	github.com/cloudwego/eino-ext/components/retriever/redis v0.0.0-20250520101807-b2008771903a
 	github.com/cloudwego/eino-ext/components/tool/duckduckgo v0.0.0-20250520101807-b2008771903a
+	github.com/cloudwego/eino-ext/components/tool/mcp v0.0.1
 	github.com/cloudwego/gopkg v0.1.4
 	github.com/cloudwego/hertz v0.9.7
 	github.com/cloudwego/kitex v0.13.1
@@ -25,6 +26,7 @@ require (
 	github.com/hertz-contrib/jwt v1.0.4
 	github.com/hertz-contrib/websocket v0.2.0
 	github.com/kitex-contrib/registry-etcd v0.2.6
+	github.com/mark3labs/mcp-go v0.29.0
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/spf13/viper v1.20.1
 	golang.org/x/crypto v0.32.0
@@ -103,6 +105,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
 	github.com/volcengine/volcengine-go-sdk v1.1.4 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
+	github.com/yosida95/uritemplate/v3 v3.0.2 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.12 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.12 // indirect
 	go.etcd.io/etcd/client/v3 v3.5.12 // indirect

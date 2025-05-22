@@ -1,22 +1,26 @@
-package indexer
+package agent
 
 import (
 	"context"
 	"github.com/cloudwego/eino-ext/components/tool/duckduckgo"
 	"github.com/cloudwego/eino/components/tool"
+	"liveclass/internal/rpc/agent/mcp"
 )
 
 func GetTools(ctx context.Context) ([]tool.BaseTool, error) {
-	toolDDGSearch, err := newDDGSearch(ctx, nil)
+	ddgTool, err := newDDGSearch(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	//TODO: MCP
+	mcpTools := mcp.GetMCPTool(ctx)
 
-	return []tool.BaseTool{
-		toolDDGSearch,
-	}, nil
+	var tools []tool.BaseTool
+
+	tools = mcpTools
+	tools = append(tools, ddgTool)
+
+	return tools, nil
 }
 
 func defaultDDGSearchConfig(ctx context.Context) (*duckduckgo.Config, error) {

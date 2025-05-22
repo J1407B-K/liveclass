@@ -1,4 +1,4 @@
-package mem
+package memory
 
 import (
 	"bufio"
@@ -12,6 +12,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
+//eino-examples中的简易内存
+
+// 默认设置
 func GetDefaultMemory() *SimpleMemory {
 	return NewSimpleMemory(SimpleMemoryConfig{
 		Dir:           "data/memory",
@@ -19,11 +22,13 @@ func GetDefaultMemory() *SimpleMemory {
 	})
 }
 
+// 配置
 type SimpleMemoryConfig struct {
-	Dir           string
-	MaxWindowSize int
+	Dir           string //存储路径
+	MaxWindowSize int    //最大返回窗口大小
 }
 
+// 创建存储目录、对话map
 func NewSimpleMemory(cfg SimpleMemoryConfig) *SimpleMemory {
 	if cfg.Dir == "" {
 		cfg.Dir = "/tmp/eino/memory"
@@ -47,6 +52,7 @@ type SimpleMemory struct {
 	conversations map[string]*Conversation
 }
 
+// 获取对话
 func (m *SimpleMemory) GetConversation(id string, createIfNotExist bool) *Conversation {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -82,6 +88,7 @@ func (m *SimpleMemory) GetConversation(id string, createIfNotExist bool) *Conver
 	return m.conversations[id]
 }
 
+// 列出所有对话文件
 func (m *SimpleMemory) ListConversations() []string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -102,6 +109,7 @@ func (m *SimpleMemory) ListConversations() []string {
 	return ids
 }
 
+// 删除对话
 func (m *SimpleMemory) DeleteConversation(id string) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()

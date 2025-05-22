@@ -23,7 +23,8 @@ func init() {
 
 func newIndexer(ctx context.Context) (idr indexer.Indexer, err error) {
 	rClient := redisCli.NewClient(&redisCli.Options{
-		Addr: global.Config.RedisAddr,
+		Addr:     global.Config.RedisAddr,
+		Protocol: 2,
 	})
 
 	//配置文件
