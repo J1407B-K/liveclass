@@ -27,4 +27,7 @@ const (
 	VectorField = "content_vector"
 	//深度
 	DistanceField = "distance"
+
+	//最大重试次数
+	MAXRETRY = 5
 )

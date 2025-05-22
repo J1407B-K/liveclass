@@ -1,17 +1,36 @@
 package main
 
 import (
+	"github.com/cloudwego/kitex/pkg/rpcinfo"
+	"github.com/cloudwego/kitex/server"
+	etcd "github.com/kitex-contrib/registry-etcd"
 	agent "liveclass/idl/kitex_gen/agent/agentservice"
 	"liveclass/internal/rpc/agent/mcp"
 	"log"
+	"net"
 )
 
 func main() {
 	go mcp.StartMCPServer()
 
-	svr := agent.NewServer(new(AgentServiceImpl))
+	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	err := svr.Run()
+	userCli, err := NewUserClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9003")
+	svr := agent.NewServer(&AgentServiceImpl{userCli: userCli},
+		server.WithServiceAddr(addr),
+		server.WithRegistry(r),
+		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
+			ServiceName: "agentservice",
+		}))
+
+	err = svr.Run()
 
 	if err != nil {
 		log.Println(err.Error())
