@@ -17,10 +17,38 @@
             </set>
           </value>
         </entry>
+        <entry key="AgentServiceDelAllUserConvArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="AgentServiceDelAllUserConvResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="AgentServiceImpl">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/agent/handler.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="AgentServiceListAllUserConvArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="AgentServiceListAllUserConvResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
             </set>
           </value>
         </entry>
@@ -147,6 +175,20 @@
             </set>
           </value>
         </entry>
+        <entry key="DelAllUserConvReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="DelAllUserConvResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="DelQuestionReq">
           <value>
             <set>
@@ -235,6 +277,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ListAllUserConvReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ListAllUserConvResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
             </set>
           </value>
         </entry>
@@ -660,13 +716,21 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676506" />
+              <option name="lastModified" value="1747930137020" />
               <option name="schema">
                 <list>
                   <option value="ChatWithAgentReq" />
                   <option value="ChatWithAgentResp" />
+                  <option value="ListAllUserConvReq" />
+                  <option value="ListAllUserConvResp" />
+                  <option value="DelAllUserConvReq" />
+                  <option value="DelAllUserConvResp" />
                   <option value="AgentServiceChatWithAgentArgs" />
                   <option value="AgentServiceChatWithAgentResult" />
+                  <option value="AgentServiceListAllUserConvArgs" />
+                  <option value="AgentServiceListAllUserConvResult" />
+                  <option value="AgentServiceDelAllUserConvArgs" />
+                  <option value="AgentServiceDelAllUserConvResult" />
                 </list>
               </option>
             </ScannedPath>
@@ -675,7 +739,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/agentservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676509" />
+              <option name="lastModified" value="1747930137024" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -687,7 +751,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676507" />
+              <option name="lastModified" value="1747930137021" />
               <option name="schema">
                 <list>
                   <option value="kAgentServiceClient" />
@@ -699,28 +763,28 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676509" />
+              <option name="lastModified" value="1747930137022" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/k-agent.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676516" />
+              <option name="lastModified" value="1747930137040" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676511" />
+              <option name="lastModified" value="1747930137027" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676497" />
+              <option name="lastModified" value="1747930136999" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -732,14 +796,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676511" />
+              <option name="lastModified" value="1747930137026" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918676509" />
+              <option name="lastModified" value="1747930137025" />
             </ScannedPath>
           </value>
         </entry>
@@ -1066,13 +1130,6 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1747927740737" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/cmd/agent/agent.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1747918327949" />
             </ScannedPath>
           </value>
         </entry>
@@ -1685,7 +1742,11 @@
       <map>
         <entry key="agent_service_chat_with_agent_args" value="AgentServiceChatWithAgentArgs" />
         <entry key="agent_service_chat_with_agent_result" value="AgentServiceChatWithAgentResult" />
+        <entry key="agent_service_del_all_user_conv_args" value="AgentServiceDelAllUserConvArgs" />
+        <entry key="agent_service_del_all_user_conv_result" value="AgentServiceDelAllUserConvResult" />
         <entry key="agent_service_impl" value="AgentServiceImpl" />
+        <entry key="agent_service_list_all_user_conv_args" value="AgentServiceListAllUserConvArgs" />
+        <entry key="agent_service_list_all_user_conv_result" value="AgentServiceListAllUserConvResult" />
         <entry key="answer" value="Answer" />
         <entry key="change_user_in_live_req" value="ChangeUserInLiveReq" />
         <entry key="change_user_in_live_resp" value="ChangeUserInLiveResp" />
@@ -1703,6 +1764,8 @@
         <entry key="create_live_resp" value="CreateLiveResp" />
         <entry key="create_question_req" value="CreateQuestionReq" />
         <entry key="create_question_resp" value="CreateQuestionResp" />
+        <entry key="del_all_user_conv_req" value="DelAllUserConvReq" />
+        <entry key="del_all_user_conv_resp" value="DelAllUserConvResp" />
         <entry key="del_question_req" value="DelQuestionReq" />
         <entry key="del_question_resp" value="DelQuestionResp" />
         <entry key="get_lesson_info_by_id_req" value="GetLessonInfoByIdReq" />
@@ -1721,6 +1784,8 @@
         <entry key="k_quiz_service_client" value="kQuizServiceClient" />
         <entry key="k_user_service_client" value="kUserServiceClient" />
         <entry key="lesson" value="Lesson" />
+        <entry key="list_all_user_conv_req" value="ListAllUserConvReq" />
+        <entry key="list_all_user_conv_resp" value="ListAllUserConvResp" />
         <entry key="live_service_change_user_in_live_args" value="LiveServiceChangeUserInLiveArgs" />
         <entry key="live_service_change_user_in_live_result" value="LiveServiceChangeUserInLiveResult" />
         <entry key="live_service_change_user_to_lesson_args" value="LiveServiceChangeUserToLessonArgs" />
@@ -1776,6 +1841,6 @@
         <entry key="user_service_register_result" value="UserServiceRegisterResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1747901184902" />
+    <option name="lastTimeChecked" value="1747988198974" />
   </component>
 </project>
