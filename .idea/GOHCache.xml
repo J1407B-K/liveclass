@@ -88,6 +88,13 @@
             </set>
           </value>
         </entry>
+        <entry key="ChatServiceImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/chat/handler.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="ChatWithAgentReq">
           <value>
             <set>
@@ -134,6 +141,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/agent/config/config.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/chat/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
@@ -431,6 +439,21 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Message">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/chat/model/msg.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/model/msg.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MongoConfig">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/chat/config/config.go" />
             </set>
           </value>
         </entry>
@@ -1335,6 +1358,71 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/config/config.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748019433952" />
+              <option name="schema">
+                <list>
+                  <option value="Config" />
+                  <option value="MongoConfig" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/global/global.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748017308963" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/handler.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748020653041" />
+              <option name="schema">
+                <list>
+                  <option value="ChatServiceImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/initialize/mongo.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748020652780" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/initialize/viper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748021169617" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748020653168" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/model/msg.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748019606299" />
+              <option name="schema">
+                <list>
+                  <option value="Message" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/config/config.go">
           <value>
             <ScannedPath>
@@ -1464,6 +1552,18 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1747662968794" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/model/msg.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748019542570" />
+              <option name="schema">
+                <list>
+                  <option value="Message" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -1722,6 +1822,13 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/filter/filter.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1747992897047" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/utils/hash/hash.go">
           <value>
             <ScannedPath>
@@ -1752,6 +1859,7 @@
         <entry key="change_user_in_live_resp" value="ChangeUserInLiveResp" />
         <entry key="change_user_to_lesson_req" value="ChangeUserToLessonReq" />
         <entry key="change_user_to_lesson_resp" value="ChangeUserToLessonResp" />
+        <entry key="chat_service_impl" value="ChatServiceImpl" />
         <entry key="chat_with_agent_req" value="ChatWithAgentReq" />
         <entry key="chat_with_agent_resp" value="ChatWithAgentResp" />
         <entry key="claims" value="Claims" />
@@ -1806,6 +1914,8 @@
         <entry key="livegojson" value="Livegojson" />
         <entry key="login_req" value="LoginReq" />
         <entry key="login_resp" value="LoginResp" />
+        <entry key="message" value="Message" />
+        <entry key="mongo_config" value="MongoConfig" />
         <entry key="mysql_config" value="MysqlConfig" />
         <entry key="option" value="Option" />
         <entry key="question" value="Question" />
