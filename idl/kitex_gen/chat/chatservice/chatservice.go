@@ -13,10 +13,24 @@ import (
 var errInvalidMessageType = errors.New("invalid message type for service method handler")
 
 var serviceMethods = map[string]kitex.MethodInfo{
-	"CreateChatRoomResp": kitex.NewMethodInfo(
-		createChatRoomRespHandler,
-		newChatServiceCreateChatRoomRespArgs,
-		newChatServiceCreateChatRoomRespResult,
+	"LiveChat": kitex.NewMethodInfo(
+		liveChatHandler,
+		newChatServiceLiveChatArgs,
+		newChatServiceLiveChatResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetHistory": kitex.NewMethodInfo(
+		getHistoryHandler,
+		newChatServiceGetHistoryArgs,
+		newChatServiceGetHistoryResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"DelHistory": kitex.NewMethodInfo(
+		delHistoryHandler,
+		newChatServiceDelHistoryArgs,
+		newChatServiceDelHistoryResult,
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
@@ -86,22 +100,58 @@ func newServiceInfo(hasStreaming bool, keepStreamingMethods bool, keepNonStreami
 	return svcInfo
 }
 
-func createChatRoomRespHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
-	realArg := arg.(*chat.ChatServiceCreateChatRoomRespArgs)
-	realResult := result.(*chat.ChatServiceCreateChatRoomRespResult)
-	success, err := handler.(chat.ChatService).CreateChatRoomResp(ctx, realArg.Req)
+func liveChatHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*chat.ChatServiceLiveChatArgs)
+	realResult := result.(*chat.ChatServiceLiveChatResult)
+	success, err := handler.(chat.ChatService).LiveChat(ctx, realArg.Req)
 	if err != nil {
 		return err
 	}
 	realResult.Success = success
 	return nil
 }
-func newChatServiceCreateChatRoomRespArgs() interface{} {
-	return chat.NewChatServiceCreateChatRoomRespArgs()
+func newChatServiceLiveChatArgs() interface{} {
+	return chat.NewChatServiceLiveChatArgs()
 }
 
-func newChatServiceCreateChatRoomRespResult() interface{} {
-	return chat.NewChatServiceCreateChatRoomRespResult()
+func newChatServiceLiveChatResult() interface{} {
+	return chat.NewChatServiceLiveChatResult()
+}
+
+func getHistoryHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*chat.ChatServiceGetHistoryArgs)
+	realResult := result.(*chat.ChatServiceGetHistoryResult)
+	success, err := handler.(chat.ChatService).GetHistory(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newChatServiceGetHistoryArgs() interface{} {
+	return chat.NewChatServiceGetHistoryArgs()
+}
+
+func newChatServiceGetHistoryResult() interface{} {
+	return chat.NewChatServiceGetHistoryResult()
+}
+
+func delHistoryHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*chat.ChatServiceDelHistoryArgs)
+	realResult := result.(*chat.ChatServiceDelHistoryResult)
+	success, err := handler.(chat.ChatService).DelHistory(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newChatServiceDelHistoryArgs() interface{} {
+	return chat.NewChatServiceDelHistoryArgs()
+}
+
+func newChatServiceDelHistoryResult() interface{} {
+	return chat.NewChatServiceDelHistoryResult()
 }
 
 type kClient struct {
@@ -114,11 +164,31 @@ func newServiceClient(c client.Client) *kClient {
 	}
 }
 
-func (p *kClient) CreateChatRoomResp(ctx context.Context, req *chat.CreateChatRoomReq) (r *chat.CreateChatRoomResp, err error) {
-	var _args chat.ChatServiceCreateChatRoomRespArgs
+func (p *kClient) LiveChat(ctx context.Context, req *chat.LiveChatReq) (r *chat.LiveChatResp, err error) {
+	var _args chat.ChatServiceLiveChatArgs
 	_args.Req = req
-	var _result chat.ChatServiceCreateChatRoomRespResult
-	if err = p.c.Call(ctx, "CreateChatRoomResp", &_args, &_result); err != nil {
+	var _result chat.ChatServiceLiveChatResult
+	if err = p.c.Call(ctx, "LiveChat", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetHistory(ctx context.Context, req *chat.GetHistoryReq) (r *chat.GetHistoryResp, err error) {
+	var _args chat.ChatServiceGetHistoryArgs
+	_args.Req = req
+	var _result chat.ChatServiceGetHistoryResult
+	if err = p.c.Call(ctx, "GetHistory", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) DelHistory(ctx context.Context, req *chat.DelHistoryReq) (r *chat.DelHistoryResp, err error) {
+	var _args chat.ChatServiceDelHistoryArgs
+	_args.Req = req
+	var _result chat.ChatServiceDelHistoryResult
+	if err = p.c.Call(ctx, "DelHistory", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

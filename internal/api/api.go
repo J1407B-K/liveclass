@@ -41,10 +41,15 @@ func InitRouter() {
 		v2.POST("/chat_agent", service.ChatWithAgent)
 		v2.GET("/list_user_conv", service.ListAllUserConv)
 		v2.DELETE("/del_user_conv", service.DelAllUserConv)
+
+		v2.GET("/get_his", service.GetHistory)
+		v2.DELETE("/del_his", service.DelHistory)
 	}
 	v3 := h.Group("/ws")
 	{
-		v3.GET("/conn", service.QuizConnection)
+		v3.GET("/quiz", service.QuizConnection)
+
+		v3.GET("/live_chat", service.ChatConnections)
 	}
 
 	h.Spin()

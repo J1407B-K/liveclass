@@ -14,8 +14,12 @@ var (
 		},
 	}
 
-	//储存连接的map(string应为lessonName)
-	WsConns = make(map[*websocket.Conn]string)
+	//储存连接的map
+	WsConnsQuiz = make(map[*websocket.Conn]string)
+	WsConnsChat = make(map[*websocket.Conn]string)
 	//锁
 	Mux = sync.Mutex{}
+
+	KafkaBroker = "127.0.0.1:9092"
+	KafkaTopic  = "local-dev"
 )

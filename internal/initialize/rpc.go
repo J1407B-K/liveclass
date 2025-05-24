@@ -3,6 +3,7 @@ package initialize
 import (
 	"github.com/cloudwego/kitex/client"
 	"liveclass/idl/kitex_gen/agent/agentservice"
+	"liveclass/idl/kitex_gen/chat/chatservice"
 	"liveclass/idl/kitex_gen/live/liveservice"
 	"liveclass/idl/kitex_gen/quiz/quizservice"
 	"liveclass/idl/kitex_gen/user/userservice"
@@ -33,6 +34,12 @@ func InitNewClient() error {
 		panic(err)
 	}
 	global.Clients.AgentClient = ac
+
+	cc, err := chatservice.NewClient("chatservice", client.WithResolver(*global.Resolver))
+	if err != nil {
+		panic(err)
+	}
+	global.Clients.ChatClient = cc
 
 	return nil
 }

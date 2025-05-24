@@ -30,8 +30,8 @@ func parse(tokenStr string) (*Claims, error) {
 func broadcastToTeacher(userid string, message interface{}) error {
 	global.Mux.Lock()
 	defer global.Mux.Unlock()
-	for conn, l := range global.WsConns {
-		if l == userid {
+	for conn, uid := range global.WsConnsQuiz {
+		if uid == userid {
 			err := conn.WriteJSON(message)
 			if err != nil {
 				return err

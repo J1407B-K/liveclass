@@ -88,6 +88,20 @@
             </set>
           </value>
         </entry>
+        <entry key="ChatServiceCreateChatRoomRespArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ChatServiceCreateChatRoomRespResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="ChatServiceImpl">
           <value>
             <set>
@@ -152,6 +166,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/agent/memory/memory.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateChatRoomReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateChatRoomResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
             </set>
           </value>
         </entry>
@@ -445,8 +473,8 @@
         <entry key="Message">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/model/message.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/chat/model/msg.go" />
-              <option value="file://$PROJECT_DIR$/internal/rpc/model/msg.go" />
             </set>
           </value>
         </entry>
@@ -701,10 +729,18 @@
             </set>
           </value>
         </entry>
+        <entry key="kChatServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/client.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="kClient">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/agentservice.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/chatservice.go" />
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go" />
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/quizservice.go" />
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/userservice.go" />
@@ -736,6 +772,13 @@
     </option>
     <option name="scannedPathMapping">
       <map>
+        <entry key="file://$PROJECT_DIR$/../liaotian/app/initialize/mongo.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748086679275" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go">
           <value>
             <ScannedPath>
@@ -804,10 +847,70 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748016394263" />
+              <option name="schema">
+                <list>
+                  <option value="CreateChatRoomReq" />
+                  <option value="CreateChatRoomResp" />
+                  <option value="ChatServiceCreateChatRoomRespArgs" />
+                  <option value="ChatServiceCreateChatRoomRespResult" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/chatservice.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748016394266" />
+              <option name="schema">
+                <list>
+                  <option value="kClient" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/client.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748016394264" />
+              <option name="schema">
+                <list>
+                  <option value="kChatServiceClient" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/server.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748016394266" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/k-chat.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748016394273" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/k-consts.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748016394268" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747930136999" />
+              <option name="lastModified" value="1748016394255" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -819,14 +922,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747930137026" />
+              <option name="lastModified" value="1748016394268" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747930137025" />
+              <option name="lastModified" value="1748016394266" />
             </ScannedPath>
           </value>
         </entry>
@@ -1068,7 +1171,7 @@
         <entry key="file://$PROJECT_DIR$/internal/cmd/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1746962957585" />
+              <option name="lastModified" value="1748095528855" />
             </ScannedPath>
           </value>
         </entry>
@@ -1089,24 +1192,43 @@
         <entry key="file://$PROJECT_DIR$/internal/global/ws.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747545834585" />
+              <option name="lastModified" value="1748089779200" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/initialize/consumer.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748095529077" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/initialize/initialize.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747921101566" />
+              <option name="lastModified" value="1748092378199" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/model/clients.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747921101492" />
+              <option name="lastModified" value="1748092377488" />
               <option name="schema">
                 <list>
                   <option value="Clients" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/model/message.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748092377399" />
+              <option name="schema">
+                <list>
+                  <option value="Message" />
                 </list>
               </option>
             </ScannedPath>
@@ -1361,13 +1483,20 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748019433952" />
+              <option name="lastModified" value="1748095313283" />
               <option name="schema">
                 <list>
                   <option value="Config" />
                   <option value="MongoConfig" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/dao/mongo.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748087266264" />
             </ScannedPath>
           </value>
         </entry>
@@ -1381,7 +1510,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748020653041" />
+              <option name="lastModified" value="1748092377460" />
               <option name="schema">
                 <list>
                   <option value="ChatServiceImpl" />
@@ -1393,7 +1522,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/initialize/mongo.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748020652780" />
+              <option name="lastModified" value="1748086681500" />
             </ScannedPath>
           </value>
         </entry>
@@ -1404,17 +1533,24 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/chat/kafka/kafka.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748095313508" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748020653168" />
+              <option name="lastModified" value="1748087266141" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/model/msg.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748019606299" />
+              <option name="lastModified" value="1748092377361" />
               <option name="schema">
                 <list>
                   <option value="Message" />
@@ -1473,7 +1609,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747664746255" />
+              <option name="lastModified" value="1748087862037" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -1552,18 +1688,6 @@
           <value>
             <ScannedPath>
               <option name="lastModified" value="1747662968794" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/rpc/model/msg.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748019542570" />
-              <option name="schema">
-                <list>
-                  <option value="Message" />
-                </list>
-              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -1775,6 +1899,20 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/chat.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748088357712" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/chat_ws.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748095714806" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/live.go">
           <value>
             <ScannedPath>
@@ -1792,7 +1930,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/quiz_ws.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747667461096" />
+              <option name="lastModified" value="1748089122648" />
             </ScannedPath>
           </value>
         </entry>
@@ -1806,7 +1944,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/ws_global.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747667461066" />
+              <option name="lastModified" value="1748095313559" />
               <option name="schema">
                 <list>
                   <option value="Claims" />
@@ -1859,6 +1997,8 @@
         <entry key="change_user_in_live_resp" value="ChangeUserInLiveResp" />
         <entry key="change_user_to_lesson_req" value="ChangeUserToLessonReq" />
         <entry key="change_user_to_lesson_resp" value="ChangeUserToLessonResp" />
+        <entry key="chat_service_create_chat_room_resp_args" value="ChatServiceCreateChatRoomRespArgs" />
+        <entry key="chat_service_create_chat_room_resp_result" value="ChatServiceCreateChatRoomRespResult" />
         <entry key="chat_service_impl" value="ChatServiceImpl" />
         <entry key="chat_with_agent_req" value="ChatWithAgentReq" />
         <entry key="chat_with_agent_resp" value="ChatWithAgentResp" />
@@ -1868,6 +2008,8 @@
         <entry key="close_live_resp" value="CloseLiveResp" />
         <entry key="config" value="Config" />
         <entry key="conversation" value="Conversation" />
+        <entry key="create_chat_room_req" value="CreateChatRoomReq" />
+        <entry key="create_chat_room_resp" value="CreateChatRoomResp" />
         <entry key="create_live_req" value="CreateLiveReq" />
         <entry key="create_live_resp" value="CreateLiveResp" />
         <entry key="create_question_req" value="CreateQuestionReq" />
@@ -1887,6 +2029,7 @@
         <entry key="is_student_in_lesson_req" value="IsStudentInLessonReq" />
         <entry key="is_student_in_lesson_resp" value="IsStudentInLessonResp" />
         <entry key="k_agent_service_client" value="kAgentServiceClient" />
+        <entry key="k_chat_service_client" value="kChatServiceClient" />
         <entry key="k_client" value="kClient" />
         <entry key="k_live_service_client" value="kLiveServiceClient" />
         <entry key="k_quiz_service_client" value="kQuizServiceClient" />
@@ -1951,6 +2094,6 @@
         <entry key="user_service_register_result" value="UserServiceRegisterResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1747988198974" />
+    <option name="lastTimeChecked" value="1748086407933" />
   </component>
 </project>

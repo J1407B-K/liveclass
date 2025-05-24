@@ -11,7 +11,9 @@ import (
 
 // Client is designed to provide IDL-compatible methods with call-option parameter for kitex framework.
 type Client interface {
-	CreateChatRoomResp(ctx context.Context, req *chat.CreateChatRoomReq, callOptions ...callopt.Option) (r *chat.CreateChatRoomResp, err error)
+	LiveChat(ctx context.Context, req *chat.LiveChatReq, callOptions ...callopt.Option) (r *chat.LiveChatResp, err error)
+	GetHistory(ctx context.Context, req *chat.GetHistoryReq, callOptions ...callopt.Option) (r *chat.GetHistoryResp, err error)
+	DelHistory(ctx context.Context, req *chat.DelHistoryReq, callOptions ...callopt.Option) (r *chat.DelHistoryResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -43,7 +45,17 @@ type kChatServiceClient struct {
 	*kClient
 }
 
-func (p *kChatServiceClient) CreateChatRoomResp(ctx context.Context, req *chat.CreateChatRoomReq, callOptions ...callopt.Option) (r *chat.CreateChatRoomResp, err error) {
+func (p *kChatServiceClient) LiveChat(ctx context.Context, req *chat.LiveChatReq, callOptions ...callopt.Option) (r *chat.LiveChatResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.CreateChatRoomResp(ctx, req)
+	return p.kClient.LiveChat(ctx, req)
+}
+
+func (p *kChatServiceClient) GetHistory(ctx context.Context, req *chat.GetHistoryReq, callOptions ...callopt.Option) (r *chat.GetHistoryResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetHistory(ctx, req)
+}
+
+func (p *kChatServiceClient) DelHistory(ctx context.Context, req *chat.DelHistoryReq, callOptions ...callopt.Option) (r *chat.DelHistoryResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.DelHistory(ctx, req)
 }

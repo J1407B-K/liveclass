@@ -43,14 +43,14 @@ func QuizConnection(c context.Context, ctx *app.RequestContext) {
 func ansHandler(c context.Context, userId string) websocket.HertzHandler {
 	return func(conn *websocket.Conn) {
 		global.Mux.Lock()
-		global.WsConns[conn] = userId
+		global.WsConnsQuiz[conn] = userId
 		global.Mux.Unlock()
 
 		for {
 			var ans model.Answer
 			if err := conn.ReadJSON(&ans); err != nil {
 				global.Mux.Lock()
-				delete(global.WsConns, conn)
+				delete(global.WsConnsQuiz, conn)
 				global.Mux.Unlock()
 				break
 			}
@@ -62,7 +62,7 @@ func ansHandler(c context.Context, userId string) websocket.HertzHandler {
 			})
 			if err != nil {
 				global.Mux.Lock()
-				delete(global.WsConns, conn)
+				delete(global.WsConnsQuiz, conn)
 				global.Mux.Unlock()
 				break
 			}
@@ -71,7 +71,7 @@ func ansHandler(c context.Context, userId string) websocket.HertzHandler {
 			err = broadcastToTeacher(teacherid, options)
 			if err != nil {
 				global.Mux.Lock()
-				delete(global.WsConns, conn)
+				delete(global.WsConnsQuiz, conn)
 				global.Mux.Unlock()
 				break
 			}

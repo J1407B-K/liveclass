@@ -5,13 +5,13 @@ import (
 	"liveclass/internal/rpc/live/model"
 )
 
-func SaveLesson(db *gorm.DB, livename, desc, username, code string) error {
+func SaveLesson(db *gorm.DB, livename, desc, username, code, teacherid string) error {
 	l := model.Lesson{
 		Name:        livename,
 		Description: desc,
 		Teacher:     username,
 		Code:        code,
-		StudentID:   []string{},
+		StudentID:   []string{teacherid},
 	}
 
 	if err := db.Create(&l).Error; err != nil {

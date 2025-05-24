@@ -23,11 +23,13 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/hertz-contrib/jwt v1.0.4
 	github.com/hertz-contrib/websocket v0.2.0
 	github.com/kitex-contrib/registry-etcd v0.2.6
 	github.com/mark3labs/mcp-go v0.29.0
 	github.com/redis/go-redis/v9 v9.8.0
+	github.com/segmentio/kafka-go v0.4.48
 	github.com/spf13/viper v1.20.1
 	go.mongodb.org/mongo-driver v1.17.3
 	golang.org/x/crypto v0.32.0
@@ -89,6 +91,7 @@ require (
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
 	github.com/perimeterx/marshmallow v1.1.4 // indirect
+	github.com/pierrec/lz4/v4 v4.1.15 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.22.0 // indirect

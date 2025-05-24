@@ -1,4 +1,6 @@
 MongoConfig:
   Addr: "mongodb://admin:123456@127.0.0.1:27017"
-  Database: "chatroom"
-  Collection: "messages"
+  Database: "liveclass"
+  CollectionPrefix: "messages_"
+KafkaBroker: "127.0.0.1:9092"
+KafkaTopic: "local-dev"

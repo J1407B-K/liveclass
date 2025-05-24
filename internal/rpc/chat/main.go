@@ -12,7 +12,12 @@ import (
 
 func main() {
 	initialize.SetupViper()
-	client, coll := initialize.InitMongo()
+	client := initialize.InitMongo()
+
+	liveCli, err := NewLiveClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
 	if err != nil {
@@ -21,7 +26,7 @@ func main() {
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9004")
 
-	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, mongoColl: coll},
+	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, liveCli: liveCli},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{

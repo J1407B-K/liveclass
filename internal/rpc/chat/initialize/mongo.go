@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func InitMongo() (*mongo.Client, *mongo.Collection) {
+func InitMongo() *mongo.Client {
 	ctx := context.Background()
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(global.Config.MongoConfig.Addr))
@@ -16,9 +16,7 @@ func InitMongo() (*mongo.Client, *mongo.Collection) {
 		panic(err)
 	}
 
-	coll := client.Database(global.Config.Database).Collection(global.Config.Collection)
-
 	log.Println("init mongo success")
 
-	return client, coll
+	return client
 }

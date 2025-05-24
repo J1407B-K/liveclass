@@ -79,7 +79,7 @@ func (s *LiveServiceImpl) CreateLive(ctx context.Context, req *live.CreateLiveRe
 		return nil, errors.New("livego 生成key错误")
 	}
 
-	err = dao.SaveLesson(s.DB, req.Livename, req.Description, username, datajson.Data)
+	err = dao.SaveLesson(s.DB, req.Livename, req.Description, username, datajson.Data, req.Userid)
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +209,13 @@ func (s *LiveServiceImpl) GetLessonInfo(ctx context.Context, req *live.GetLesson
 	if err != nil {
 		return nil, err
 	}
-	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + lesson.Code
+
+	var stuidStr string
+	for _, uid := range lesson.StudentID {
+		stuidStr += uid + "/"
+	}
+
+	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + lesson.Code + "$" + stuidStr
 
 	return &live.GetLessonInfoResp{
 		Resp: &common.Resp{
@@ -230,7 +236,12 @@ func (s *LiveServiceImpl) GetLessonInfoById(ctx context.Context, req *live.GetLe
 		return nil, err
 	}
 
-	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + lesson.Code
+	var stuidStr string
+	for _, uid := range lesson.StudentID {
+		stuidStr += uid + "/"
+	}
+
+	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + lesson.Code + "/" + stuidStr
 
 	return &live.GetLessonInfoByIdResp{
 		Resp: &common.Resp{
@@ -278,13 +289,13 @@ func (s *LiveServiceImpl) IsStudentInLesson(ctx context.Context, req *live.IsStu
 	if info == "in" {
 		return &live.IsStudentInLessonResp{
 			Resp: &common.Resp{
-				Data: "the student in the lesson",
+				Data: "in",
 			},
 		}, nil
 	} else if info == "not_in" {
 		return &live.IsStudentInLessonResp{
 			Resp: &common.Resp{
-				Data: "the student not in the lesson",
+				Data: "not_in",
 			},
 		}, nil
 	}

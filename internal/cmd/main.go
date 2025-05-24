@@ -20,5 +20,6 @@ func main() {
 		panic(err)
 	}
 
+	go initialize.ConsumeKafkaMessages()
 	api.InitRouter()
 }
