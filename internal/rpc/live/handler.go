@@ -22,6 +22,7 @@ import (
 	"liveclass/internal/rpc/live/model"
 	"liveclass/internal/utils/cut"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -425,4 +426,104 @@ func (s *LiveServiceImpl) SignIn(ctx context.Context, req *live.SignInReq) (resp
 		return &live.SignInResp{Resp: &common.Resp{Data: "success"}}, nil
 	}
 	return nil, errors.New("不是此课程学生")
+}
+
+// SelectSignIn implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) SelectSignIn(ctx context.Context, req *live.SelectSignInReq) (resp *live.SelectSignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLessonById(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	sinfo, err := dao.SelectSignIn(s.DB, req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &live.SelectSignInResp{Resp: &common.Resp{Data: sinfo}}, nil
+}
+
+// DelSign implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) DelSign(ctx context.Context, req *live.DelSignInReq) (resp *live.DelSignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLessonById(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = dao.RemoveSignIn(s.DB, req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &live.DelSignInResp{Resp: &common.Resp{Data: "success"}}, nil
+}
+
+// RollCallInRandom implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) RollCallInRandom(ctx context.Context, req *live.RollCallInRandomReq) (resp *live.RollCallInRandomResp, err error) {
+	lid, err := strconv.Atoi(req.LessonId)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLessonById(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	randomIndex := rand.Intn(len(linfo.StudentID))
+
+	stuinfo, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: linfo.StudentID[randomIndex]})
+	if err != nil {
+		return nil, err
+	}
+
+	stuname, _ := cut.SplitInfo(stuinfo.Resp.Data)
+
+	return &live.RollCallInRandomResp{Resp: &common.Resp{Data: stuname}}, nil
 }

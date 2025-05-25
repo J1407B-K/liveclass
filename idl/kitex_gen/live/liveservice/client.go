@@ -22,6 +22,9 @@ type Client interface {
 	RecordLesson(ctx context.Context, req *live.RecordLessonReq, callOptions ...callopt.Option) (r *live.RecordLessonResp, err error)
 	CreateSignIn(ctx context.Context, req *live.CreateSignInReq, callOptions ...callopt.Option) (r *live.CreateSignInResp, err error)
 	SignIn(ctx context.Context, req *live.SignInReq, callOptions ...callopt.Option) (r *live.SignInResp, err error)
+	SelectSignIn(ctx context.Context, req *live.SelectSignInReq, callOptions ...callopt.Option) (r *live.SelectSignInResp, err error)
+	DelSign(ctx context.Context, req *live.DelSignInReq, callOptions ...callopt.Option) (r *live.DelSignInResp, err error)
+	RollCallInRandom(ctx context.Context, req *live.RollCallInRandomReq, callOptions ...callopt.Option) (r *live.RollCallInRandomResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -106,4 +109,19 @@ func (p *kLiveServiceClient) CreateSignIn(ctx context.Context, req *live.CreateS
 func (p *kLiveServiceClient) SignIn(ctx context.Context, req *live.SignInReq, callOptions ...callopt.Option) (r *live.SignInResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.SignIn(ctx, req)
+}
+
+func (p *kLiveServiceClient) SelectSignIn(ctx context.Context, req *live.SelectSignInReq, callOptions ...callopt.Option) (r *live.SelectSignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.SelectSignIn(ctx, req)
+}
+
+func (p *kLiveServiceClient) DelSign(ctx context.Context, req *live.DelSignInReq, callOptions ...callopt.Option) (r *live.DelSignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.DelSign(ctx, req)
+}
+
+func (p *kLiveServiceClient) RollCallInRandom(ctx context.Context, req *live.RollCallInRandomReq, callOptions ...callopt.Option) (r *live.RollCallInRandomResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.RollCallInRandom(ctx, req)
 }

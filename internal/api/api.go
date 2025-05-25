@@ -37,6 +37,9 @@ func InitRouter() {
 		v2.GET("record_lesson", service.RecordLesson)
 		v2.POST("/create_signin", service.CreateSignIn)
 		v2.PUT("/signin", service.SignIn)
+		v2.GET("/select_signin", service.SelectSignIn)
+		v2.DELETE("/del_signin", service.DelSignIn)
+		v2.GET("/roll_call", service.RollCallInRandom)
 
 		v2.POST("/create_question", service.CreateQuestion)
 		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)

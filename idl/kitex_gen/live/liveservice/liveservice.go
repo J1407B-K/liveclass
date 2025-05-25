@@ -90,6 +90,27 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"SelectSignIn": kitex.NewMethodInfo(
+		selectSignInHandler,
+		newLiveServiceSelectSignInArgs,
+		newLiveServiceSelectSignInResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"DelSign": kitex.NewMethodInfo(
+		delSignHandler,
+		newLiveServiceDelSignArgs,
+		newLiveServiceDelSignResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"RollCallInRandom": kitex.NewMethodInfo(
+		rollCallInRandomHandler,
+		newLiveServiceRollCallInRandomArgs,
+		newLiveServiceRollCallInRandomResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -354,6 +375,60 @@ func newLiveServiceSignInResult() interface{} {
 	return live.NewLiveServiceSignInResult()
 }
 
+func selectSignInHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceSelectSignInArgs)
+	realResult := result.(*live.LiveServiceSelectSignInResult)
+	success, err := handler.(live.LiveService).SelectSignIn(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceSelectSignInArgs() interface{} {
+	return live.NewLiveServiceSelectSignInArgs()
+}
+
+func newLiveServiceSelectSignInResult() interface{} {
+	return live.NewLiveServiceSelectSignInResult()
+}
+
+func delSignHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceDelSignArgs)
+	realResult := result.(*live.LiveServiceDelSignResult)
+	success, err := handler.(live.LiveService).DelSign(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceDelSignArgs() interface{} {
+	return live.NewLiveServiceDelSignArgs()
+}
+
+func newLiveServiceDelSignResult() interface{} {
+	return live.NewLiveServiceDelSignResult()
+}
+
+func rollCallInRandomHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceRollCallInRandomArgs)
+	realResult := result.(*live.LiveServiceRollCallInRandomResult)
+	success, err := handler.(live.LiveService).RollCallInRandom(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceRollCallInRandomArgs() interface{} {
+	return live.NewLiveServiceRollCallInRandomArgs()
+}
+
+func newLiveServiceRollCallInRandomResult() interface{} {
+	return live.NewLiveServiceRollCallInRandomResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -469,6 +544,36 @@ func (p *kClient) SignIn(ctx context.Context, req *live.SignInReq) (r *live.Sign
 	_args.Req = req
 	var _result live.LiveServiceSignInResult
 	if err = p.c.Call(ctx, "SignIn", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SelectSignIn(ctx context.Context, req *live.SelectSignInReq) (r *live.SelectSignInResp, err error) {
+	var _args live.LiveServiceSelectSignInArgs
+	_args.Req = req
+	var _result live.LiveServiceSelectSignInResult
+	if err = p.c.Call(ctx, "SelectSignIn", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) DelSign(ctx context.Context, req *live.DelSignInReq) (r *live.DelSignInResp, err error) {
+	var _args live.LiveServiceDelSignArgs
+	_args.Req = req
+	var _result live.LiveServiceDelSignResult
+	if err = p.c.Call(ctx, "DelSign", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) RollCallInRandom(ctx context.Context, req *live.RollCallInRandomReq) (r *live.RollCallInRandomResp, err error) {
+	var _args live.LiveServiceRollCallInRandomArgs
+	_args.Req = req
+	var _result live.LiveServiceRollCallInRandomResult
+	if err = p.c.Call(ctx, "RollCallInRandom", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

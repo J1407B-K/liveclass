@@ -260,6 +260,20 @@
             </set>
           </value>
         </entry>
+        <entry key="CreateSignInReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="CreateSignInResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="DelAllUserConvReq">
           <value>
             <set>
@@ -477,6 +491,20 @@
             </set>
           </value>
         </entry>
+        <entry key="LiveServiceCreateSignInArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceCreateSignInResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="LiveServiceGetLessonInfoArgs">
           <value>
             <set>
@@ -526,6 +554,20 @@
             </set>
           </value>
         </entry>
+        <entry key="LiveServiceRecordLessonArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceRecordLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="LiveServiceSelectLessonInfoArgs">
           <value>
             <set>
@@ -534,6 +576,20 @@
           </value>
         </entry>
         <entry key="LiveServiceSelectLessonInfoResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceSignInArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceSignInResult">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
@@ -651,6 +707,20 @@
             </set>
           </value>
         </entry>
+        <entry key="RecordLessonReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RecordLessonResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="RedisConfig">
           <value>
             <set>
@@ -704,6 +774,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/live/model/signin.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SignInReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="SignInResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
             </set>
           </value>
         </entry>
@@ -1016,7 +1100,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748100086152" />
+              <option name="lastModified" value="1748153695495" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1028,35 +1112,35 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748100086159" />
+              <option name="lastModified" value="1748153695518" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748100086159" />
+              <option name="lastModified" value="1748153695517" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747663664028" />
+              <option name="lastModified" value="1748153695518" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747663664042" />
+              <option name="lastModified" value="1748153695529" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747663664025" />
+              <option name="lastModified" value="1748153695515" />
               <option name="schema">
                 <list>
                   <option value="CreateLiveReq" />
@@ -1075,6 +1159,12 @@
                   <option value="ChangeUserToLessonResp" />
                   <option value="IsStudentInLessonReq" />
                   <option value="IsStudentInLessonResp" />
+                  <option value="RecordLessonReq" />
+                  <option value="RecordLessonResp" />
+                  <option value="CreateSignInReq" />
+                  <option value="CreateSignInResp" />
+                  <option value="SignInReq" />
+                  <option value="SignInResp" />
                   <option value="LiveServiceCreateLiveArgs" />
                   <option value="LiveServiceCreateLiveResult" />
                   <option value="LiveServiceCloseLiveArgs" />
@@ -1091,6 +1181,12 @@
                   <option value="LiveServiceChangeUserToLessonResult" />
                   <option value="LiveServiceIsStudentInLessonArgs" />
                   <option value="LiveServiceIsStudentInLessonResult" />
+                  <option value="LiveServiceRecordLessonArgs" />
+                  <option value="LiveServiceRecordLessonResult" />
+                  <option value="LiveServiceCreateSignInArgs" />
+                  <option value="LiveServiceCreateSignInResult" />
+                  <option value="LiveServiceSignInArgs" />
+                  <option value="LiveServiceSignInResult" />
                 </list>
               </option>
             </ScannedPath>
@@ -1099,7 +1195,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747663664026" />
+              <option name="lastModified" value="1748153695516" />
               <option name="schema">
                 <list>
                   <option value="kLiveServiceClient" />
@@ -1111,7 +1207,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747663664028" />
+              <option name="lastModified" value="1748153695517" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1123,7 +1219,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747663664026" />
+              <option name="lastModified" value="1748153695516" />
             </ScannedPath>
           </value>
         </entry>
@@ -1270,7 +1366,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748159584041" />
+              <option name="lastModified" value="1748165194973" />
             </ScannedPath>
           </value>
         </entry>
@@ -1697,7 +1793,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748156292725" />
+              <option name="lastModified" value="1748164028761" />
             </ScannedPath>
           </value>
         </entry>
@@ -1730,7 +1826,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748156648907" />
+              <option name="lastModified" value="1748165195133" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -2056,7 +2152,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748155465653" />
+              <option name="lastModified" value="1748165194908" />
             </ScannedPath>
           </value>
         </entry>
@@ -2168,6 +2264,8 @@
         <entry key="create_live_resp" value="CreateLiveResp" />
         <entry key="create_question_req" value="CreateQuestionReq" />
         <entry key="create_question_resp" value="CreateQuestionResp" />
+        <entry key="create_sign_in_req" value="CreateSignInReq" />
+        <entry key="create_sign_in_resp" value="CreateSignInResp" />
         <entry key="del_all_user_conv_req" value="DelAllUserConvReq" />
         <entry key="del_all_user_conv_resp" value="DelAllUserConvResp" />
         <entry key="del_history_req" value="DelHistoryReq" />
@@ -2205,6 +2303,8 @@
         <entry key="live_service_close_live_result" value="LiveServiceCloseLiveResult" />
         <entry key="live_service_create_live_args" value="LiveServiceCreateLiveArgs" />
         <entry key="live_service_create_live_result" value="LiveServiceCreateLiveResult" />
+        <entry key="live_service_create_sign_in_args" value="LiveServiceCreateSignInArgs" />
+        <entry key="live_service_create_sign_in_result" value="LiveServiceCreateSignInResult" />
         <entry key="live_service_get_lesson_info_args" value="LiveServiceGetLessonInfoArgs" />
         <entry key="live_service_get_lesson_info_by_id_args" value="LiveServiceGetLessonInfoByIdArgs" />
         <entry key="live_service_get_lesson_info_by_id_result" value="LiveServiceGetLessonInfoByIdResult" />
@@ -2212,8 +2312,12 @@
         <entry key="live_service_impl" value="LiveServiceImpl" />
         <entry key="live_service_is_student_in_lesson_args" value="LiveServiceIsStudentInLessonArgs" />
         <entry key="live_service_is_student_in_lesson_result" value="LiveServiceIsStudentInLessonResult" />
+        <entry key="live_service_record_lesson_args" value="LiveServiceRecordLessonArgs" />
+        <entry key="live_service_record_lesson_result" value="LiveServiceRecordLessonResult" />
         <entry key="live_service_select_lesson_info_args" value="LiveServiceSelectLessonInfoArgs" />
         <entry key="live_service_select_lesson_info_result" value="LiveServiceSelectLessonInfoResult" />
+        <entry key="live_service_sign_in_args" value="LiveServiceSignInArgs" />
+        <entry key="live_service_sign_in_result" value="LiveServiceSignInResult" />
         <entry key="livegojson" value="Livegojson" />
         <entry key="login_req" value="LoginReq" />
         <entry key="login_resp" value="LoginResp" />
@@ -2229,6 +2333,8 @@
         <entry key="quiz_service_impl" value="QuizServiceImpl" />
         <entry key="quiz_service_tor_f_answer_args" value="QuizServiceTorFAnswerArgs" />
         <entry key="quiz_service_tor_f_answer_result" value="QuizServiceTorFAnswerResult" />
+        <entry key="record_lesson_req" value="RecordLessonReq" />
+        <entry key="record_lesson_resp" value="RecordLessonResp" />
         <entry key="redis_config" value="RedisConfig" />
         <entry key="register_req" value="RegisterReq" />
         <entry key="register_resp" value="RegisterResp" />
@@ -2237,6 +2343,8 @@
         <entry key="select_lesson_info_req" value="SelectLessonInfoReq" />
         <entry key="select_lesson_info_resp" value="SelectLessonInfoResp" />
         <entry key="sign_in" value="SignIn" />
+        <entry key="sign_in_req" value="SignInReq" />
+        <entry key="sign_in_resp" value="SignInResp" />
         <entry key="simple_memory" value="SimpleMemory" />
         <entry key="simple_memory_config" value="SimpleMemoryConfig" />
         <entry key="template_config" value="TemplateConfig" />

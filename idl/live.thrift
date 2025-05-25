@@ -108,6 +108,33 @@ struct SignInResp {
     1:common.resp resp,
 }
 
+struct SelectSignInReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct SelectSignInResp{
+    1:common.resp resp,
+}
+
+struct DelSignInReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct DelSignInResp{
+    1:common.resp resp,
+}
+
+struct RollCallInRandomReq{
+    1:string userid,
+    2:string lesson_id
+}
+
+struct RollCallInRandomResp{
+    1:common.resp resp,
+}
+
 service LiveService {
     CreateLiveResp CreateLive(1: CreateLiveReq req),
     CloseLiveResp  CloseLive(1:CloseLiveReq req),
@@ -120,4 +147,7 @@ service LiveService {
    RecordLessonResp     RecordLesson(1:RecordLessonReq req),
     CreateSignInResp    CreateSignIn(1:CreateSignInReq req),
     SignInResp          SignIn(1:SignInReq req),
+    SelectSignInResp    SelectSignIn(1: SelectSignInReq req),
+    DelSignInResp       DelSign(1:DelSignInReq req),
+     RollCallInRandomResp    RollCallInRandom(1:RollCallInRandomReq req),
 }

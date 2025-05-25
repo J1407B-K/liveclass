@@ -2,6 +2,7 @@ package dao
 
 import (
 	"errors"
+	"fmt"
 	"gorm.io/gorm"
 	"liveclass/internal/rpc/live/model"
 )
@@ -224,4 +225,52 @@ func StuSignIn(db *gorm.DB, lessonId, userId string) (string, error) {
 	}
 
 	return "success", nil
+}
+
+func SelectSignIn(db *gorm.DB, lessonId string) (string, error) {
+	var s model.SignIn
+
+	if err := db.Where("lesson_id = ?", lessonId).First(&s).Error; err != nil {
+		return "", err
+	}
+
+	var news = s
+	for _, aid := range news.AlreadyUserId {
+		for _, sid := range news.AllUserId {
+			if sid == aid {
+				removeValueInArray(news.AllUserId, aid)
+			}
+		}
+	}
+
+	var already string
+	for i := 0; i < len(news.AlreadyUserId); i++ {
+		if i != len(news.AllUserId)-1 {
+			already += news.AllUserId[i] + "/"
+		}
+		already += news.AllUserId[i]
+	}
+
+	var notalready string
+	for i := 0; i < len(news.AllUserId); i++ {
+		if i != len(news.AllUserId)-1 {
+			notalready += news.AllUserId[i] + "/"
+		}
+		notalready += news.AllUserId[i]
+	}
+
+	return fmt.Sprintf("已签到为%v,未签到为%v", already, notalready), nil
+}
+
+func RemoveSignIn(db *gorm.DB, lessonId string) error {
+	return db.Where("lesson_id = ?", lessonId).Unscoped().Delete(&model.SignIn{}).Error
+}
+
+func removeValueInArray(array []string, value string) []string {
+	for i, v := range array {
+		if v == value {
+			return append(array[:i], array[i+1:]...)
+		}
+	}
+	return nil
 }
