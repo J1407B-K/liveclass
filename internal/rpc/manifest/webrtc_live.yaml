@@ -1,0 +1,5 @@
+MysqlConfig:
+  Username: "root"
+  Password: "123456"
+  Addr: "localhost:3306"
+  DB: "liveclass"

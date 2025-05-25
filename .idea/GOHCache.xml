@@ -201,6 +201,7 @@
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go" />
             </set>
           </value>
         </entry>
@@ -316,6 +317,13 @@
             </set>
           </value>
         </entry>
+        <entry key="Engine">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcEngine.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="GetHistoryReq">
           <value>
             <set>
@@ -404,6 +412,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/lesson.go" />
             </set>
           </value>
         </entry>
@@ -638,6 +647,7 @@
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go" />
             </set>
           </value>
         </entry>
@@ -901,6 +911,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcLesson.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveImpl">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go" />
             </set>
           </value>
         </entry>
@@ -1366,7 +1390,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748165194973" />
+              <option name="lastModified" value="1748179294000" />
             </ScannedPath>
           </value>
         </entry>
@@ -1415,14 +1439,14 @@
         <entry key="file://$PROJECT_DIR$/internal/initialize/rpc.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748092378199" />
+              <option name="lastModified" value="1748176797287" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/model/clients.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748092377488" />
+              <option name="lastModified" value="1748176797170" />
               <option name="schema">
                 <list>
                   <option value="Clients" />
@@ -2128,6 +2152,116 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748171381320" />
+              <option name="schema">
+                <list>
+                  <option value="Config" />
+                  <option value="MysqlConfig" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/global/global.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748172076535" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748189117902" />
+              <option name="schema">
+                <list>
+                  <option value="WebrtcLiveImpl" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/mysql.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748171502073" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/viper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748171411503" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/webrtc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748189022400" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748172076234" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/lesson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748171549458" />
+              <option name="schema">
+                <list>
+                  <option value="Lesson" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/types.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748171582738" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcEngine.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748172496064" />
+              <option name="schema">
+                <list>
+                  <option value="Engine" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcLesson.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748176127393" />
+              <option name="schema">
+                <list>
+                  <option value="WebrtcLesson" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/webrtc/webrtc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748172127893" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/agent.go">
           <value>
             <ScannedPath>
@@ -2177,6 +2311,13 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748176797379" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/ws_global.go">
           <value>
             <ScannedPath>
@@ -2186,6 +2327,13 @@
                   <option value="Claims" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/utils/cors/cors.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748179294052" />
             </ScannedPath>
           </value>
         </entry>
@@ -2272,6 +2420,7 @@
         <entry key="del_history_resp" value="DelHistoryResp" />
         <entry key="del_question_req" value="DelQuestionReq" />
         <entry key="del_question_resp" value="DelQuestionResp" />
+        <entry key="engine" value="Engine" />
         <entry key="get_history_req" value="GetHistoryReq" />
         <entry key="get_history_resp" value="GetHistoryResp" />
         <entry key="get_lesson_info_by_id_req" value="GetLessonInfoByIdReq" />
@@ -2361,6 +2510,8 @@
         <entry key="user_service_login_result" value="UserServiceLoginResult" />
         <entry key="user_service_register_args" value="UserServiceRegisterArgs" />
         <entry key="user_service_register_result" value="UserServiceRegisterResult" />
+        <entry key="webrtc_lesson" value="WebrtcLesson" />
+        <entry key="webrtc_live_impl" value="WebrtcLiveImpl" />
       </map>
     </option>
     <option name="lastTimeChecked" value="1748086407933" />

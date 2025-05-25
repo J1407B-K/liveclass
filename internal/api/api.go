@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"liveclass/internal/service"
+	"liveclass/internal/utils/cors"
 	"liveclass/internal/utils/jwt"
 	"log"
 )
@@ -10,6 +11,8 @@ import (
 func InitRouter() {
 	h := server.New(server.WithHostPorts(":8080"))
 	h.NoHijackConnPool = true
+
+	h.Use(cors.CORS())
 
 	authMiddlewire, err := jwt.NewMiddle()
 	if err != nil {
@@ -27,6 +30,7 @@ func InitRouter() {
 	v2 := h.Group("/")
 	v2.Use(authMiddlewire.MiddlewareFunc())
 	{
+		//livego
 		v2.POST("/create_live", service.CreateLive)
 		v2.DELETE("/close_live", service.CloseLive)
 		v2.PUT("/change_user_in_live", service.ChangeUserInLive)
@@ -40,6 +44,10 @@ func InitRouter() {
 		v2.GET("/select_signin", service.SelectSignIn)
 		v2.DELETE("/del_signin", service.DelSignIn)
 		v2.GET("/roll_call", service.RollCallInRandom)
+
+		//webrtc
+		v2.POST("/broadcast", service.Broadcast)
+		v2.POST("/view", service.View)
 
 		v2.POST("/create_question", service.CreateQuestion)
 		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)

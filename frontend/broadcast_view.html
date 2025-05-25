@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>课堂 Broadcast & View 验证（修正版）</title>
+    <style>
+        video { width: 48%; border: 1px solid #ccc; margin: 5px; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+<h2>在线课堂：开播 & 观看（含 recvonly）</h2>
+<div>
+    <label>Lesson ID: <input id="lessonID" value="lesson123" /></label>
+    <label>JWT Token: <input id="token" style="width:300px" placeholder="your.jwt.token" /></label>
+</div>
+
+<div>
+    <button id="startBroadcast">老师开播</button>
+    <button id="stopBroadcast">停止开播</button>
+    <button id="startView">学生观看</button>
+</div>
+
+<div>
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline controls></video>
+</div>
+
+<script>
+    (async () => {
+        const lessonInput = document.getElementById('lessonID');
+        const tokenInput  = document.getElementById('token');
+        const localVideo  = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
+        let pc;  // RTCPeerConnection
+
+        async function postFormData(path, params) {
+            const form = new FormData();
+            for (const [k,v] of Object.entries(params)) form.append(k, v);
+            console.log('🛫 POST to', path, 'form:', params);
+            const res = await fetch(path, {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + tokenInput.value },
+                body: form
+            });
+            const text = await res.text();
+            console.log('🛬 Raw response:', text);
+            if (!res.ok) throw new Error(`HTTP ${res.status}: ${text}`);
+            const json = JSON.parse(text);
+            console.log(path, 'parsed JSON:', json);
+            if (json.resp?.Code !== 0) throw new Error(`Error ${json.resp.Code}: ${json.resp.Msg}`);
+            return json.resp.Data; // b64answer
+        }
+
+        function createPC(viewer = false) {
+            if (pc) pc.close();
+            pc = new RTCPeerConnection({ iceServers:[{urls:'stun:stun.l.google.com:19302'}] });
+
+            if (viewer) {
+                // —— 关键：声明接收通道 ——
+                pc.addTransceiver('video', { direction: 'recvonly' });
+                pc.addTransceiver('audio', { direction: 'recvonly' });
+                pc.ontrack = ({ streams:[stream], track }) => {
+                    console.log('📺 ontrack kind=', track.kind, 'stream=', stream);
+                    remoteVideo.srcObject = stream;
+                };
+            }
+            return pc;
+        }
+
+        function waitIce() {
+            return new Promise(resolve => {
+                pc.onicecandidate = e => {
+                    console.log('🧊 icecandidate:', e.candidate);
+                    if (e.candidate === null) {
+                        console.log('✅ ICE gathering complete');
+                        resolve();
+                    }
+                };
+            });
+        }
+
+        // 老师开播
+        document.getElementById('startBroadcast').onclick = async () => {
+            const lessonID = lessonInput.value.trim();
+            if (!lessonID || !tokenInput.value.trim()) {
+                return alert('请填写 lesson_id 和 JWT token');
+            }
+
+            const stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:true });
+            localVideo.srcObject = stream;
+
+            createPC(false);
+            stream.getTracks().forEach(t => pc.addTrack(t, stream));
+
+            console.log('📝 creating offer for broadcast...');
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            console.log('📡 localDescription:', pc.localDescription);
+            await waitIce();
+
+            const b64offer = btoa(JSON.stringify(pc.localDescription));
+            const b64answer = await postFormData('http://127.0.0.1:8080/broadcast', {
+                lesson_id: lessonID,
+                b64offer
+            });
+
+            const answerDesc = JSON.parse(atob(b64answer));
+            console.log('⬇️ setting remoteDescription for broadcast:', answerDesc);
+            await pc.setRemoteDescription(answerDesc);
+            console.log('🎉 Broadcast connection established');
+        };
+
+        // 停止开播
+        document.getElementById('stopBroadcast').onclick = () => {
+            if (pc) pc.close();
+            pc = null;
+            localVideo.srcObject = null;
+        };
+
+        // 学生观看
+        document.getElementById('startView').onclick = async () => {
+            const lessonID = lessonInput.value.trim();
+            if (!lessonID || !tokenInput.value.trim()) {
+                return alert('请填写 lesson_id 和 JWT token');
+            }
+
+            createPC(true);
+
+            console.log('📝 creating offer for view...');
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            console.log('📡 localDescription (view):', pc.localDescription);
+            await waitIce();
+
+            const b64offer = btoa(JSON.stringify(pc.localDescription));
+            const b64answer = await postFormData('http://127.0.0.1:8080/view', {
+                lesson_id: lessonID,
+                b64offer
+            });
+
+            const answerDesc = JSON.parse(atob(b64answer));
+            console.log('⬇️ setting remoteDescription for view:', answerDesc);
+            await pc.setRemoteDescription(answerDesc);
+            console.log('🎉 View connection established');
+        };
+    })();
+</script>
+</body>
+</html>

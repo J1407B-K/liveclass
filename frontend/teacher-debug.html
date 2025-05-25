@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <title>WebRTC连接调试工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        video { width: 48%; border: 1px solid #ccc; margin: 5px; }
+        button { margin: 5px; padding: 8px 15px; }
+        input { margin: 5px; padding: 5px; }
+        textarea { width: 100%; height: 100px; margin: 10px 0; }
+        .log { height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; font-family: monospace; font-size: 12px; }
+        .ice-candidate { margin: 5px 0; padding: 5px; background: #f8f9fa; border-left: 3px solid #007bff; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+<h1>WebRTC连接诊断工具</h1>
+
+<div class="section">
+    <h3>📋 基本配置</h3>
+    <label>Lesson ID: <input id="lessonID" value="lesson123" /></label><br>
+    <label>JWT Token: <input id="token" style="width:300px" placeholder="your.jwt.token" /></label><br>
+    <label>服务器地址: <input id="serverUrl" value="http://127.0.0.1:8080" style="width:200px" /></label>
+</div>
+
+<div class="section">
+    <h3>🔧 操作面板</h3>
+    <button id="testNetwork">网络连通性测试</button>
+    <button id="testIceServers">STUN/TURN服务器测试</button>
+    <button id="startBroadcast">开始广播</button>
+    <button id="startView">开始观看</button>
+    <button id="stopAll">停止所有连接</button>
+    <button id="clearLogs">清空日志</button>
+</div>
+
+<div class="section">
+    <h3>📺 视频预览</h3>
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline controls></video>
+</div>
+
+<div class="section">
+    <h3>📊 连接状态监控</h3>
+    <div id="connectionStatus" class="status info">等待连接...</div>
+    <table id="statsTable">
+        <thead>
+        <tr>
+            <th>指标</th>
+            <th>值</th>
+            <th>说明</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr><td>连接状态</td><td id="connState">-</td><td>WebRTC连接状态</td></tr>
+        <tr><td>ICE连接状态</td><td id="iceConnState">-</td><td>ICE连接状态</td></tr>
+        <tr><td>ICE收集状态</td><td id="iceGatherState">-</td><td>ICE候选收集状态</td></tr>
+        <tr><td>信令状态</td><td id="signalState">-</td><td>信令交换状态</td></tr>
+        <tr><td>收集到的ICE候选</td><td id="iceCandidateCount">0</td><td>本地ICE候选数量</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section">
+    <h3>🧊 ICE候选信息</h3>
+    <div id="iceCandidates"></div>
+</div>
+
+<div class="section">
+    <h3>📋 调试日志</h3>
+    <div id="debugLog" class="log"></div>
+</div>
+
+<script>
+    let pc = null;
+    let localStream = null;
+    let iceCandidateCount = 0;
+
+    const $ = id => document.getElementById(id);
+    const log = (msg, type = 'info') => {
+        const timestamp = new Date().toLocaleTimeString();
+        const logDiv = $('debugLog');
+        const className = type === 'error' ? 'error' : type === 'warn' ? 'warning' : 'info';
+        logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${msg}</div>`;
+        logDiv.scrollTop = logDiv.scrollHeight;
+        console.log(`[${timestamp}] ${msg}`);
+    };
+
+    const updateStatus = (msg, type = 'info') => {
+        const statusDiv = $('connectionStatus');
+        statusDiv.textContent = msg;
+        statusDiv.className = `status ${type}`;
+    };
+
+    const updateStats = () => {
+        if (!pc) return;
+        $('connState').textContent = pc.connectionState;
+        $('iceConnState').textContent = pc.iceConnectionState;
+        $('iceGatherState').textContent = pc.iceGatheringState;
+        $('signalState').textContent = pc.signalingState;
+        $('iceCandidateCount').textContent = iceCandidateCount;
+    };
+
+    // 网络连通性测试
+    $('testNetwork').onclick = async () => {
+        log('🔍 开始网络连通性测试...');
+        const serverUrl = $('serverUrl').value.trim();
+
+        try {
+            // 测试服务器连通性
+            const response = await fetch(`${serverUrl}/ping`, {
+                method: 'GET',
+                mode: 'cors'
+            });
+
+            if (response.ok) {
+                log('✅ 服务器连通性正常', 'success');
+                updateStatus('服务器连通性正常', 'success');
+            } else {
+                log(`❌ 服务器响应异常: ${response.status}`, 'error');
+                updateStatus('服务器连通性异常', 'error');
+            }
+        } catch (error) {
+            log(`❌ 网络连接失败: ${error.message}`, 'error');
+            updateStatus('网络连接失败', 'error');
+        }
+    };
+
+    // STUN/TURN服务器测试
+    $('testIceServers').onclick = async () => {
+        log('🧊 开始ICE服务器测试...');
+
+        const testPC = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' }
+            ]
+        });
+
+        let candidateFound = false;
+
+        testPC.onicecandidate = (e) => {
+            if (e.candidate) {
+                candidateFound = true;
+                log(`✅ ICE候选获取成功: ${e.candidate.candidate}`);
+            }
+        };
+
+        testPC.onicegatheringstatechange = () => {
+            if (testPC.iceGatheringState === 'complete') {
+                if (candidateFound) {
+                    log('✅ STUN服务器工作正常', 'success');
+                    updateStatus('STUN服务器正常', 'success');
+                } else {
+                    log('❌ 未能获取到ICE候选，可能需要TURN服务器', 'error');
+                    updateStatus('需要TURN服务器', 'warning');
+                }
+                testPC.close();
+            }
+        };
+
+        // 创建一个虚拟的offer来触发ICE收集
+        testPC.createDataChannel('test');
+        const offer = await testPC.createOffer();
+        await testPC.setLocalDescription(offer);
+    };
+
+    const createPeerConnection = (isViewer = false) => {
+        if (pc) {
+            pc.close();
+        }
+
+        pc = new RTCPeerConnection({
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        });
+
+        iceCandidateCount = 0;
+        $('iceCandidates').innerHTML = '';
+
+        // 监听连接状态变化
+        pc.onconnectionstatechange = () => {
+            log(`🔌 连接状态变化: ${pc.connectionState}`);
+            updateStats();
+
+            switch (pc.connectionState) {
+                case 'connected':
+                    updateStatus('连接成功', 'success');
+                    break;
+                case 'connecting':
+                    updateStatus('正在连接...', 'warning');
+                    break;
+                case 'failed':
+                    updateStatus('连接失败', 'error');
+                    break;
+                case 'disconnected':
+                    updateStatus('连接断开', 'warning');
+                    break;
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            log(`🧊 ICE连接状态变化: ${pc.iceConnectionState}`);
+            updateStats();
+        };
+
+        pc.onicegatheringstatechange = () => {
+            log(`📡 ICE收集状态变化: ${pc.iceGatheringState}`);
+            updateStats();
+        };
+
+        pc.onsignalingstatechange = () => {
+            log(`📞 信令状态变化: ${pc.signalingState}`);
+            updateStats();
+        };
+
+        pc.onicecandidate = (e) => {
+            if (e.candidate) {
+                iceCandidateCount++;
+                const candidate = e.candidate;
+                log(`🧊 ICE候选: ${candidate.candidate}`);
+
+                const candidateDiv = document.createElement('div');
+                candidateDiv.className = 'ice-candidate';
+                candidateDiv.innerHTML = `
+                        <strong>类型:</strong> ${candidate.type || 'unknown'}
+                        <strong>协议:</strong> ${candidate.protocol || 'unknown'}<br>
+                        <strong>地址:</strong> ${candidate.address || 'unknown'}:${candidate.port || 'unknown'}<br>
+                        <strong>候选:</strong> ${candidate.candidate}
+                    `;
+                $('iceCandidates').appendChild(candidateDiv);
+                updateStats();
+            } else {
+                log('✅ ICE候选收集完成');
+            }
+        };
+
+        if (isViewer) {
+            pc.addTransceiver('video', { direction: 'recvonly' });
+            pc.addTransceiver('audio', { direction: 'recvonly' });
+
+            pc.ontrack = (event) => {
+                log(`📺 接收到媒体流: ${event.track.kind}`);
+                if (event.streams && event.streams[0]) {
+                    $('remoteVideo').srcObject = event.streams[0];
+                }
+            };
+        }
+
+        return pc;
+    };
+
+    const postFormData = async (path, params) => {
+        const form = new FormData();
+        for (const [k, v] of Object.entries(params)) {
+            form.append(k, v);
+        }
+
+        log(`📤 发送请求到: ${path}`);
+        log(`📋 参数: ${JSON.stringify(params)}`);
+
+        const response = await fetch(path, {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Bearer ' + $('token').value
+            },
+            body: form
+        });
+
+        const text = await response.text();
+        log(`📥 服务器响应: ${text}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${text}`);
+        }
+
+        const json = JSON.parse(text);
+        if (json.resp?.Code !== 0) {
+            throw new Error(`服务器错误 ${json.resp.Code}: ${json.resp.Msg}`);
+        }
+
+        return json.resp.Data;
+    };
+
+    // 开始广播
+    $('startBroadcast').onclick = async () => {
+        try {
+            log('🎥 开始获取用户媒体...');
+            localStream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 1280, height: 720 },
+                audio: true
+            });
+            $('localVideo').srcObject = localStream;
+            log('✅ 媒体获取成功');
+
+            createPeerConnection(false);
+            localStream.getTracks().forEach(track => {
+                pc.addTrack(track, localStream);
+                log(`➕ 添加媒体轨道: ${track.kind}`);
+            });
+
+            log('📝 创建Offer...');
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            log('✅ LocalDescription设置成功');
+
+            // 等待ICE候选收集
+            await new Promise((resolve) => {
+                if (pc.iceGatheringState === 'complete') {
+                    resolve();
+                } else {
+                    pc.addEventListener('icegatheringstatechange', () => {
+                        if (pc.iceGatheringState === 'complete') {
+                            resolve();
+                        }
+                    });
+                }
+            });
+
+            const b64offer = btoa(JSON.stringify(pc.localDescription));
+            const b64answer = await postFormData(`${$('serverUrl').value}/broadcast`, {
+                lesson_id: $('lessonID').value,
+                b64offer
+            });
+
+            const answer = JSON.parse(atob(b64answer));
+            log('📥 设置RemoteDescription...');
+            await pc.setRemoteDescription(answer);
+            log('✅ 广播连接建立完成');
+
+        } catch (error) {
+            log(`❌ 广播失败: ${error.message}`, 'error');
+            updateStatus(`广播失败: ${error.message}`, 'error');
+        }
+    };
+
+    // 开始观看
+    $('startView').onclick = async () => {
+        try {
+            createPeerConnection(true);
+
+            log('📝 创建观看Offer...');
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            log('✅ LocalDescription设置成功');
+
+            // 等待ICE候选收集
+            await new Promise((resolve) => {
+                if (pc.iceGatheringState === 'complete') {
+                    resolve();
+                } else {
+                    pc.addEventListener('icegatheringstatechange', () => {
+                        if (pc.iceGatheringState === 'complete') {
+                            resolve();
+                        }
+                    });
+                }
+            });
+
+            const b64offer = btoa(JSON.stringify(pc.localDescription));
+            const b64answer = await postFormData(`${$('serverUrl').value}/view`, {
+                lesson_id: $('lessonID').value,
+                b64offer
+            });
+
+            const answer = JSON.parse(atob(b64answer));
+            log('📥 设置RemoteDescription...');
+            await pc.setRemoteDescription(answer);
+            log('✅ 观看连接建立完成');
+
+        } catch (error) {
+            log(`❌ 观看失败: ${error.message}`, 'error');
+            updateStatus(`观看失败: ${error.message}`, 'error');
+        }
+    };
+
+    // 停止所有连接
+    $('stopAll').onclick = () => {
+        if (pc) {
+            pc.close();
+            pc = null;
+        }
+        if (localStream) {
+            localStream.getTracks().forEach(track => track.stop());
+            localStream = null;
+        }
+        $('localVideo').srcObject = null;
+        $('remoteVideo').srcObject = null;
+        updateStatus('已停止所有连接', 'info');
+        log('🛑 已停止所有连接');
+    };
+
+    // 清空日志
+    $('clearLogs').onclick = () => {
+        $('debugLog').innerHTML = '';
+        $('iceCandidates').innerHTML = '';
+        iceCandidateCount = 0;
+        updateStats();
+    };
+
+    // 定期更新统计信息
+    setInterval(updateStats, 1000);
+
+    log('🚀 WebRTC调试工具已启动');
+</script>
+</body>
+</html>

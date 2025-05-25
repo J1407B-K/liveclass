@@ -7,6 +7,7 @@ import (
 	"liveclass/idl/kitex_gen/live/liveservice"
 	"liveclass/idl/kitex_gen/quiz/quizservice"
 	"liveclass/idl/kitex_gen/user/userservice"
+	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 	"liveclass/internal/global"
 )
 
@@ -40,6 +41,12 @@ func InitNewClient() error {
 		panic(err)
 	}
 	global.Clients.ChatClient = cc
+
+	wc, err := webrtc_live.NewClient("webrtc_liveservice", client.WithResolver(*global.Resolver))
+	if err != nil {
+		panic(err)
+	}
+	global.Clients.Webrtc_liveClient = wc
 
 	return nil
 }

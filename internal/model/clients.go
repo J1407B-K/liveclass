@@ -6,12 +6,14 @@ import (
 	live "liveclass/idl/kitex_gen/live/liveservice"
 	quiz "liveclass/idl/kitex_gen/quiz/quizservice"
 	user "liveclass/idl/kitex_gen/user/userservice"
+	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 )
 
 type Clients struct {
-	UserClient  user.Client
-	LiveClient  live.Client
-	QuizClient  quiz.Client
-	AgentClient agent.Client
-	ChatClient  chat.Client
+	UserClient        user.Client
+	LiveClient        live.Client
+	QuizClient        quiz.Client
+	AgentClient       agent.Client
+	ChatClient        chat.Client
+	Webrtc_liveClient webrtc_live.Client
 }
