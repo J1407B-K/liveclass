@@ -9,6 +9,8 @@
       <methods>
         <method importPath="liveclass/idl/kitex_gen/user/userservice" receiver="Client" name="Register" />
         <method importPath="liveclass/idl/kitex_gen/user/userservice" receiver="Client" name="GetUserInfo" />
+        <method importPath="liveclass/idl/kitex_gen/chat/chatservice" receiver="Client" name="GetHistory" />
+        <method importPath="liveclass/idl/kitex_gen/chat/chatservice" receiver="Client" name="DelHistory" />
       </methods>
     </inspection_tool>
   </profile>

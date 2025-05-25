@@ -79,6 +79,35 @@ struct IsStudentInLessonResp {
     1:common.resp resp,
 }
 
+struct RecordLessonReq{
+    1: string userid,
+    2: string streamURL,
+    3: string lesson_id,
+    4: i32    duration,
+}
+
+struct RecordLessonResp {
+    1:common.resp resp,
+}
+
+struct CreateSignInReq {
+    1: string userid,
+    2: string lessonid,
+}
+
+struct CreateSignInResp {
+    1:common.resp resp,
+}
+
+struct SignInReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct SignInResp {
+    1:common.resp resp,
+}
+
 service LiveService {
     CreateLiveResp CreateLive(1: CreateLiveReq req),
     CloseLiveResp  CloseLive(1:CloseLiveReq req),
@@ -88,4 +117,7 @@ service LiveService {
    GetLessonInfoByIdResp GetLessonInfoById(1:GetLessonInfoByIdReq req),
    ChangeUserToLessonResp   ChangeUserToLesson(1:ChangeUserToLessonReq req),
    IsStudentInLessonResp IsStudentInLesson(1:IsStudentInLessonReq req),
+   RecordLessonResp     RecordLesson(1:RecordLessonReq req),
+    CreateSignInResp    CreateSignIn(1:CreateSignInReq req),
+    SignInResp          SignIn(1:SignInReq req),
 }

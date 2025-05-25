@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"errors"
 	"gorm.io/gorm"
 	"liveclass/internal/rpc/live/model"
 )
@@ -103,7 +104,12 @@ func ChangeUserToLesson(db *gorm.DB, studentId, lessonName, teacher, option stri
 			return err
 		}
 	}
-	return tx.Commit().Error
+	err := tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
 }
 
 func CheckStudentInLesson(db *gorm.DB, studentId, lessonid string) (string, error) {
@@ -137,4 +143,85 @@ func CheckStudentInLesson(db *gorm.DB, studentId, lessonid string) (string, erro
 	}
 
 	return "not_in", nil
+}
+
+func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string) error {
+	tx := db.Begin()
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+
+	var search model.SignIn
+	err := tx.Where("lesson_id = ?", lessonId).Find(&search).Error
+	if err == nil {
+		tx.Rollback()
+		return errors.New("你已创建过签到")
+	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
+		tx.Rollback()
+		return err
+	}
+
+	s := model.SignIn{LessonId: lessonId, AllUserId: alluserid, AlreadyUserId: []string{}}
+
+	if err := tx.Create(&s).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
+}
+
+func StuSignIn(db *gorm.DB, lessonId, userId string) (string, error) {
+	tx := db.Begin()
+	if tx.Error != nil {
+		return "", tx.Error
+	}
+
+	// 确保结束时提交或回滚
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+
+	var SignIn model.SignIn
+	err := tx.Where("lesson_id = ?", lessonId).First(&SignIn).Error
+	if SignIn.LessonId != lessonId {
+		tx.Rollback()
+		return "", errors.New("课程不匹配")
+	}
+
+	if err != nil {
+		tx.Rollback()
+		return "", err
+	}
+
+	for _, id := range SignIn.AlreadyUserId {
+		if id == userId {
+			tx.Rollback()
+			return "<UNK>", errors.New("你已经签过到了")
+		}
+	}
+
+	SignIn.AlreadyUserId = append(SignIn.AlreadyUserId, userId)
+	err = tx.Where("lesson_id = ?", lessonId).Save(&SignIn).Error
+	if err != nil {
+		tx.Rollback()
+		return "", err
+	}
+	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return "", err
+	}
+
+	return "success", nil
 }

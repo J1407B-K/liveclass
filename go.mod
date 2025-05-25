@@ -31,6 +31,7 @@ require (
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/segmentio/kafka-go v0.4.48
 	github.com/spf13/viper v1.20.1
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.65
 	go.mongodb.org/mongo-driver v1.17.3
 	golang.org/x/crypto v0.32.0
 	gorm.io/driver/mysql v1.5.7
@@ -43,6 +44,7 @@ require (
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/base64x v0.1.5 // indirect
 	github.com/cloudwego/configmanager v0.2.3 // indirect
 	github.com/cloudwego/dynamicgo v0.6.2 // indirect
@@ -70,6 +72,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/pprof v0.0.0-20240727154555-813a5fbdbec8 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
@@ -83,10 +86,12 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
+	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/mozillazg/go-httpheader v0.2.1 // indirect
 	github.com/nikolalohinski/gonja v1.5.3 // indirect
 	github.com/nyaruka/phonenumbers v1.0.55 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect

@@ -19,6 +19,9 @@ type Client interface {
 	GetLessonInfoById(ctx context.Context, req *live.GetLessonInfoByIdReq, callOptions ...callopt.Option) (r *live.GetLessonInfoByIdResp, err error)
 	ChangeUserToLesson(ctx context.Context, req *live.ChangeUserToLessonReq, callOptions ...callopt.Option) (r *live.ChangeUserToLessonResp, err error)
 	IsStudentInLesson(ctx context.Context, req *live.IsStudentInLessonReq, callOptions ...callopt.Option) (r *live.IsStudentInLessonResp, err error)
+	RecordLesson(ctx context.Context, req *live.RecordLessonReq, callOptions ...callopt.Option) (r *live.RecordLessonResp, err error)
+	CreateSignIn(ctx context.Context, req *live.CreateSignInReq, callOptions ...callopt.Option) (r *live.CreateSignInResp, err error)
+	SignIn(ctx context.Context, req *live.SignInReq, callOptions ...callopt.Option) (r *live.SignInResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -88,4 +91,19 @@ func (p *kLiveServiceClient) ChangeUserToLesson(ctx context.Context, req *live.C
 func (p *kLiveServiceClient) IsStudentInLesson(ctx context.Context, req *live.IsStudentInLessonReq, callOptions ...callopt.Option) (r *live.IsStudentInLessonResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.IsStudentInLesson(ctx, req)
+}
+
+func (p *kLiveServiceClient) RecordLesson(ctx context.Context, req *live.RecordLessonReq, callOptions ...callopt.Option) (r *live.RecordLessonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.RecordLesson(ctx, req)
+}
+
+func (p *kLiveServiceClient) CreateSignIn(ctx context.Context, req *live.CreateSignInReq, callOptions ...callopt.Option) (r *live.CreateSignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.CreateSignIn(ctx, req)
+}
+
+func (p *kLiveServiceClient) SignIn(ctx context.Context, req *live.SignInReq, callOptions ...callopt.Option) (r *live.SignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.SignIn(ctx, req)
 }

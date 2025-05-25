@@ -4,21 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/cloudwego/kitex/client"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	etcd "github.com/kitex-contrib/registry-etcd"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
 	"io"
 	"liveclass/idl/kitex_gen/common"
-	live "liveclass/idl/kitex_gen/live"
+	"liveclass/idl/kitex_gen/live"
 	"liveclass/idl/kitex_gen/user"
 	"liveclass/idl/kitex_gen/user/userservice"
+	my_cos "liveclass/internal/rpc/live/cos"
 	"liveclass/internal/rpc/live/dao"
 	"liveclass/internal/rpc/live/global"
 	"liveclass/internal/rpc/live/model"
 	"liveclass/internal/utils/cut"
 	"log"
 	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 )
 
@@ -32,6 +39,7 @@ type LiveServiceImpl struct {
 	membersha      string
 	delsha         string
 	selectsha      string
+	cosClient      *cos.Client
 }
 
 func NewUserClient() (userservice.Client, error) {
@@ -305,4 +313,116 @@ func (s *LiveServiceImpl) IsStudentInLesson(ctx context.Context, req *live.IsStu
 			Data: errors.New("unknown error happened").Error(),
 		},
 	}, nil
+}
+
+// RecordLesson implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) RecordLesson(ctx context.Context, req *live.RecordLessonReq) (resp *live.RecordLessonResp, err error) {
+	lid, err := strconv.Atoi(req.LessonId)
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLessonById(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, uid := range linfo.StudentID {
+		if req.Userid == uid {
+			err = os.Mkdir(global.Config.TmpBaseDir, 0755)
+			if err != nil && !os.IsExist(err) {
+				return nil, err
+			}
+
+			filename := fmt.Sprintf("%s-record-%s.mp4", req.LessonId, uuid.NewString())
+			localfile := filepath.Join(global.Config.TmpBaseDir, filename)
+
+			args := []string{"-y", "-i", req.StreamURL, "-c", "copy", localfile}
+			if req.Duration > 0 {
+				args = append(args, "-t", fmt.Sprintf("%d", req.Duration))
+			}
+
+			log.Println("开始录制")
+			go func() {
+				cmd := exec.CommandContext(ctx, "ffmpeg", args...)
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+
+				if err := cmd.Run(); err != nil {
+					log.Printf("ffmpeg拉流失败: %v", err)
+					return
+				}
+
+				if err := my_cos.UploadToCos(ctx, s.cosClient, localfile, req.LessonId, filename); err != nil {
+					log.Printf("上传失败: %v", err)
+					return
+				}
+
+				if err := os.Remove(localfile); err != nil {
+					log.Printf("删除临时文件失败: %v", err)
+				}
+
+				log.Println("异步录制和上传成功")
+			}()
+
+			return &live.RecordLessonResp{Resp: &common.Resp{Data: "success:https://console.cloud.tencent.com/cos/bucket?bucket=lanshan-1338048877&region=ap-chongqing"}}, nil
+		}
+	}
+	return nil, errors.New("你不是当前课程的学生或老师！！！")
+}
+
+// CreateSignIn implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) CreateSignIn(ctx context.Context, req *live.CreateSignInReq) (resp *live.CreateSignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLessonById(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID)
+	if err != nil {
+		return nil, err
+	}
+	return &live.CreateSignInResp{Resp: &common.Resp{Data: "success"}}, nil
+}
+
+// SignIn implements the LiveServiceImpl interface.
+func (s *LiveServiceImpl) SignIn(ctx context.Context, req *live.SignInReq) (resp *live.SignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLessonById(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, stuid := range linfo.StudentID {
+		if req.Userid == stuid {
+			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return &live.SignInResp{Resp: &common.Resp{Data: "success"}}, nil
+	}
+	return nil, errors.New("不是此课程学生")
 }

@@ -69,6 +69,27 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"RecordLesson": kitex.NewMethodInfo(
+		recordLessonHandler,
+		newLiveServiceRecordLessonArgs,
+		newLiveServiceRecordLessonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"CreateSignIn": kitex.NewMethodInfo(
+		createSignInHandler,
+		newLiveServiceCreateSignInArgs,
+		newLiveServiceCreateSignInResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"SignIn": kitex.NewMethodInfo(
+		signInHandler,
+		newLiveServiceSignInArgs,
+		newLiveServiceSignInResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -279,6 +300,60 @@ func newLiveServiceIsStudentInLessonResult() interface{} {
 	return live.NewLiveServiceIsStudentInLessonResult()
 }
 
+func recordLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceRecordLessonArgs)
+	realResult := result.(*live.LiveServiceRecordLessonResult)
+	success, err := handler.(live.LiveService).RecordLesson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceRecordLessonArgs() interface{} {
+	return live.NewLiveServiceRecordLessonArgs()
+}
+
+func newLiveServiceRecordLessonResult() interface{} {
+	return live.NewLiveServiceRecordLessonResult()
+}
+
+func createSignInHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceCreateSignInArgs)
+	realResult := result.(*live.LiveServiceCreateSignInResult)
+	success, err := handler.(live.LiveService).CreateSignIn(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceCreateSignInArgs() interface{} {
+	return live.NewLiveServiceCreateSignInArgs()
+}
+
+func newLiveServiceCreateSignInResult() interface{} {
+	return live.NewLiveServiceCreateSignInResult()
+}
+
+func signInHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*live.LiveServiceSignInArgs)
+	realResult := result.(*live.LiveServiceSignInResult)
+	success, err := handler.(live.LiveService).SignIn(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newLiveServiceSignInArgs() interface{} {
+	return live.NewLiveServiceSignInArgs()
+}
+
+func newLiveServiceSignInResult() interface{} {
+	return live.NewLiveServiceSignInResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -364,6 +439,36 @@ func (p *kClient) IsStudentInLesson(ctx context.Context, req *live.IsStudentInLe
 	_args.Req = req
 	var _result live.LiveServiceIsStudentInLessonResult
 	if err = p.c.Call(ctx, "IsStudentInLesson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) RecordLesson(ctx context.Context, req *live.RecordLessonReq) (r *live.RecordLessonResp, err error) {
+	var _args live.LiveServiceRecordLessonArgs
+	_args.Req = req
+	var _result live.LiveServiceRecordLessonResult
+	if err = p.c.Call(ctx, "RecordLesson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) CreateSignIn(ctx context.Context, req *live.CreateSignInReq) (r *live.CreateSignInResp, err error) {
+	var _args live.LiveServiceCreateSignInArgs
+	_args.Req = req
+	var _result live.LiveServiceCreateSignInResult
+	if err = p.c.Call(ctx, "CreateSignIn", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SignIn(ctx context.Context, req *live.SignInReq) (r *live.SignInResp, err error) {
+	var _args live.LiveServiceSignInArgs
+	_args.Req = req
+	var _result live.LiveServiceSignInResult
+	if err = p.c.Call(ctx, "SignIn", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

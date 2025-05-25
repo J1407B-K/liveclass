@@ -16,6 +16,7 @@ func main() {
 	db := initialize.InitGormDB()
 	rdb := initialize.InitRedisDB()
 	getLiveKeyAddr := initialize.InitKeyAddr()
+	cosClient := initialize.SetUpCos()
 	countsha, membersha, delsha, selectsha := initialize.InitScript(rdb)
 
 	option := flag.Parse()
@@ -35,7 +36,7 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9002")
-	svr := live.NewServer(&LiveServiceImpl{DB: db, RDB: rdb, userCli: userCli, GetLiveKeyAddr: getLiveKeyAddr, countsha: countsha, membersha: membersha, delsha: delsha, selectsha: selectsha},
+	svr := live.NewServer(&LiveServiceImpl{DB: db, RDB: rdb, userCli: userCli, GetLiveKeyAddr: getLiveKeyAddr, countsha: countsha, membersha: membersha, delsha: delsha, selectsha: selectsha, cosClient: cosClient},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
