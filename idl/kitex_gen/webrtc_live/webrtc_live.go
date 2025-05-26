@@ -11,8 +11,9 @@ import (
 )
 
 type BroadcastReq struct {
-	LessonId string `thrift:"lesson_id,1" frugal:"1,default,string" json:"lesson_id"`
-	B64offer string `thrift:"b64offer,2" frugal:"2,default,string" json:"b64offer"`
+	Userid   string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
+	LessonId string `thrift:"lesson_id,2" frugal:"2,default,string" json:"lesson_id"`
+	B64offer string `thrift:"b64offer,3" frugal:"3,default,string" json:"b64offer"`
 }
 
 func NewBroadcastReq() *BroadcastReq {
@@ -22,12 +23,19 @@ func NewBroadcastReq() *BroadcastReq {
 func (p *BroadcastReq) InitDefault() {
 }
 
+func (p *BroadcastReq) GetUserid() (v string) {
+	return p.Userid
+}
+
 func (p *BroadcastReq) GetLessonId() (v string) {
 	return p.LessonId
 }
 
 func (p *BroadcastReq) GetB64offer() (v string) {
 	return p.B64offer
+}
+func (p *BroadcastReq) SetUserid(val string) {
+	p.Userid = val
 }
 func (p *BroadcastReq) SetLessonId(val string) {
 	p.LessonId = val
@@ -37,8 +45,9 @@ func (p *BroadcastReq) SetB64offer(val string) {
 }
 
 var fieldIDToName_BroadcastReq = map[int16]string{
-	1: "lesson_id",
-	2: "b64offer",
+	1: "userid",
+	2: "lesson_id",
+	3: "b64offer",
 }
 
 func (p *BroadcastReq) Read(iprot thrift.TProtocol) (err error) {
@@ -71,6 +80,14 @@ func (p *BroadcastReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -113,10 +130,21 @@ func (p *BroadcastReq) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.LessonId = _field
+	p.Userid = _field
 	return nil
 }
 func (p *BroadcastReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.LessonId = _field
+	return nil
+}
+func (p *BroadcastReq) ReadField3(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -143,6 +171,10 @@ func (p *BroadcastReq) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 2
 			goto WriteFieldError
 		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -162,10 +194,10 @@ WriteStructEndError:
 }
 
 func (p *BroadcastReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("lesson_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("userid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.LessonId); err != nil {
+	if err := oprot.WriteString(p.Userid); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -179,10 +211,10 @@ WriteFieldEndError:
 }
 
 func (p *BroadcastReq) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("b64offer", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("lesson_id", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.B64offer); err != nil {
+	if err := oprot.WriteString(p.LessonId); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -193,6 +225,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *BroadcastReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("b64offer", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.B64offer); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *BroadcastReq) String() string {
@@ -209,10 +258,13 @@ func (p *BroadcastReq) DeepEqual(ano *BroadcastReq) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.LessonId) {
+	if !p.Field1DeepEqual(ano.Userid) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.B64offer) {
+	if !p.Field2DeepEqual(ano.LessonId) {
+		return false
+	}
+	if !p.Field3DeepEqual(ano.B64offer) {
 		return false
 	}
 	return true
@@ -220,12 +272,19 @@ func (p *BroadcastReq) DeepEqual(ano *BroadcastReq) bool {
 
 func (p *BroadcastReq) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.LessonId, src) != 0 {
+	if strings.Compare(p.Userid, src) != 0 {
 		return false
 	}
 	return true
 }
 func (p *BroadcastReq) Field2DeepEqual(src string) bool {
+
+	if strings.Compare(p.LessonId, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *BroadcastReq) Field3DeepEqual(src string) bool {
 
 	if strings.Compare(p.B64offer, src) != 0 {
 		return false
@@ -404,8 +463,9 @@ func (p *BroadcastResp) Field1DeepEqual(src *common.Resp) bool {
 }
 
 type ViewReq struct {
-	LessonId string `thrift:"lesson_id,1" frugal:"1,default,string" json:"lesson_id"`
-	B64offer string `thrift:"b64offer,2" frugal:"2,default,string" json:"b64offer"`
+	Userid   string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
+	LessonId string `thrift:"lesson_id,2" frugal:"2,default,string" json:"lesson_id"`
+	B64offer string `thrift:"b64offer,3" frugal:"3,default,string" json:"b64offer"`
 }
 
 func NewViewReq() *ViewReq {
@@ -415,12 +475,19 @@ func NewViewReq() *ViewReq {
 func (p *ViewReq) InitDefault() {
 }
 
+func (p *ViewReq) GetUserid() (v string) {
+	return p.Userid
+}
+
 func (p *ViewReq) GetLessonId() (v string) {
 	return p.LessonId
 }
 
 func (p *ViewReq) GetB64offer() (v string) {
 	return p.B64offer
+}
+func (p *ViewReq) SetUserid(val string) {
+	p.Userid = val
 }
 func (p *ViewReq) SetLessonId(val string) {
 	p.LessonId = val
@@ -430,8 +497,9 @@ func (p *ViewReq) SetB64offer(val string) {
 }
 
 var fieldIDToName_ViewReq = map[int16]string{
-	1: "lesson_id",
-	2: "b64offer",
+	1: "userid",
+	2: "lesson_id",
+	3: "b64offer",
 }
 
 func (p *ViewReq) Read(iprot thrift.TProtocol) (err error) {
@@ -464,6 +532,14 @@ func (p *ViewReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -506,10 +582,21 @@ func (p *ViewReq) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.LessonId = _field
+	p.Userid = _field
 	return nil
 }
 func (p *ViewReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.LessonId = _field
+	return nil
+}
+func (p *ViewReq) ReadField3(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -536,6 +623,10 @@ func (p *ViewReq) Write(oprot thrift.TProtocol) (err error) {
 			fieldId = 2
 			goto WriteFieldError
 		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
 	}
 	if err = oprot.WriteFieldStop(); err != nil {
 		goto WriteFieldStopError
@@ -555,10 +646,10 @@ WriteStructEndError:
 }
 
 func (p *ViewReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("lesson_id", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("userid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.LessonId); err != nil {
+	if err := oprot.WriteString(p.Userid); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -572,10 +663,10 @@ WriteFieldEndError:
 }
 
 func (p *ViewReq) writeField2(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("b64offer", thrift.STRING, 2); err != nil {
+	if err = oprot.WriteFieldBegin("lesson_id", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.B64offer); err != nil {
+	if err := oprot.WriteString(p.LessonId); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -586,6 +677,23 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+
+func (p *ViewReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("b64offer", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.B64offer); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
 
 func (p *ViewReq) String() string {
@@ -602,10 +710,13 @@ func (p *ViewReq) DeepEqual(ano *ViewReq) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.LessonId) {
+	if !p.Field1DeepEqual(ano.Userid) {
 		return false
 	}
-	if !p.Field2DeepEqual(ano.B64offer) {
+	if !p.Field2DeepEqual(ano.LessonId) {
+		return false
+	}
+	if !p.Field3DeepEqual(ano.B64offer) {
 		return false
 	}
 	return true
@@ -613,12 +724,19 @@ func (p *ViewReq) DeepEqual(ano *ViewReq) bool {
 
 func (p *ViewReq) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.LessonId, src) != 0 {
+	if strings.Compare(p.Userid, src) != 0 {
 		return false
 	}
 	return true
 }
 func (p *ViewReq) Field2DeepEqual(src string) bool {
+
+	if strings.Compare(p.LessonId, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *ViewReq) Field3DeepEqual(src string) bool {
 
 	if strings.Compare(p.B64offer, src) != 0 {
 		return false
@@ -796,38 +914,47 @@ func (p *ViewResp) Field1DeepEqual(src *common.Resp) bool {
 	return true
 }
 
-type CreateLiveReq struct {
-	Userid     string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
-	LessonName string `thrift:"lesson_name,2" frugal:"2,default,string" json:"lesson_name"`
+type CreateLessonReq struct {
+	Userid      string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
+	LessonName  string `thrift:"lesson_name,2" frugal:"2,default,string" json:"lesson_name"`
+	Description string `thrift:"description,3" frugal:"3,default,string" json:"description"`
 }
 
-func NewCreateLiveReq() *CreateLiveReq {
-	return &CreateLiveReq{}
+func NewCreateLessonReq() *CreateLessonReq {
+	return &CreateLessonReq{}
 }
 
-func (p *CreateLiveReq) InitDefault() {
+func (p *CreateLessonReq) InitDefault() {
 }
 
-func (p *CreateLiveReq) GetUserid() (v string) {
+func (p *CreateLessonReq) GetUserid() (v string) {
 	return p.Userid
 }
 
-func (p *CreateLiveReq) GetLessonName() (v string) {
+func (p *CreateLessonReq) GetLessonName() (v string) {
 	return p.LessonName
 }
-func (p *CreateLiveReq) SetUserid(val string) {
+
+func (p *CreateLessonReq) GetDescription() (v string) {
+	return p.Description
+}
+func (p *CreateLessonReq) SetUserid(val string) {
 	p.Userid = val
 }
-func (p *CreateLiveReq) SetLessonName(val string) {
+func (p *CreateLessonReq) SetLessonName(val string) {
 	p.LessonName = val
 }
-
-var fieldIDToName_CreateLiveReq = map[int16]string{
-	1: "userid",
-	2: "lesson_name",
+func (p *CreateLessonReq) SetDescription(val string) {
+	p.Description = val
 }
 
-func (p *CreateLiveReq) Read(iprot thrift.TProtocol) (err error) {
+var fieldIDToName_CreateLessonReq = map[int16]string{
+	1: "userid",
+	2: "lesson_name",
+	3: "description",
+}
+
+func (p *CreateLessonReq) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -862,6 +989,14 @@ func (p *CreateLiveReq) Read(iprot thrift.TProtocol) (err error) {
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
 		default:
 			if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
@@ -881,7 +1016,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLiveReq[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLessonReq[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -891,7 +1026,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *CreateLiveReq) ReadField1(iprot thrift.TProtocol) error {
+func (p *CreateLessonReq) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -902,7 +1037,7 @@ func (p *CreateLiveReq) ReadField1(iprot thrift.TProtocol) error {
 	p.Userid = _field
 	return nil
 }
-func (p *CreateLiveReq) ReadField2(iprot thrift.TProtocol) error {
+func (p *CreateLessonReq) ReadField2(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -913,11 +1048,22 @@ func (p *CreateLiveReq) ReadField2(iprot thrift.TProtocol) error {
 	p.LessonName = _field
 	return nil
 }
+func (p *CreateLessonReq) ReadField3(iprot thrift.TProtocol) error {
 
-func (p *CreateLiveReq) Write(oprot thrift.TProtocol) (err error) {
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Description = _field
+	return nil
+}
+
+func (p *CreateLessonReq) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("CreateLiveReq"); err != nil {
+	if err = oprot.WriteStructBegin("CreateLessonReq"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -927,6 +1073,10 @@ func (p *CreateLiveReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -947,7 +1097,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *CreateLiveReq) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *CreateLessonReq) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("userid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -964,7 +1114,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *CreateLiveReq) writeField2(oprot thrift.TProtocol) (err error) {
+func (p *CreateLessonReq) writeField2(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("lesson_name", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -981,15 +1131,32 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
-func (p *CreateLiveReq) String() string {
+func (p *CreateLessonReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("description", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Description); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *CreateLessonReq) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("CreateLiveReq(%+v)", *p)
+	return fmt.Sprintf("CreateLessonReq(%+v)", *p)
 
 }
 
-func (p *CreateLiveReq) DeepEqual(ano *CreateLiveReq) bool {
+func (p *CreateLessonReq) DeepEqual(ano *CreateLessonReq) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -1001,56 +1168,66 @@ func (p *CreateLiveReq) DeepEqual(ano *CreateLiveReq) bool {
 	if !p.Field2DeepEqual(ano.LessonName) {
 		return false
 	}
+	if !p.Field3DeepEqual(ano.Description) {
+		return false
+	}
 	return true
 }
 
-func (p *CreateLiveReq) Field1DeepEqual(src string) bool {
+func (p *CreateLessonReq) Field1DeepEqual(src string) bool {
 
 	if strings.Compare(p.Userid, src) != 0 {
 		return false
 	}
 	return true
 }
-func (p *CreateLiveReq) Field2DeepEqual(src string) bool {
+func (p *CreateLessonReq) Field2DeepEqual(src string) bool {
 
 	if strings.Compare(p.LessonName, src) != 0 {
 		return false
 	}
 	return true
 }
+func (p *CreateLessonReq) Field3DeepEqual(src string) bool {
 
-type CreateLiveResp struct {
+	if strings.Compare(p.Description, src) != 0 {
+		return false
+	}
+	return true
+}
+
+type CreateLessonResp struct {
 	Resp *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
 }
 
-func NewCreateLiveResp() *CreateLiveResp {
-	return &CreateLiveResp{}
+func NewCreateLessonResp() *CreateLessonResp {
+	return &CreateLessonResp{}
 }
 
-func (p *CreateLiveResp) InitDefault() {
+func (p *CreateLessonResp) InitDefault() {
 }
 
-var CreateLiveResp_Resp_DEFAULT *common.Resp
+var CreateLessonResp_Resp_DEFAULT *common.Resp
 
-func (p *CreateLiveResp) GetResp() (v *common.Resp) {
+func (p *CreateLessonResp) GetResp() (v *common.Resp) {
 	if !p.IsSetResp() {
-		return CreateLiveResp_Resp_DEFAULT
+		return CreateLessonResp_Resp_DEFAULT
 	}
 	return p.Resp
 }
-func (p *CreateLiveResp) SetResp(val *common.Resp) {
+func (p *CreateLessonResp) SetResp(val *common.Resp) {
 	p.Resp = val
 }
 
-var fieldIDToName_CreateLiveResp = map[int16]string{
+var fieldIDToName_CreateLessonResp = map[int16]string{
 	1: "resp",
 }
 
-func (p *CreateLiveResp) IsSetResp() bool {
+func (p *CreateLessonResp) IsSetResp() bool {
 	return p.Resp != nil
 }
 
-func (p *CreateLiveResp) Read(iprot thrift.TProtocol) (err error) {
+func (p *CreateLessonResp) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -1096,7 +1273,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLiveResp[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLessonResp[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1106,7 +1283,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *CreateLiveResp) ReadField1(iprot thrift.TProtocol) error {
+func (p *CreateLessonResp) ReadField1(iprot thrift.TProtocol) error {
 	_field := common.NewResp()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -1115,10 +1292,10 @@ func (p *CreateLiveResp) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *CreateLiveResp) Write(oprot thrift.TProtocol) (err error) {
+func (p *CreateLessonResp) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("CreateLiveResp"); err != nil {
+	if err = oprot.WriteStructBegin("CreateLessonResp"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -1144,7 +1321,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *CreateLiveResp) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *CreateLessonResp) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("resp", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -1161,15 +1338,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *CreateLiveResp) String() string {
+func (p *CreateLessonResp) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("CreateLiveResp(%+v)", *p)
+	return fmt.Sprintf("CreateLessonResp(%+v)", *p)
 
 }
 
-func (p *CreateLiveResp) DeepEqual(ano *CreateLiveResp) bool {
+func (p *CreateLessonResp) DeepEqual(ano *CreateLessonResp) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -1181,7 +1358,7 @@ func (p *CreateLiveResp) DeepEqual(ano *CreateLiveResp) bool {
 	return true
 }
 
-func (p *CreateLiveResp) Field1DeepEqual(src *common.Resp) bool {
+func (p *CreateLessonResp) Field1DeepEqual(src *common.Resp) bool {
 
 	if !p.Resp.DeepEqual(src) {
 		return false
@@ -1189,38 +1366,38 @@ func (p *CreateLiveResp) Field1DeepEqual(src *common.Resp) bool {
 	return true
 }
 
-type DelLiveReq struct {
+type DelLessonReq struct {
 	Userid   string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
 	Lessonid string `thrift:"lessonid,2" frugal:"2,default,string" json:"lessonid"`
 }
 
-func NewDelLiveReq() *DelLiveReq {
-	return &DelLiveReq{}
+func NewDelLessonReq() *DelLessonReq {
+	return &DelLessonReq{}
 }
 
-func (p *DelLiveReq) InitDefault() {
+func (p *DelLessonReq) InitDefault() {
 }
 
-func (p *DelLiveReq) GetUserid() (v string) {
+func (p *DelLessonReq) GetUserid() (v string) {
 	return p.Userid
 }
 
-func (p *DelLiveReq) GetLessonid() (v string) {
+func (p *DelLessonReq) GetLessonid() (v string) {
 	return p.Lessonid
 }
-func (p *DelLiveReq) SetUserid(val string) {
+func (p *DelLessonReq) SetUserid(val string) {
 	p.Userid = val
 }
-func (p *DelLiveReq) SetLessonid(val string) {
+func (p *DelLessonReq) SetLessonid(val string) {
 	p.Lessonid = val
 }
 
-var fieldIDToName_DelLiveReq = map[int16]string{
+var fieldIDToName_DelLessonReq = map[int16]string{
 	1: "userid",
 	2: "lessonid",
 }
 
-func (p *DelLiveReq) Read(iprot thrift.TProtocol) (err error) {
+func (p *DelLessonReq) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -1274,7 +1451,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLiveReq[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLessonReq[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1284,7 +1461,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *DelLiveReq) ReadField1(iprot thrift.TProtocol) error {
+func (p *DelLessonReq) ReadField1(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -1295,7 +1472,7 @@ func (p *DelLiveReq) ReadField1(iprot thrift.TProtocol) error {
 	p.Userid = _field
 	return nil
 }
-func (p *DelLiveReq) ReadField2(iprot thrift.TProtocol) error {
+func (p *DelLessonReq) ReadField2(iprot thrift.TProtocol) error {
 
 	var _field string
 	if v, err := iprot.ReadString(); err != nil {
@@ -1307,10 +1484,10 @@ func (p *DelLiveReq) ReadField2(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *DelLiveReq) Write(oprot thrift.TProtocol) (err error) {
+func (p *DelLessonReq) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("DelLiveReq"); err != nil {
+	if err = oprot.WriteStructBegin("DelLessonReq"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -1340,7 +1517,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *DelLiveReq) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *DelLessonReq) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("userid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -1357,7 +1534,7 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *DelLiveReq) writeField2(oprot thrift.TProtocol) (err error) {
+func (p *DelLessonReq) writeField2(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("lessonid", thrift.STRING, 2); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -1374,15 +1551,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
-func (p *DelLiveReq) String() string {
+func (p *DelLessonReq) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("DelLiveReq(%+v)", *p)
+	return fmt.Sprintf("DelLessonReq(%+v)", *p)
 
 }
 
-func (p *DelLiveReq) DeepEqual(ano *DelLiveReq) bool {
+func (p *DelLessonReq) DeepEqual(ano *DelLessonReq) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -1397,14 +1574,14 @@ func (p *DelLiveReq) DeepEqual(ano *DelLiveReq) bool {
 	return true
 }
 
-func (p *DelLiveReq) Field1DeepEqual(src string) bool {
+func (p *DelLessonReq) Field1DeepEqual(src string) bool {
 
 	if strings.Compare(p.Userid, src) != 0 {
 		return false
 	}
 	return true
 }
-func (p *DelLiveReq) Field2DeepEqual(src string) bool {
+func (p *DelLessonReq) Field2DeepEqual(src string) bool {
 
 	if strings.Compare(p.Lessonid, src) != 0 {
 		return false
@@ -1412,38 +1589,38 @@ func (p *DelLiveReq) Field2DeepEqual(src string) bool {
 	return true
 }
 
-type DelLiveResp struct {
+type DelLessonResp struct {
 	Resp *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
 }
 
-func NewDelLiveResp() *DelLiveResp {
-	return &DelLiveResp{}
+func NewDelLessonResp() *DelLessonResp {
+	return &DelLessonResp{}
 }
 
-func (p *DelLiveResp) InitDefault() {
+func (p *DelLessonResp) InitDefault() {
 }
 
-var DelLiveResp_Resp_DEFAULT *common.Resp
+var DelLessonResp_Resp_DEFAULT *common.Resp
 
-func (p *DelLiveResp) GetResp() (v *common.Resp) {
+func (p *DelLessonResp) GetResp() (v *common.Resp) {
 	if !p.IsSetResp() {
-		return DelLiveResp_Resp_DEFAULT
+		return DelLessonResp_Resp_DEFAULT
 	}
 	return p.Resp
 }
-func (p *DelLiveResp) SetResp(val *common.Resp) {
+func (p *DelLessonResp) SetResp(val *common.Resp) {
 	p.Resp = val
 }
 
-var fieldIDToName_DelLiveResp = map[int16]string{
+var fieldIDToName_DelLessonResp = map[int16]string{
 	1: "resp",
 }
 
-func (p *DelLiveResp) IsSetResp() bool {
+func (p *DelLessonResp) IsSetResp() bool {
 	return p.Resp != nil
 }
 
-func (p *DelLiveResp) Read(iprot thrift.TProtocol) (err error) {
+func (p *DelLessonResp) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -1489,7 +1666,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLiveResp[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLessonResp[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -1499,7 +1676,7 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *DelLiveResp) ReadField1(iprot thrift.TProtocol) error {
+func (p *DelLessonResp) ReadField1(iprot thrift.TProtocol) error {
 	_field := common.NewResp()
 	if err := _field.Read(iprot); err != nil {
 		return err
@@ -1508,10 +1685,10 @@ func (p *DelLiveResp) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *DelLiveResp) Write(oprot thrift.TProtocol) (err error) {
+func (p *DelLessonResp) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("DelLiveResp"); err != nil {
+	if err = oprot.WriteStructBegin("DelLessonResp"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -1537,7 +1714,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *DelLiveResp) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *DelLessonResp) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("resp", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -1554,15 +1731,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *DelLiveResp) String() string {
+func (p *DelLessonResp) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("DelLiveResp(%+v)", *p)
+	return fmt.Sprintf("DelLessonResp(%+v)", *p)
 
 }
 
-func (p *DelLiveResp) DeepEqual(ano *DelLiveResp) bool {
+func (p *DelLessonResp) DeepEqual(ano *DelLessonResp) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -1574,7 +1751,7 @@ func (p *DelLiveResp) DeepEqual(ano *DelLiveResp) bool {
 	return true
 }
 
-func (p *DelLiveResp) Field1DeepEqual(src *common.Resp) bool {
+func (p *DelLessonResp) Field1DeepEqual(src *common.Resp) bool {
 
 	if !p.Resp.DeepEqual(src) {
 		return false
@@ -1583,7 +1760,7 @@ func (p *DelLiveResp) Field1DeepEqual(src *common.Resp) bool {
 }
 
 type ChangeUserInLiveReq struct {
-	Livename string `thrift:"livename,1" frugal:"1,default,string" json:"livename"`
+	Lessonid string `thrift:"lessonid,1" frugal:"1,default,string" json:"lessonid"`
 	Userid   string `thrift:"userid,2" frugal:"2,default,string" json:"userid"`
 	Options  string `thrift:"options,3" frugal:"3,default,string" json:"options"`
 }
@@ -1595,8 +1772,8 @@ func NewChangeUserInLiveReq() *ChangeUserInLiveReq {
 func (p *ChangeUserInLiveReq) InitDefault() {
 }
 
-func (p *ChangeUserInLiveReq) GetLivename() (v string) {
-	return p.Livename
+func (p *ChangeUserInLiveReq) GetLessonid() (v string) {
+	return p.Lessonid
 }
 
 func (p *ChangeUserInLiveReq) GetUserid() (v string) {
@@ -1606,8 +1783,8 @@ func (p *ChangeUserInLiveReq) GetUserid() (v string) {
 func (p *ChangeUserInLiveReq) GetOptions() (v string) {
 	return p.Options
 }
-func (p *ChangeUserInLiveReq) SetLivename(val string) {
-	p.Livename = val
+func (p *ChangeUserInLiveReq) SetLessonid(val string) {
+	p.Lessonid = val
 }
 func (p *ChangeUserInLiveReq) SetUserid(val string) {
 	p.Userid = val
@@ -1617,7 +1794,7 @@ func (p *ChangeUserInLiveReq) SetOptions(val string) {
 }
 
 var fieldIDToName_ChangeUserInLiveReq = map[int16]string{
-	1: "livename",
+	1: "lessonid",
 	2: "userid",
 	3: "options",
 }
@@ -1702,7 +1879,7 @@ func (p *ChangeUserInLiveReq) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Livename = _field
+	p.Lessonid = _field
 	return nil
 }
 func (p *ChangeUserInLiveReq) ReadField2(iprot thrift.TProtocol) error {
@@ -1766,10 +1943,10 @@ WriteStructEndError:
 }
 
 func (p *ChangeUserInLiveReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("livename", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("lessonid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Livename); err != nil {
+	if err := oprot.WriteString(p.Lessonid); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1830,7 +2007,7 @@ func (p *ChangeUserInLiveReq) DeepEqual(ano *ChangeUserInLiveReq) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Livename) {
+	if !p.Field1DeepEqual(ano.Lessonid) {
 		return false
 	}
 	if !p.Field2DeepEqual(ano.Userid) {
@@ -1844,7 +2021,7 @@ func (p *ChangeUserInLiveReq) DeepEqual(ano *ChangeUserInLiveReq) bool {
 
 func (p *ChangeUserInLiveReq) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.Livename, src) != 0 {
+	if strings.Compare(p.Lessonid, src) != 0 {
 		return false
 	}
 	return true
@@ -2037,6 +2214,7 @@ func (p *ChangeUserInLiveResp) Field1DeepEqual(src *common.Resp) bool {
 type ChangeUserToLessonReq struct {
 	Userid   string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
 	Lessonid string `thrift:"lessonid,2" frugal:"2,default,string" json:"lessonid"`
+	Options  string `thrift:"options,3" frugal:"3,default,string" json:"options"`
 }
 
 func NewChangeUserToLessonReq() *ChangeUserToLessonReq {
@@ -2053,16 +2231,24 @@ func (p *ChangeUserToLessonReq) GetUserid() (v string) {
 func (p *ChangeUserToLessonReq) GetLessonid() (v string) {
 	return p.Lessonid
 }
+
+func (p *ChangeUserToLessonReq) GetOptions() (v string) {
+	return p.Options
+}
 func (p *ChangeUserToLessonReq) SetUserid(val string) {
 	p.Userid = val
 }
 func (p *ChangeUserToLessonReq) SetLessonid(val string) {
 	p.Lessonid = val
 }
+func (p *ChangeUserToLessonReq) SetOptions(val string) {
+	p.Options = val
+}
 
 var fieldIDToName_ChangeUserToLessonReq = map[int16]string{
 	1: "userid",
 	2: "lessonid",
+	3: "options",
 }
 
 func (p *ChangeUserToLessonReq) Read(iprot thrift.TProtocol) (err error) {
@@ -2095,6 +2281,14 @@ func (p *ChangeUserToLessonReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2151,6 +2345,17 @@ func (p *ChangeUserToLessonReq) ReadField2(iprot thrift.TProtocol) error {
 	p.Lessonid = _field
 	return nil
 }
+func (p *ChangeUserToLessonReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Options = _field
+	return nil
+}
 
 func (p *ChangeUserToLessonReq) Write(oprot thrift.TProtocol) (err error) {
 
@@ -2165,6 +2370,10 @@ func (p *ChangeUserToLessonReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -2219,6 +2428,23 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
+func (p *ChangeUserToLessonReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("options", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Options); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
 func (p *ChangeUserToLessonReq) String() string {
 	if p == nil {
 		return "<nil>"
@@ -2239,6 +2465,9 @@ func (p *ChangeUserToLessonReq) DeepEqual(ano *ChangeUserToLessonReq) bool {
 	if !p.Field2DeepEqual(ano.Lessonid) {
 		return false
 	}
+	if !p.Field3DeepEqual(ano.Options) {
+		return false
+	}
 	return true
 }
 
@@ -2252,6 +2481,13 @@ func (p *ChangeUserToLessonReq) Field1DeepEqual(src string) bool {
 func (p *ChangeUserToLessonReq) Field2DeepEqual(src string) bool {
 
 	if strings.Compare(p.Lessonid, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *ChangeUserToLessonReq) Field3DeepEqual(src string) bool {
+
+	if strings.Compare(p.Options, src) != 0 {
 		return false
 	}
 	return true
@@ -2766,9 +3002,9 @@ type WebrtcLive interface {
 
 	View(ctx context.Context, req *ViewReq) (r *ViewResp, err error)
 
-	CreateLive(ctx context.Context, req *CreateLiveReq) (r *CreateLiveResp, err error)
+	CreateLesson(ctx context.Context, req *CreateLessonReq) (r *CreateLessonResp, err error)
 
-	DelLive(ctx context.Context, req *DelLiveReq) (r *DelLiveResp, err error)
+	DelLesson(ctx context.Context, req *DelLessonReq) (r *DelLessonResp, err error)
 
 	ChangeUserInLive(ctx context.Context, req *ChangeUserInLiveReq) (r *ChangeUserInLiveResp, err error)
 
@@ -3461,38 +3697,38 @@ func (p *WebrtcLiveViewResult) Field0DeepEqual(src *ViewResp) bool {
 	return true
 }
 
-type WebrtcLiveCreateLiveArgs struct {
-	Req *CreateLiveReq `thrift:"req,1" frugal:"1,default,CreateLiveReq" json:"req"`
+type WebrtcLiveCreateLessonArgs struct {
+	Req *CreateLessonReq `thrift:"req,1" frugal:"1,default,CreateLessonReq" json:"req"`
 }
 
-func NewWebrtcLiveCreateLiveArgs() *WebrtcLiveCreateLiveArgs {
-	return &WebrtcLiveCreateLiveArgs{}
+func NewWebrtcLiveCreateLessonArgs() *WebrtcLiveCreateLessonArgs {
+	return &WebrtcLiveCreateLessonArgs{}
 }
 
-func (p *WebrtcLiveCreateLiveArgs) InitDefault() {
+func (p *WebrtcLiveCreateLessonArgs) InitDefault() {
 }
 
-var WebrtcLiveCreateLiveArgs_Req_DEFAULT *CreateLiveReq
+var WebrtcLiveCreateLessonArgs_Req_DEFAULT *CreateLessonReq
 
-func (p *WebrtcLiveCreateLiveArgs) GetReq() (v *CreateLiveReq) {
+func (p *WebrtcLiveCreateLessonArgs) GetReq() (v *CreateLessonReq) {
 	if !p.IsSetReq() {
-		return WebrtcLiveCreateLiveArgs_Req_DEFAULT
+		return WebrtcLiveCreateLessonArgs_Req_DEFAULT
 	}
 	return p.Req
 }
-func (p *WebrtcLiveCreateLiveArgs) SetReq(val *CreateLiveReq) {
+func (p *WebrtcLiveCreateLessonArgs) SetReq(val *CreateLessonReq) {
 	p.Req = val
 }
 
-var fieldIDToName_WebrtcLiveCreateLiveArgs = map[int16]string{
+var fieldIDToName_WebrtcLiveCreateLessonArgs = map[int16]string{
 	1: "req",
 }
 
-func (p *WebrtcLiveCreateLiveArgs) IsSetReq() bool {
+func (p *WebrtcLiveCreateLessonArgs) IsSetReq() bool {
 	return p.Req != nil
 }
 
-func (p *WebrtcLiveCreateLiveArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveCreateLessonArgs) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -3538,7 +3774,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLiveArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLessonArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -3548,8 +3784,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveCreateLiveArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewCreateLiveReq()
+func (p *WebrtcLiveCreateLessonArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewCreateLessonReq()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -3557,10 +3793,10 @@ func (p *WebrtcLiveCreateLiveArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *WebrtcLiveCreateLiveArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveCreateLessonArgs) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("CreateLive_args"); err != nil {
+	if err = oprot.WriteStructBegin("CreateLesson_args"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -3586,7 +3822,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveCreateLiveArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveCreateLessonArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -3603,15 +3839,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *WebrtcLiveCreateLiveArgs) String() string {
+func (p *WebrtcLiveCreateLessonArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("WebrtcLiveCreateLiveArgs(%+v)", *p)
+	return fmt.Sprintf("WebrtcLiveCreateLessonArgs(%+v)", *p)
 
 }
 
-func (p *WebrtcLiveCreateLiveArgs) DeepEqual(ano *WebrtcLiveCreateLiveArgs) bool {
+func (p *WebrtcLiveCreateLessonArgs) DeepEqual(ano *WebrtcLiveCreateLessonArgs) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -3623,7 +3859,7 @@ func (p *WebrtcLiveCreateLiveArgs) DeepEqual(ano *WebrtcLiveCreateLiveArgs) bool
 	return true
 }
 
-func (p *WebrtcLiveCreateLiveArgs) Field1DeepEqual(src *CreateLiveReq) bool {
+func (p *WebrtcLiveCreateLessonArgs) Field1DeepEqual(src *CreateLessonReq) bool {
 
 	if !p.Req.DeepEqual(src) {
 		return false
@@ -3631,38 +3867,38 @@ func (p *WebrtcLiveCreateLiveArgs) Field1DeepEqual(src *CreateLiveReq) bool {
 	return true
 }
 
-type WebrtcLiveCreateLiveResult struct {
-	Success *CreateLiveResp `thrift:"success,0,optional" frugal:"0,optional,CreateLiveResp" json:"success,omitempty"`
+type WebrtcLiveCreateLessonResult struct {
+	Success *CreateLessonResp `thrift:"success,0,optional" frugal:"0,optional,CreateLessonResp" json:"success,omitempty"`
 }
 
-func NewWebrtcLiveCreateLiveResult() *WebrtcLiveCreateLiveResult {
-	return &WebrtcLiveCreateLiveResult{}
+func NewWebrtcLiveCreateLessonResult() *WebrtcLiveCreateLessonResult {
+	return &WebrtcLiveCreateLessonResult{}
 }
 
-func (p *WebrtcLiveCreateLiveResult) InitDefault() {
+func (p *WebrtcLiveCreateLessonResult) InitDefault() {
 }
 
-var WebrtcLiveCreateLiveResult_Success_DEFAULT *CreateLiveResp
+var WebrtcLiveCreateLessonResult_Success_DEFAULT *CreateLessonResp
 
-func (p *WebrtcLiveCreateLiveResult) GetSuccess() (v *CreateLiveResp) {
+func (p *WebrtcLiveCreateLessonResult) GetSuccess() (v *CreateLessonResp) {
 	if !p.IsSetSuccess() {
-		return WebrtcLiveCreateLiveResult_Success_DEFAULT
+		return WebrtcLiveCreateLessonResult_Success_DEFAULT
 	}
 	return p.Success
 }
-func (p *WebrtcLiveCreateLiveResult) SetSuccess(x interface{}) {
-	p.Success = x.(*CreateLiveResp)
+func (p *WebrtcLiveCreateLessonResult) SetSuccess(x interface{}) {
+	p.Success = x.(*CreateLessonResp)
 }
 
-var fieldIDToName_WebrtcLiveCreateLiveResult = map[int16]string{
+var fieldIDToName_WebrtcLiveCreateLessonResult = map[int16]string{
 	0: "success",
 }
 
-func (p *WebrtcLiveCreateLiveResult) IsSetSuccess() bool {
+func (p *WebrtcLiveCreateLessonResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *WebrtcLiveCreateLiveResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveCreateLessonResult) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -3708,7 +3944,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLiveResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLessonResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -3718,8 +3954,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveCreateLiveResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewCreateLiveResp()
+func (p *WebrtcLiveCreateLessonResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewCreateLessonResp()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -3727,10 +3963,10 @@ func (p *WebrtcLiveCreateLiveResult) ReadField0(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *WebrtcLiveCreateLiveResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveCreateLessonResult) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("CreateLive_result"); err != nil {
+	if err = oprot.WriteStructBegin("CreateLesson_result"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -3756,7 +3992,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveCreateLiveResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveCreateLessonResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -3775,15 +4011,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *WebrtcLiveCreateLiveResult) String() string {
+func (p *WebrtcLiveCreateLessonResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("WebrtcLiveCreateLiveResult(%+v)", *p)
+	return fmt.Sprintf("WebrtcLiveCreateLessonResult(%+v)", *p)
 
 }
 
-func (p *WebrtcLiveCreateLiveResult) DeepEqual(ano *WebrtcLiveCreateLiveResult) bool {
+func (p *WebrtcLiveCreateLessonResult) DeepEqual(ano *WebrtcLiveCreateLessonResult) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -3795,7 +4031,7 @@ func (p *WebrtcLiveCreateLiveResult) DeepEqual(ano *WebrtcLiveCreateLiveResult) 
 	return true
 }
 
-func (p *WebrtcLiveCreateLiveResult) Field0DeepEqual(src *CreateLiveResp) bool {
+func (p *WebrtcLiveCreateLessonResult) Field0DeepEqual(src *CreateLessonResp) bool {
 
 	if !p.Success.DeepEqual(src) {
 		return false
@@ -3803,38 +4039,38 @@ func (p *WebrtcLiveCreateLiveResult) Field0DeepEqual(src *CreateLiveResp) bool {
 	return true
 }
 
-type WebrtcLiveDelLiveArgs struct {
-	Req *DelLiveReq `thrift:"req,1" frugal:"1,default,DelLiveReq" json:"req"`
+type WebrtcLiveDelLessonArgs struct {
+	Req *DelLessonReq `thrift:"req,1" frugal:"1,default,DelLessonReq" json:"req"`
 }
 
-func NewWebrtcLiveDelLiveArgs() *WebrtcLiveDelLiveArgs {
-	return &WebrtcLiveDelLiveArgs{}
+func NewWebrtcLiveDelLessonArgs() *WebrtcLiveDelLessonArgs {
+	return &WebrtcLiveDelLessonArgs{}
 }
 
-func (p *WebrtcLiveDelLiveArgs) InitDefault() {
+func (p *WebrtcLiveDelLessonArgs) InitDefault() {
 }
 
-var WebrtcLiveDelLiveArgs_Req_DEFAULT *DelLiveReq
+var WebrtcLiveDelLessonArgs_Req_DEFAULT *DelLessonReq
 
-func (p *WebrtcLiveDelLiveArgs) GetReq() (v *DelLiveReq) {
+func (p *WebrtcLiveDelLessonArgs) GetReq() (v *DelLessonReq) {
 	if !p.IsSetReq() {
-		return WebrtcLiveDelLiveArgs_Req_DEFAULT
+		return WebrtcLiveDelLessonArgs_Req_DEFAULT
 	}
 	return p.Req
 }
-func (p *WebrtcLiveDelLiveArgs) SetReq(val *DelLiveReq) {
+func (p *WebrtcLiveDelLessonArgs) SetReq(val *DelLessonReq) {
 	p.Req = val
 }
 
-var fieldIDToName_WebrtcLiveDelLiveArgs = map[int16]string{
+var fieldIDToName_WebrtcLiveDelLessonArgs = map[int16]string{
 	1: "req",
 }
 
-func (p *WebrtcLiveDelLiveArgs) IsSetReq() bool {
+func (p *WebrtcLiveDelLessonArgs) IsSetReq() bool {
 	return p.Req != nil
 }
 
-func (p *WebrtcLiveDelLiveArgs) Read(iprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveDelLessonArgs) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -3880,7 +4116,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLiveArgs[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLessonArgs[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -3890,8 +4126,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveDelLiveArgs) ReadField1(iprot thrift.TProtocol) error {
-	_field := NewDelLiveReq()
+func (p *WebrtcLiveDelLessonArgs) ReadField1(iprot thrift.TProtocol) error {
+	_field := NewDelLessonReq()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -3899,10 +4135,10 @@ func (p *WebrtcLiveDelLiveArgs) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *WebrtcLiveDelLiveArgs) Write(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveDelLessonArgs) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("DelLive_args"); err != nil {
+	if err = oprot.WriteStructBegin("DelLesson_args"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -3928,7 +4164,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveDelLiveArgs) writeField1(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveDelLessonArgs) writeField1(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("req", thrift.STRUCT, 1); err != nil {
 		goto WriteFieldBeginError
 	}
@@ -3945,15 +4181,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 
-func (p *WebrtcLiveDelLiveArgs) String() string {
+func (p *WebrtcLiveDelLessonArgs) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("WebrtcLiveDelLiveArgs(%+v)", *p)
+	return fmt.Sprintf("WebrtcLiveDelLessonArgs(%+v)", *p)
 
 }
 
-func (p *WebrtcLiveDelLiveArgs) DeepEqual(ano *WebrtcLiveDelLiveArgs) bool {
+func (p *WebrtcLiveDelLessonArgs) DeepEqual(ano *WebrtcLiveDelLessonArgs) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -3965,7 +4201,7 @@ func (p *WebrtcLiveDelLiveArgs) DeepEqual(ano *WebrtcLiveDelLiveArgs) bool {
 	return true
 }
 
-func (p *WebrtcLiveDelLiveArgs) Field1DeepEqual(src *DelLiveReq) bool {
+func (p *WebrtcLiveDelLessonArgs) Field1DeepEqual(src *DelLessonReq) bool {
 
 	if !p.Req.DeepEqual(src) {
 		return false
@@ -3973,38 +4209,38 @@ func (p *WebrtcLiveDelLiveArgs) Field1DeepEqual(src *DelLiveReq) bool {
 	return true
 }
 
-type WebrtcLiveDelLiveResult struct {
-	Success *DelLiveResp `thrift:"success,0,optional" frugal:"0,optional,DelLiveResp" json:"success,omitempty"`
+type WebrtcLiveDelLessonResult struct {
+	Success *DelLessonResp `thrift:"success,0,optional" frugal:"0,optional,DelLessonResp" json:"success,omitempty"`
 }
 
-func NewWebrtcLiveDelLiveResult() *WebrtcLiveDelLiveResult {
-	return &WebrtcLiveDelLiveResult{}
+func NewWebrtcLiveDelLessonResult() *WebrtcLiveDelLessonResult {
+	return &WebrtcLiveDelLessonResult{}
 }
 
-func (p *WebrtcLiveDelLiveResult) InitDefault() {
+func (p *WebrtcLiveDelLessonResult) InitDefault() {
 }
 
-var WebrtcLiveDelLiveResult_Success_DEFAULT *DelLiveResp
+var WebrtcLiveDelLessonResult_Success_DEFAULT *DelLessonResp
 
-func (p *WebrtcLiveDelLiveResult) GetSuccess() (v *DelLiveResp) {
+func (p *WebrtcLiveDelLessonResult) GetSuccess() (v *DelLessonResp) {
 	if !p.IsSetSuccess() {
-		return WebrtcLiveDelLiveResult_Success_DEFAULT
+		return WebrtcLiveDelLessonResult_Success_DEFAULT
 	}
 	return p.Success
 }
-func (p *WebrtcLiveDelLiveResult) SetSuccess(x interface{}) {
-	p.Success = x.(*DelLiveResp)
+func (p *WebrtcLiveDelLessonResult) SetSuccess(x interface{}) {
+	p.Success = x.(*DelLessonResp)
 }
 
-var fieldIDToName_WebrtcLiveDelLiveResult = map[int16]string{
+var fieldIDToName_WebrtcLiveDelLessonResult = map[int16]string{
 	0: "success",
 }
 
-func (p *WebrtcLiveDelLiveResult) IsSetSuccess() bool {
+func (p *WebrtcLiveDelLessonResult) IsSetSuccess() bool {
 	return p.Success != nil
 }
 
-func (p *WebrtcLiveDelLiveResult) Read(iprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveDelLessonResult) Read(iprot thrift.TProtocol) (err error) {
 
 	var fieldTypeId thrift.TType
 	var fieldId int16
@@ -4050,7 +4286,7 @@ ReadStructBeginError:
 ReadFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLiveResult[fieldId]), err)
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLessonResult[fieldId]), err)
 SkipFieldError:
 	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 
@@ -4060,8 +4296,8 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveDelLiveResult) ReadField0(iprot thrift.TProtocol) error {
-	_field := NewDelLiveResp()
+func (p *WebrtcLiveDelLessonResult) ReadField0(iprot thrift.TProtocol) error {
+	_field := NewDelLessonResp()
 	if err := _field.Read(iprot); err != nil {
 		return err
 	}
@@ -4069,10 +4305,10 @@ func (p *WebrtcLiveDelLiveResult) ReadField0(iprot thrift.TProtocol) error {
 	return nil
 }
 
-func (p *WebrtcLiveDelLiveResult) Write(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveDelLessonResult) Write(oprot thrift.TProtocol) (err error) {
 
 	var fieldId int16
-	if err = oprot.WriteStructBegin("DelLive_result"); err != nil {
+	if err = oprot.WriteStructBegin("DelLesson_result"); err != nil {
 		goto WriteStructBeginError
 	}
 	if p != nil {
@@ -4098,7 +4334,7 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *WebrtcLiveDelLiveResult) writeField0(oprot thrift.TProtocol) (err error) {
+func (p *WebrtcLiveDelLessonResult) writeField0(oprot thrift.TProtocol) (err error) {
 	if p.IsSetSuccess() {
 		if err = oprot.WriteFieldBegin("success", thrift.STRUCT, 0); err != nil {
 			goto WriteFieldBeginError
@@ -4117,15 +4353,15 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 0 end error: ", p), err)
 }
 
-func (p *WebrtcLiveDelLiveResult) String() string {
+func (p *WebrtcLiveDelLessonResult) String() string {
 	if p == nil {
 		return "<nil>"
 	}
-	return fmt.Sprintf("WebrtcLiveDelLiveResult(%+v)", *p)
+	return fmt.Sprintf("WebrtcLiveDelLessonResult(%+v)", *p)
 
 }
 
-func (p *WebrtcLiveDelLiveResult) DeepEqual(ano *WebrtcLiveDelLiveResult) bool {
+func (p *WebrtcLiveDelLessonResult) DeepEqual(ano *WebrtcLiveDelLessonResult) bool {
 	if p == ano {
 		return true
 	} else if p == nil || ano == nil {
@@ -4137,7 +4373,7 @@ func (p *WebrtcLiveDelLiveResult) DeepEqual(ano *WebrtcLiveDelLiveResult) bool {
 	return true
 }
 
-func (p *WebrtcLiveDelLiveResult) Field0DeepEqual(src *DelLiveResp) bool {
+func (p *WebrtcLiveDelLessonResult) Field0DeepEqual(src *DelLessonResp) bool {
 
 	if !p.Success.DeepEqual(src) {
 		return false

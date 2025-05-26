@@ -33,12 +33,15 @@ func InitRouter() {
 		//livego
 		v2.POST("/create_live", service.CreateLive)
 		v2.DELETE("/close_live", service.CloseLive)
+		//前端接口，进入or退出直播间直接调用
 		v2.PUT("/change_user_in_live", service.ChangeUserInLive)
+		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)
 		//这个是直播间在线人数信息
+		//TODO:明天实现以下原livego内容
 		v2.GET("/select_lesson", service.SelectLessonInfo)
 		//MYSQL中课程信息
 		v2.GET("/get_lesson", service.GetLessonInfo)
-		v2.GET("record_lesson", service.RecordLesson)
+		v2.GET("/record_lesson", service.RecordLesson)
 		v2.POST("/create_signin", service.CreateSignIn)
 		v2.PUT("/signin", service.SignIn)
 		v2.GET("/select_signin", service.SelectSignIn)
@@ -48,9 +51,12 @@ func InitRouter() {
 		//webrtc
 		v2.POST("/broadcast", service.Broadcast)
 		v2.POST("/view", service.View)
+		v2.POST("/create_lesson_webrtc", service.CreateLesson)
+		v2.DELETE("/del_lesson_webrtc", service.DelLesson)
+		v2.PUT("/change_user_to_lesson_webrtc", service.ChangeUserToLesson_WebRTC)
+		v2.GET("/change_user_in_live_webrtc", service.ChangeUserInLive_WebRTC)
 
 		v2.POST("/create_question", service.CreateQuestion)
-		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)
 		v2.DELETE("/del_question", service.DelQuestion)
 
 		v2.POST("/chat_agent", service.ChatWithAgent)

@@ -71,6 +71,20 @@ func (p *BroadcastReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField3(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -99,11 +113,25 @@ func (p *BroadcastReq) FastReadField1(buf []byte) (int, error) {
 		offset += l
 		_field = v
 	}
-	p.LessonId = _field
+	p.Userid = _field
 	return offset, nil
 }
 
 func (p *BroadcastReq) FastReadField2(buf []byte) (int, error) {
+	offset := 0
+
+	var _field string
+	if v, l, err := thrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+		_field = v
+	}
+	p.LessonId = _field
+	return offset, nil
+}
+
+func (p *BroadcastReq) FastReadField3(buf []byte) (int, error) {
 	offset := 0
 
 	var _field string
@@ -126,6 +154,7 @@ func (p *BroadcastReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
 		offset += p.fastWriteField2(buf[offset:], w)
+		offset += p.fastWriteField3(buf[offset:], w)
 	}
 	offset += thrift.Binary.WriteFieldStop(buf[offset:])
 	return offset
@@ -136,6 +165,7 @@ func (p *BroadcastReq) BLength() int {
 	if p != nil {
 		l += p.field1Length()
 		l += p.field2Length()
+		l += p.field3Length()
 	}
 	l += thrift.Binary.FieldStopLength()
 	return l
@@ -144,13 +174,20 @@ func (p *BroadcastReq) BLength() int {
 func (p *BroadcastReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.LessonId)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Userid)
 	return offset
 }
 
 func (p *BroadcastReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 2)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.LessonId)
+	return offset
+}
+
+func (p *BroadcastReq) fastWriteField3(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 3)
 	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.B64offer)
 	return offset
 }
@@ -158,11 +195,18 @@ func (p *BroadcastReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
 func (p *BroadcastReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.LessonId)
+	l += thrift.Binary.StringLengthNocopy(p.Userid)
 	return l
 }
 
 func (p *BroadcastReq) field2Length() int {
+	l := 0
+	l += thrift.Binary.FieldBeginLength()
+	l += thrift.Binary.StringLengthNocopy(p.LessonId)
+	return l
+}
+
+func (p *BroadcastReq) field3Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.B64offer)
@@ -311,6 +355,20 @@ func (p *ViewReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField3(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -339,11 +397,25 @@ func (p *ViewReq) FastReadField1(buf []byte) (int, error) {
 		offset += l
 		_field = v
 	}
-	p.LessonId = _field
+	p.Userid = _field
 	return offset, nil
 }
 
 func (p *ViewReq) FastReadField2(buf []byte) (int, error) {
+	offset := 0
+
+	var _field string
+	if v, l, err := thrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+		_field = v
+	}
+	p.LessonId = _field
+	return offset, nil
+}
+
+func (p *ViewReq) FastReadField3(buf []byte) (int, error) {
 	offset := 0
 
 	var _field string
@@ -366,6 +438,7 @@ func (p *ViewReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
 		offset += p.fastWriteField2(buf[offset:], w)
+		offset += p.fastWriteField3(buf[offset:], w)
 	}
 	offset += thrift.Binary.WriteFieldStop(buf[offset:])
 	return offset
@@ -376,6 +449,7 @@ func (p *ViewReq) BLength() int {
 	if p != nil {
 		l += p.field1Length()
 		l += p.field2Length()
+		l += p.field3Length()
 	}
 	l += thrift.Binary.FieldStopLength()
 	return l
@@ -384,13 +458,20 @@ func (p *ViewReq) BLength() int {
 func (p *ViewReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.LessonId)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Userid)
 	return offset
 }
 
 func (p *ViewReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 2)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.LessonId)
+	return offset
+}
+
+func (p *ViewReq) fastWriteField3(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 3)
 	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.B64offer)
 	return offset
 }
@@ -398,11 +479,18 @@ func (p *ViewReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
 func (p *ViewReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.LessonId)
+	l += thrift.Binary.StringLengthNocopy(p.Userid)
 	return l
 }
 
 func (p *ViewReq) field2Length() int {
+	l := 0
+	l += thrift.Binary.FieldBeginLength()
+	l += thrift.Binary.StringLengthNocopy(p.LessonId)
+	return l
+}
+
+func (p *ViewReq) field3Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.B64offer)
@@ -506,7 +594,7 @@ func (p *ViewResp) field1Length() int {
 	return l
 }
 
-func (p *CreateLiveReq) FastRead(buf []byte) (int, error) {
+func (p *CreateLessonReq) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -551,6 +639,20 @@ func (p *CreateLiveReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField3(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -564,12 +666,12 @@ func (p *CreateLiveReq) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLiveReq[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLessonReq[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *CreateLiveReq) FastReadField1(buf []byte) (int, error) {
+func (p *CreateLessonReq) FastReadField1(buf []byte) (int, error) {
 	offset := 0
 
 	var _field string
@@ -583,7 +685,7 @@ func (p *CreateLiveReq) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *CreateLiveReq) FastReadField2(buf []byte) (int, error) {
+func (p *CreateLessonReq) FastReadField2(buf []byte) (int, error) {
 	offset := 0
 
 	var _field string
@@ -597,59 +699,89 @@ func (p *CreateLiveReq) FastReadField2(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *CreateLiveReq) FastWrite(buf []byte) int {
+func (p *CreateLessonReq) FastReadField3(buf []byte) (int, error) {
+	offset := 0
+
+	var _field string
+	if v, l, err := thrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+		_field = v
+	}
+	p.Description = _field
+	return offset, nil
+}
+
+func (p *CreateLessonReq) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *CreateLiveReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *CreateLessonReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
 		offset += p.fastWriteField2(buf[offset:], w)
+		offset += p.fastWriteField3(buf[offset:], w)
 	}
 	offset += thrift.Binary.WriteFieldStop(buf[offset:])
 	return offset
 }
 
-func (p *CreateLiveReq) BLength() int {
+func (p *CreateLessonReq) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field1Length()
 		l += p.field2Length()
+		l += p.field3Length()
 	}
 	l += thrift.Binary.FieldStopLength()
 	return l
 }
 
-func (p *CreateLiveReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
+func (p *CreateLessonReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
 	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Userid)
 	return offset
 }
 
-func (p *CreateLiveReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
+func (p *CreateLessonReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 2)
 	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.LessonName)
 	return offset
 }
 
-func (p *CreateLiveReq) field1Length() int {
+func (p *CreateLessonReq) fastWriteField3(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 3)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Description)
+	return offset
+}
+
+func (p *CreateLessonReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.Userid)
 	return l
 }
 
-func (p *CreateLiveReq) field2Length() int {
+func (p *CreateLessonReq) field2Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.LessonName)
 	return l
 }
 
-func (p *CreateLiveResp) FastRead(buf []byte) (int, error) {
+func (p *CreateLessonReq) field3Length() int {
+	l := 0
+	l += thrift.Binary.FieldBeginLength()
+	l += thrift.Binary.StringLengthNocopy(p.Description)
+	return l
+}
+
+func (p *CreateLessonResp) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -693,12 +825,12 @@ func (p *CreateLiveResp) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLiveResp[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_CreateLessonResp[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *CreateLiveResp) FastReadField1(buf []byte) (int, error) {
+func (p *CreateLessonResp) FastReadField1(buf []byte) (int, error) {
 	offset := 0
 	_field := common.NewResp()
 	if l, err := _field.FastRead(buf[offset:]); err != nil {
@@ -710,11 +842,11 @@ func (p *CreateLiveResp) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *CreateLiveResp) FastWrite(buf []byte) int {
+func (p *CreateLessonResp) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *CreateLiveResp) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *CreateLessonResp) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
@@ -723,7 +855,7 @@ func (p *CreateLiveResp) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int 
 	return offset
 }
 
-func (p *CreateLiveResp) BLength() int {
+func (p *CreateLessonResp) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field1Length()
@@ -732,21 +864,21 @@ func (p *CreateLiveResp) BLength() int {
 	return l
 }
 
-func (p *CreateLiveResp) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
+func (p *CreateLessonResp) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 1)
 	offset += p.Resp.FastWriteNocopy(buf[offset:], w)
 	return offset
 }
 
-func (p *CreateLiveResp) field1Length() int {
+func (p *CreateLessonResp) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += p.Resp.BLength()
 	return l
 }
 
-func (p *DelLiveReq) FastRead(buf []byte) (int, error) {
+func (p *DelLessonReq) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -804,12 +936,12 @@ func (p *DelLiveReq) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLiveReq[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLessonReq[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *DelLiveReq) FastReadField1(buf []byte) (int, error) {
+func (p *DelLessonReq) FastReadField1(buf []byte) (int, error) {
 	offset := 0
 
 	var _field string
@@ -823,7 +955,7 @@ func (p *DelLiveReq) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *DelLiveReq) FastReadField2(buf []byte) (int, error) {
+func (p *DelLessonReq) FastReadField2(buf []byte) (int, error) {
 	offset := 0
 
 	var _field string
@@ -837,11 +969,11 @@ func (p *DelLiveReq) FastReadField2(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *DelLiveReq) FastWrite(buf []byte) int {
+func (p *DelLessonReq) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *DelLiveReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *DelLessonReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
@@ -851,7 +983,7 @@ func (p *DelLiveReq) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	return offset
 }
 
-func (p *DelLiveReq) BLength() int {
+func (p *DelLessonReq) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field1Length()
@@ -861,35 +993,35 @@ func (p *DelLiveReq) BLength() int {
 	return l
 }
 
-func (p *DelLiveReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
+func (p *DelLessonReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
 	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Userid)
 	return offset
 }
 
-func (p *DelLiveReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
+func (p *DelLessonReq) fastWriteField2(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 2)
 	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Lessonid)
 	return offset
 }
 
-func (p *DelLiveReq) field1Length() int {
+func (p *DelLessonReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.Userid)
 	return l
 }
 
-func (p *DelLiveReq) field2Length() int {
+func (p *DelLessonReq) field2Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.Lessonid)
 	return l
 }
 
-func (p *DelLiveResp) FastRead(buf []byte) (int, error) {
+func (p *DelLessonResp) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -933,12 +1065,12 @@ func (p *DelLiveResp) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLiveResp[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_DelLessonResp[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *DelLiveResp) FastReadField1(buf []byte) (int, error) {
+func (p *DelLessonResp) FastReadField1(buf []byte) (int, error) {
 	offset := 0
 	_field := common.NewResp()
 	if l, err := _field.FastRead(buf[offset:]); err != nil {
@@ -950,11 +1082,11 @@ func (p *DelLiveResp) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *DelLiveResp) FastWrite(buf []byte) int {
+func (p *DelLessonResp) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *DelLiveResp) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *DelLessonResp) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
@@ -963,7 +1095,7 @@ func (p *DelLiveResp) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	return offset
 }
 
-func (p *DelLiveResp) BLength() int {
+func (p *DelLessonResp) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field1Length()
@@ -972,14 +1104,14 @@ func (p *DelLiveResp) BLength() int {
 	return l
 }
 
-func (p *DelLiveResp) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
+func (p *DelLessonResp) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 1)
 	offset += p.Resp.FastWriteNocopy(buf[offset:], w)
 	return offset
 }
 
-func (p *DelLiveResp) field1Length() int {
+func (p *DelLessonResp) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += p.Resp.BLength()
@@ -1073,7 +1205,7 @@ func (p *ChangeUserInLiveReq) FastReadField1(buf []byte) (int, error) {
 		offset += l
 		_field = v
 	}
-	p.Livename = _field
+	p.Lessonid = _field
 	return offset, nil
 }
 
@@ -1134,7 +1266,7 @@ func (p *ChangeUserInLiveReq) BLength() int {
 func (p *ChangeUserInLiveReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Livename)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Lessonid)
 	return offset
 }
 
@@ -1155,7 +1287,7 @@ func (p *ChangeUserInLiveReq) fastWriteField3(buf []byte, w thrift.NocopyWriter)
 func (p *ChangeUserInLiveReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.Livename)
+	l += thrift.Binary.StringLengthNocopy(p.Lessonid)
 	return l
 }
 
@@ -1315,6 +1447,20 @@ func (p *ChangeUserToLessonReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField3(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = thrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -1361,6 +1507,20 @@ func (p *ChangeUserToLessonReq) FastReadField2(buf []byte) (int, error) {
 	return offset, nil
 }
 
+func (p *ChangeUserToLessonReq) FastReadField3(buf []byte) (int, error) {
+	offset := 0
+
+	var _field string
+	if v, l, err := thrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+		_field = v
+	}
+	p.Options = _field
+	return offset, nil
+}
+
 func (p *ChangeUserToLessonReq) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
@@ -1370,6 +1530,7 @@ func (p *ChangeUserToLessonReq) FastWriteNocopy(buf []byte, w thrift.NocopyWrite
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
 		offset += p.fastWriteField2(buf[offset:], w)
+		offset += p.fastWriteField3(buf[offset:], w)
 	}
 	offset += thrift.Binary.WriteFieldStop(buf[offset:])
 	return offset
@@ -1380,6 +1541,7 @@ func (p *ChangeUserToLessonReq) BLength() int {
 	if p != nil {
 		l += p.field1Length()
 		l += p.field2Length()
+		l += p.field3Length()
 	}
 	l += thrift.Binary.FieldStopLength()
 	return l
@@ -1399,6 +1561,13 @@ func (p *ChangeUserToLessonReq) fastWriteField2(buf []byte, w thrift.NocopyWrite
 	return offset
 }
 
+func (p *ChangeUserToLessonReq) fastWriteField3(buf []byte, w thrift.NocopyWriter) int {
+	offset := 0
+	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 3)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Options)
+	return offset
+}
+
 func (p *ChangeUserToLessonReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
@@ -1410,6 +1579,13 @@ func (p *ChangeUserToLessonReq) field2Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += thrift.Binary.StringLengthNocopy(p.Lessonid)
+	return l
+}
+
+func (p *ChangeUserToLessonReq) field3Length() int {
+	l := 0
+	l += thrift.Binary.FieldBeginLength()
+	l += thrift.Binary.StringLengthNocopy(p.Options)
 	return l
 }
 
@@ -2102,7 +2278,7 @@ func (p *WebrtcLiveViewResult) field0Length() int {
 	return l
 }
 
-func (p *WebrtcLiveCreateLiveArgs) FastRead(buf []byte) (int, error) {
+func (p *WebrtcLiveCreateLessonArgs) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -2146,14 +2322,14 @@ func (p *WebrtcLiveCreateLiveArgs) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLiveArgs[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLessonArgs[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *WebrtcLiveCreateLiveArgs) FastReadField1(buf []byte) (int, error) {
+func (p *WebrtcLiveCreateLessonArgs) FastReadField1(buf []byte) (int, error) {
 	offset := 0
-	_field := NewCreateLiveReq()
+	_field := NewCreateLessonReq()
 	if l, err := _field.FastRead(buf[offset:]); err != nil {
 		return offset, err
 	} else {
@@ -2163,11 +2339,11 @@ func (p *WebrtcLiveCreateLiveArgs) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *WebrtcLiveCreateLiveArgs) FastWrite(buf []byte) int {
+func (p *WebrtcLiveCreateLessonArgs) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *WebrtcLiveCreateLiveArgs) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveCreateLessonArgs) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
@@ -2176,7 +2352,7 @@ func (p *WebrtcLiveCreateLiveArgs) FastWriteNocopy(buf []byte, w thrift.NocopyWr
 	return offset
 }
 
-func (p *WebrtcLiveCreateLiveArgs) BLength() int {
+func (p *WebrtcLiveCreateLessonArgs) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field1Length()
@@ -2185,21 +2361,21 @@ func (p *WebrtcLiveCreateLiveArgs) BLength() int {
 	return l
 }
 
-func (p *WebrtcLiveCreateLiveArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveCreateLessonArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 1)
 	offset += p.Req.FastWriteNocopy(buf[offset:], w)
 	return offset
 }
 
-func (p *WebrtcLiveCreateLiveArgs) field1Length() int {
+func (p *WebrtcLiveCreateLessonArgs) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += p.Req.BLength()
 	return l
 }
 
-func (p *WebrtcLiveCreateLiveResult) FastRead(buf []byte) (int, error) {
+func (p *WebrtcLiveCreateLessonResult) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -2243,14 +2419,14 @@ func (p *WebrtcLiveCreateLiveResult) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLiveResult[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveCreateLessonResult[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *WebrtcLiveCreateLiveResult) FastReadField0(buf []byte) (int, error) {
+func (p *WebrtcLiveCreateLessonResult) FastReadField0(buf []byte) (int, error) {
 	offset := 0
-	_field := NewCreateLiveResp()
+	_field := NewCreateLessonResp()
 	if l, err := _field.FastRead(buf[offset:]); err != nil {
 		return offset, err
 	} else {
@@ -2260,11 +2436,11 @@ func (p *WebrtcLiveCreateLiveResult) FastReadField0(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *WebrtcLiveCreateLiveResult) FastWrite(buf []byte) int {
+func (p *WebrtcLiveCreateLessonResult) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *WebrtcLiveCreateLiveResult) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveCreateLessonResult) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField0(buf[offset:], w)
@@ -2273,7 +2449,7 @@ func (p *WebrtcLiveCreateLiveResult) FastWriteNocopy(buf []byte, w thrift.Nocopy
 	return offset
 }
 
-func (p *WebrtcLiveCreateLiveResult) BLength() int {
+func (p *WebrtcLiveCreateLessonResult) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field0Length()
@@ -2282,7 +2458,7 @@ func (p *WebrtcLiveCreateLiveResult) BLength() int {
 	return l
 }
 
-func (p *WebrtcLiveCreateLiveResult) fastWriteField0(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveCreateLessonResult) fastWriteField0(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p.IsSetSuccess() {
 		offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 0)
@@ -2291,7 +2467,7 @@ func (p *WebrtcLiveCreateLiveResult) fastWriteField0(buf []byte, w thrift.Nocopy
 	return offset
 }
 
-func (p *WebrtcLiveCreateLiveResult) field0Length() int {
+func (p *WebrtcLiveCreateLessonResult) field0Length() int {
 	l := 0
 	if p.IsSetSuccess() {
 		l += thrift.Binary.FieldBeginLength()
@@ -2300,7 +2476,7 @@ func (p *WebrtcLiveCreateLiveResult) field0Length() int {
 	return l
 }
 
-func (p *WebrtcLiveDelLiveArgs) FastRead(buf []byte) (int, error) {
+func (p *WebrtcLiveDelLessonArgs) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -2344,14 +2520,14 @@ func (p *WebrtcLiveDelLiveArgs) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLiveArgs[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLessonArgs[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *WebrtcLiveDelLiveArgs) FastReadField1(buf []byte) (int, error) {
+func (p *WebrtcLiveDelLessonArgs) FastReadField1(buf []byte) (int, error) {
 	offset := 0
-	_field := NewDelLiveReq()
+	_field := NewDelLessonReq()
 	if l, err := _field.FastRead(buf[offset:]); err != nil {
 		return offset, err
 	} else {
@@ -2361,11 +2537,11 @@ func (p *WebrtcLiveDelLiveArgs) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *WebrtcLiveDelLiveArgs) FastWrite(buf []byte) int {
+func (p *WebrtcLiveDelLessonArgs) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *WebrtcLiveDelLiveArgs) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveDelLessonArgs) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], w)
@@ -2374,7 +2550,7 @@ func (p *WebrtcLiveDelLiveArgs) FastWriteNocopy(buf []byte, w thrift.NocopyWrite
 	return offset
 }
 
-func (p *WebrtcLiveDelLiveArgs) BLength() int {
+func (p *WebrtcLiveDelLessonArgs) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field1Length()
@@ -2383,21 +2559,21 @@ func (p *WebrtcLiveDelLiveArgs) BLength() int {
 	return l
 }
 
-func (p *WebrtcLiveDelLiveArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveDelLessonArgs) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 1)
 	offset += p.Req.FastWriteNocopy(buf[offset:], w)
 	return offset
 }
 
-func (p *WebrtcLiveDelLiveArgs) field1Length() int {
+func (p *WebrtcLiveDelLessonArgs) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
 	l += p.Req.BLength()
 	return l
 }
 
-func (p *WebrtcLiveDelLiveResult) FastRead(buf []byte) (int, error) {
+func (p *WebrtcLiveDelLessonResult) FastRead(buf []byte) (int, error) {
 
 	var err error
 	var offset int
@@ -2441,14 +2617,14 @@ func (p *WebrtcLiveDelLiveResult) FastRead(buf []byte) (int, error) {
 ReadFieldBeginError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
 ReadFieldError:
-	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLiveResult[fieldId]), err)
+	return offset, thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_WebrtcLiveDelLessonResult[fieldId]), err)
 SkipFieldError:
 	return offset, thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
 }
 
-func (p *WebrtcLiveDelLiveResult) FastReadField0(buf []byte) (int, error) {
+func (p *WebrtcLiveDelLessonResult) FastReadField0(buf []byte) (int, error) {
 	offset := 0
-	_field := NewDelLiveResp()
+	_field := NewDelLessonResp()
 	if l, err := _field.FastRead(buf[offset:]); err != nil {
 		return offset, err
 	} else {
@@ -2458,11 +2634,11 @@ func (p *WebrtcLiveDelLiveResult) FastReadField0(buf []byte) (int, error) {
 	return offset, nil
 }
 
-func (p *WebrtcLiveDelLiveResult) FastWrite(buf []byte) int {
+func (p *WebrtcLiveDelLessonResult) FastWrite(buf []byte) int {
 	return p.FastWriteNocopy(buf, nil)
 }
 
-func (p *WebrtcLiveDelLiveResult) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveDelLessonResult) FastWriteNocopy(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p != nil {
 		offset += p.fastWriteField0(buf[offset:], w)
@@ -2471,7 +2647,7 @@ func (p *WebrtcLiveDelLiveResult) FastWriteNocopy(buf []byte, w thrift.NocopyWri
 	return offset
 }
 
-func (p *WebrtcLiveDelLiveResult) BLength() int {
+func (p *WebrtcLiveDelLessonResult) BLength() int {
 	l := 0
 	if p != nil {
 		l += p.field0Length()
@@ -2480,7 +2656,7 @@ func (p *WebrtcLiveDelLiveResult) BLength() int {
 	return l
 }
 
-func (p *WebrtcLiveDelLiveResult) fastWriteField0(buf []byte, w thrift.NocopyWriter) int {
+func (p *WebrtcLiveDelLessonResult) fastWriteField0(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	if p.IsSetSuccess() {
 		offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRUCT, 0)
@@ -2489,7 +2665,7 @@ func (p *WebrtcLiveDelLiveResult) fastWriteField0(buf []byte, w thrift.NocopyWri
 	return offset
 }
 
-func (p *WebrtcLiveDelLiveResult) field0Length() int {
+func (p *WebrtcLiveDelLessonResult) field0Length() int {
 	l := 0
 	if p.IsSetSuccess() {
 		l += thrift.Binary.FieldBeginLength()
@@ -3108,19 +3284,19 @@ func (p *WebrtcLiveViewResult) GetResult() interface{} {
 	return p.Success
 }
 
-func (p *WebrtcLiveCreateLiveArgs) GetFirstArgument() interface{} {
+func (p *WebrtcLiveCreateLessonArgs) GetFirstArgument() interface{} {
 	return p.Req
 }
 
-func (p *WebrtcLiveCreateLiveResult) GetResult() interface{} {
+func (p *WebrtcLiveCreateLessonResult) GetResult() interface{} {
 	return p.Success
 }
 
-func (p *WebrtcLiveDelLiveArgs) GetFirstArgument() interface{} {
+func (p *WebrtcLiveDelLessonArgs) GetFirstArgument() interface{} {
 	return p.Req
 }
 
-func (p *WebrtcLiveDelLiveResult) GetResult() interface{} {
+func (p *WebrtcLiveDelLessonResult) GetResult() interface{} {
 	return p.Success
 }
 

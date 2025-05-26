@@ -13,8 +13,8 @@ import (
 type Client interface {
 	Broadcast(ctx context.Context, req *webrtc_live.BroadcastReq, callOptions ...callopt.Option) (r *webrtc_live.BroadcastResp, err error)
 	View(ctx context.Context, req *webrtc_live.ViewReq, callOptions ...callopt.Option) (r *webrtc_live.ViewResp, err error)
-	CreateLive(ctx context.Context, req *webrtc_live.CreateLiveReq, callOptions ...callopt.Option) (r *webrtc_live.CreateLiveResp, err error)
-	DelLive(ctx context.Context, req *webrtc_live.DelLiveReq, callOptions ...callopt.Option) (r *webrtc_live.DelLiveResp, err error)
+	CreateLesson(ctx context.Context, req *webrtc_live.CreateLessonReq, callOptions ...callopt.Option) (r *webrtc_live.CreateLessonResp, err error)
+	DelLesson(ctx context.Context, req *webrtc_live.DelLessonReq, callOptions ...callopt.Option) (r *webrtc_live.DelLessonResp, err error)
 	ChangeUserInLive(ctx context.Context, req *webrtc_live.ChangeUserInLiveReq, callOptions ...callopt.Option) (r *webrtc_live.ChangeUserInLiveResp, err error)
 	ChangeUserToLesson(ctx context.Context, req *webrtc_live.ChangeUserToLessonReq, callOptions ...callopt.Option) (r *webrtc_live.ChangeUserToLessonResp, err error)
 	GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonInfoByIdResp, err error)
@@ -59,14 +59,14 @@ func (p *kWebrtcLiveClient) View(ctx context.Context, req *webrtc_live.ViewReq, 
 	return p.kClient.View(ctx, req)
 }
 
-func (p *kWebrtcLiveClient) CreateLive(ctx context.Context, req *webrtc_live.CreateLiveReq, callOptions ...callopt.Option) (r *webrtc_live.CreateLiveResp, err error) {
+func (p *kWebrtcLiveClient) CreateLesson(ctx context.Context, req *webrtc_live.CreateLessonReq, callOptions ...callopt.Option) (r *webrtc_live.CreateLessonResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.CreateLive(ctx, req)
+	return p.kClient.CreateLesson(ctx, req)
 }
 
-func (p *kWebrtcLiveClient) DelLive(ctx context.Context, req *webrtc_live.DelLiveReq, callOptions ...callopt.Option) (r *webrtc_live.DelLiveResp, err error) {
+func (p *kWebrtcLiveClient) DelLesson(ctx context.Context, req *webrtc_live.DelLessonReq, callOptions ...callopt.Option) (r *webrtc_live.DelLessonResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
-	return p.kClient.DelLive(ctx, req)
+	return p.kClient.DelLesson(ctx, req)
 }
 
 func (p *kWebrtcLiveClient) ChangeUserInLive(ctx context.Context, req *webrtc_live.ChangeUserInLiveReq, callOptions ...callopt.Option) (r *webrtc_live.ChangeUserInLiveResp, err error) {

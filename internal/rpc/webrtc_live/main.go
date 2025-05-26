@@ -14,6 +14,8 @@ import (
 func main() {
 	initialize.SetupViper()
 	db := initialize.InitGormDB()
+	rdb := initialize.InitRedisDB()
+	countsha, membersha, delsha, selectsha := initialize.InitScript(rdb)
 	initialize.InitWebRTCEngine()
 
 	option := flag.Parse()
@@ -22,13 +24,18 @@ func main() {
 		log.Println("未自动建表")
 	}
 
+	userCli, err := NewUserClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9005")
-	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DB: db},
+	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DB: db, userCli: userCli, RDB: rdb, countsha: countsha, membersha: membersha, selectsha: selectsha, delsha: delsha},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{

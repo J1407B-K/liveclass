@@ -141,7 +141,7 @@ func ChangeUserInLive(c context.Context, ctx *app.RequestContext) {
 
 	userid := data.(*model.User).UserId
 
-	livename := ctx.PostForm("livename")
+	lid := ctx.PostForm("lesson_id")
 	options := ctx.PostForm("options")
 	if options != "add" && options != "del" {
 		ctx.JSON(http.StatusBadRequest, utils.H{
@@ -153,7 +153,7 @@ func ChangeUserInLive(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 	resp, err := global.Clients.LiveClient.ChangeUserInLive(c, &live.ChangeUserInLiveReq{
-		Livename: livename,
+		Lessonid: lid,
 		Userid:   userid,
 		Options:  options,
 	})

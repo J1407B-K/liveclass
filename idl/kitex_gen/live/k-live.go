@@ -637,7 +637,7 @@ func (p *ChangeUserInLiveReq) FastReadField1(buf []byte) (int, error) {
 		offset += l
 		_field = v
 	}
-	p.Livename = _field
+	p.Lessonid = _field
 	return offset, nil
 }
 
@@ -698,7 +698,7 @@ func (p *ChangeUserInLiveReq) BLength() int {
 func (p *ChangeUserInLiveReq) fastWriteField1(buf []byte, w thrift.NocopyWriter) int {
 	offset := 0
 	offset += thrift.Binary.WriteFieldBegin(buf[offset:], thrift.STRING, 1)
-	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Livename)
+	offset += thrift.Binary.WriteStringNocopy(buf[offset:], w, p.Lessonid)
 	return offset
 }
 
@@ -719,7 +719,7 @@ func (p *ChangeUserInLiveReq) fastWriteField3(buf []byte, w thrift.NocopyWriter)
 func (p *ChangeUserInLiveReq) field1Length() int {
 	l := 0
 	l += thrift.Binary.FieldBeginLength()
-	l += thrift.Binary.StringLengthNocopy(p.Livename)
+	l += thrift.Binary.StringLengthNocopy(p.Lessonid)
 	return l
 }
 

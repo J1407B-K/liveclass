@@ -856,7 +856,7 @@ func (p *CloseLiveResp) Field1DeepEqual(src *common.Resp) bool {
 }
 
 type ChangeUserInLiveReq struct {
-	Livename string `thrift:"livename,1" frugal:"1,default,string" json:"livename"`
+	Lessonid string `thrift:"lessonid,1" frugal:"1,default,string" json:"lessonid"`
 	Userid   string `thrift:"userid,2" frugal:"2,default,string" json:"userid"`
 	Options  string `thrift:"options,3" frugal:"3,default,string" json:"options"`
 }
@@ -868,8 +868,8 @@ func NewChangeUserInLiveReq() *ChangeUserInLiveReq {
 func (p *ChangeUserInLiveReq) InitDefault() {
 }
 
-func (p *ChangeUserInLiveReq) GetLivename() (v string) {
-	return p.Livename
+func (p *ChangeUserInLiveReq) GetLessonid() (v string) {
+	return p.Lessonid
 }
 
 func (p *ChangeUserInLiveReq) GetUserid() (v string) {
@@ -879,8 +879,8 @@ func (p *ChangeUserInLiveReq) GetUserid() (v string) {
 func (p *ChangeUserInLiveReq) GetOptions() (v string) {
 	return p.Options
 }
-func (p *ChangeUserInLiveReq) SetLivename(val string) {
-	p.Livename = val
+func (p *ChangeUserInLiveReq) SetLessonid(val string) {
+	p.Lessonid = val
 }
 func (p *ChangeUserInLiveReq) SetUserid(val string) {
 	p.Userid = val
@@ -890,7 +890,7 @@ func (p *ChangeUserInLiveReq) SetOptions(val string) {
 }
 
 var fieldIDToName_ChangeUserInLiveReq = map[int16]string{
-	1: "livename",
+	1: "lessonid",
 	2: "userid",
 	3: "options",
 }
@@ -975,7 +975,7 @@ func (p *ChangeUserInLiveReq) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Livename = _field
+	p.Lessonid = _field
 	return nil
 }
 func (p *ChangeUserInLiveReq) ReadField2(iprot thrift.TProtocol) error {
@@ -1039,10 +1039,10 @@ WriteStructEndError:
 }
 
 func (p *ChangeUserInLiveReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("livename", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("lessonid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Livename); err != nil {
+	if err := oprot.WriteString(p.Lessonid); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1103,7 +1103,7 @@ func (p *ChangeUserInLiveReq) DeepEqual(ano *ChangeUserInLiveReq) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Livename) {
+	if !p.Field1DeepEqual(ano.Lessonid) {
 		return false
 	}
 	if !p.Field2DeepEqual(ano.Userid) {
@@ -1117,7 +1117,7 @@ func (p *ChangeUserInLiveReq) DeepEqual(ano *ChangeUserInLiveReq) bool {
 
 func (p *ChangeUserInLiveReq) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.Livename, src) != 0 {
+	if strings.Compare(p.Lessonid, src) != 0 {
 		return false
 	}
 	return true

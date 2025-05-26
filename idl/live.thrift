@@ -22,7 +22,7 @@ struct CloseLiveResp {
 }
 
 struct ChangeUserInLiveReq {
-    1: string livename,
+    1: string lessonid,
     2: string userid,
     3: string options,
 }

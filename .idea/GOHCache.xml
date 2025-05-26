@@ -777,6 +777,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go" />
             </set>
           </value>
         </entry>
@@ -1586,7 +1587,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748179294000" />
+              <option name="lastModified" value="1748275922094" />
             </ScannedPath>
           </value>
         </entry>
@@ -1778,7 +1779,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/tools.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1747918210608" />
+              <option name="lastModified" value="1748262426894" />
             </ScannedPath>
           </value>
         </entry>
@@ -1891,7 +1892,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/getStudiotool.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748262191306" />
+              <option name="lastModified" value="1748262426874" />
             </ScannedPath>
           </value>
         </entry>
@@ -2053,7 +2054,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748165195133" />
+              <option name="lastModified" value="1748277341027" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -2358,13 +2359,21 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748171381320" />
+              <option name="lastModified" value="1748273444009" />
               <option name="schema">
                 <list>
                   <option value="Config" />
                   <option value="MysqlConfig" />
+                  <option value="RedisConfig" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748272503123" />
             </ScannedPath>
           </value>
         </entry>
@@ -2390,14 +2399,14 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/global/global.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748172076535" />
+              <option name="lastModified" value="1748273443271" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748261637200" />
+              <option name="lastModified" value="1748277340989" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -2406,10 +2415,24 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/lua.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748273443334" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/mysql.go">
           <value>
             <ScannedPath>
               <option name="lastModified" value="1748171502073" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748273443282" />
             </ScannedPath>
           </value>
         </entry>
@@ -2430,7 +2453,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748261597122" />
+              <option name="lastModified" value="1748273443643" />
             </ScannedPath>
           </value>
         </entry>
@@ -2508,7 +2531,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748165194908" />
+              <option name="lastModified" value="1748276923141" />
             </ScannedPath>
           </value>
         </entry>
@@ -2536,7 +2559,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748176797379" />
+              <option name="lastModified" value="1748276923411" />
             </ScannedPath>
           </value>
         </entry>
