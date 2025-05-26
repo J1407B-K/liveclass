@@ -2,6 +2,7 @@
 package initialize
 
 import (
+	"github.com/pion/interceptor/pkg/report"
 	"sync"
 
 	"github.com/pion/interceptor"
@@ -20,12 +21,12 @@ func InitWebRTCEngine() {
 
 	// 2. 拦截器 + 默认拦截器
 	ir := &interceptor.Registry{}
-	if err := webrtc.RegisterDefaultInterceptors(me, ir); err != nil {
-		panic(err)
-	}
 	//    加一个 PLI interceptor（每 3 秒发一帧关键帧请求）
 	if pli, err := intervalpli.NewReceiverInterceptor(); err == nil && pli != nil {
 		ir.Add(pli)
+	}
+	if senderFactory, err := report.NewSenderInterceptor(); err == nil && senderFactory != nil {
+		ir.Add(senderFactory)
 	}
 
 	// 3. 用默认 SettingEngine / MediaEngine / InterceptorRegistry 创建 API

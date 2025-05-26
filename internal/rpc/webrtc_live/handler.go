@@ -4,14 +4,15 @@ package main
 import (
 	"context"
 	"errors"
-	"gorm.io/gorm"
-	"log"
-
+	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
+	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/common"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/internal/rpc/webrtc_live/global"
 	my_webrtc "liveclass/internal/rpc/webrtc_live/webrtc"
+	"log"
+	"time"
 )
 
 // WebrtcLiveImpl implements the Kitex webrtc_live service
@@ -20,19 +21,19 @@ type WebrtcLiveImpl struct {
 }
 
 func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.BroadcastReq) (*webrtc_live.BroadcastResp, error) {
-	// decode browser offer
+	//先解码
 	offer, err := my_webrtc.DecodeSDP(req.B64offer)
 	if err != nil {
 		return nil, err
 	}
 
-	// new PeerConnection (default host+srflx candidates)
+	//全局配置创建pc
 	pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	// recvonly audio+video
+	//需要的类型
 	pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly})
 	vt, _ := pc.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo, webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly})
 	vt.SetCodecPreferences([]webrtc.RTPCodecParameters{
@@ -40,7 +41,7 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		{RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264, ClockRate: 90000}},
 	})
 
-	// ICE 日志
+	// 日志
 	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
 		if c != nil {
 			log.Println("[Server][Broadcast] ICE candidate:", c.ToJSON())
@@ -50,37 +51,65 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		log.Println("[Server][Broadcast] ICE state:", s.String())
 	})
 
-	// OnTrack: 收到浏览器的 track，创建本地转发 track 并缓存
+	//收到流时的逻辑
 	pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
 		log.Println("[Server][Broadcast] OnTrack kind=", remote.Kind())
-		local, err := webrtc.NewTrackLocalStaticRTP(remote.Codec().RTPCodecCapability,
-			remote.Kind().String()+"-"+req.LessonId,
-			"stream-"+req.LessonId,
+		local, err := webrtc.NewTrackLocalStaticRTP(remote.Codec().RTPCodecCapability, //编码器
+			remote.Kind().String()+"-"+req.LessonId, //trackID
+			"stream-"+req.LessonId,                  //媒体流名称，归类用
 		)
 		if err != nil {
 			log.Println("track create error:", err)
 			return
 		}
+
+		//存储
 		raw, _ := global.WebRTCEngine.BroadcastTracks.LoadOrStore(req.LessonId, []*webrtc.TrackLocalStaticRTP{})
 		arr := raw.([]*webrtc.TrackLocalStaticRTP)
 		arr = append(arr, local)
 		global.WebRTCEngine.BroadcastTracks.Store(req.LessonId, arr)
 
-		// 转发 RTP 包
-		buf := make([]byte, 1500)
+		//不断请求关键帧
+		go func(ssrc uint32) {
+			ticker := time.NewTicker(2 * time.Second)
+			defer ticker.Stop()
+			for range ticker.C {
+				if err := pc.WriteRTCP([]rtcp.Packet{
+					&rtcp.PictureLossIndication{MediaSSRC: ssrc},
+				}); err != nil {
+					// PC 关闭或出错就停止
+					return
+				}
+			}
+		}(uint32(remote.SSRC()))
+
 		for {
-			n, _, readErr := remote.Read(buf)
+			pkt, _, readErr := remote.ReadRTP()
 			if readErr != nil {
 				return
 			}
-			local.Write(buf[:n]) // 忽略写错误
+
+			if writeErr := local.WriteRTP(pkt); writeErr != nil {
+				return
+			}
 		}
 	})
 
-	// SDP 交换
 	if err := pc.SetRemoteDescription(offer); err != nil {
 		return nil, err
 	}
+
+	//连接断开或出错时，从缓存中删除
+	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+		log.Println("[Server][Broadcast] PeerConnection state:", state.String())
+		if state == webrtc.PeerConnectionStateFailed ||
+			state == webrtc.PeerConnectionStateClosed ||
+			state == webrtc.PeerConnectionStateDisconnected {
+			log.Println("[Server][Broadcast] Cleaning up maps for lesson", req.LessonId)
+			global.WebRTCEngine.BroadcastTracks.Delete(req.LessonId)
+		}
+	})
+
 	answer, err := pc.CreateAnswer(nil)
 	if err != nil {
 		return nil, err
@@ -90,12 +119,12 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	}
 	<-webrtc.GatheringCompletePromise(pc)
 
+	//编码
 	b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
 	return &webrtc_live.BroadcastResp{Resp: &common.Resp{Data: b64ans}}, nil
 }
 
 func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*webrtc_live.ViewResp, error) {
-	// decode browser offer
 	offer, err := my_webrtc.DecodeSDP(req.B64offer)
 	if err != nil {
 		return nil, err
@@ -123,6 +152,7 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 	if !ok {
 		return nil, errors.New("未开播: " + req.LessonId)
 	}
+	//将轨道加入view pc
 	for _, t := range raw.([]*webrtc.TrackLocalStaticRTP) {
 		pc.AddTrack(t)
 	}
