@@ -7,9 +7,11 @@ import (
 )
 
 type Engine struct {
+	API                 *webrtc.API
 	MediaEngine         *webrtc.MediaEngine
 	InterceptorRegistry *interceptor.Registry
+	SettingEngine       webrtc.SettingEngine
 	SfuConfig           webrtc.Configuration
-	BroadcastTracks     sync.Map //map[string]*webrtc.TrackLocalStaticRTP
+	BroadcastTracks     sync.Map
 	DuplexConns         sync.Map //map[string][]*webrtc.PeerConnection
 }

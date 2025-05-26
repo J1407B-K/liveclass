@@ -18,7 +18,6 @@ func ConsumeKafkaMessages() {
 		// 使用 context.Background()
 		msg, err := reader.ReadMessage(context.Background())
 		if err != nil {
-			log.Println("读取 Kafka 消息出错:", err)
 			continue // 继续读取下一条消息
 		}
 

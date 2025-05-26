@@ -34,7 +34,7 @@
 
 - JWT
 
-- WebRTC(仅写出example，没前端配合www)
+- WebRTC(仅写出开播关播逻辑，没前端配合www)
 
 - RAG
 
@@ -49,6 +49,12 @@
 - WebSocket
 
 - Livego
+
+- Kafka
+
+- MongoDB
+
+- 腾讯云COS存储
 
   
 
