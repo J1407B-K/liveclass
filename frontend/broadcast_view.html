@@ -114,7 +114,7 @@
         document.getElementById('startBroadcast').onclick = async () => {
             if (!lessonInput.value || !tokenInput.value) return alert('请填写 lesson_id 和 JWT token');
             const offer = await doOffer(true);
-            const answer = await postFormData('http://127.0.0.1:8080/broadcast', {
+            const answer = await postFormData('http://127.0.0.1:80/broadcast', {
                 lesson_id: lessonInput.value.trim(), b64offer: offer
             });
             await handleAnswer(answer);
@@ -127,7 +127,7 @@
         document.getElementById('startView').onclick = async () => {
             if (!lessonInput.value || !tokenInput.value) return alert('请填写 lesson_id 和 JWT token');
             const offer = await doOffer(false);
-            const answer = await postFormData('http://127.0.0.1:8080/view', {
+            const answer = await postFormData('http://127.0.0.1:80/view', {
                 lesson_id: lessonInput.value.trim(), b64offer: offer
             });
             await handleAnswer(answer);

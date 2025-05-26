@@ -5,6 +5,7 @@ import (
 	"github.com/cloudwego/kitex/server"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
+	"liveclass/internal/rpc/webrtc_live/flag"
 	"liveclass/internal/rpc/webrtc_live/initialize"
 	"log"
 	"net"
@@ -14,6 +15,12 @@ func main() {
 	initialize.SetupViper()
 	db := initialize.InitGormDB()
 	initialize.InitWebRTCEngine()
+
+	option := flag.Parse()
+	ok := flag.DBOption(db, option)
+	if !ok {
+		log.Println("未自动建表")
+	}
 
 	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
 	if err != nil {

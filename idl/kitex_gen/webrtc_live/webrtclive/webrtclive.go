@@ -27,6 +27,41 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"CreateLive": kitex.NewMethodInfo(
+		createLiveHandler,
+		newWebrtcLiveCreateLiveArgs,
+		newWebrtcLiveCreateLiveResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"DelLive": kitex.NewMethodInfo(
+		delLiveHandler,
+		newWebrtcLiveDelLiveArgs,
+		newWebrtcLiveDelLiveResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"ChangeUserInLive": kitex.NewMethodInfo(
+		changeUserInLiveHandler,
+		newWebrtcLiveChangeUserInLiveArgs,
+		newWebrtcLiveChangeUserInLiveResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"ChangeUserToLesson": kitex.NewMethodInfo(
+		changeUserToLessonHandler,
+		newWebrtcLiveChangeUserToLessonArgs,
+		newWebrtcLiveChangeUserToLessonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetLessonInfoById": kitex.NewMethodInfo(
+		getLessonInfoByIdHandler,
+		newWebrtcLiveGetLessonInfoByIdArgs,
+		newWebrtcLiveGetLessonInfoByIdResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -129,6 +164,96 @@ func newWebrtcLiveViewResult() interface{} {
 	return webrtc_live.NewWebrtcLiveViewResult()
 }
 
+func createLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveCreateLiveArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveCreateLiveResult)
+	success, err := handler.(webrtc_live.WebrtcLive).CreateLive(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveCreateLiveArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveCreateLiveArgs()
+}
+
+func newWebrtcLiveCreateLiveResult() interface{} {
+	return webrtc_live.NewWebrtcLiveCreateLiveResult()
+}
+
+func delLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveDelLiveArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveDelLiveResult)
+	success, err := handler.(webrtc_live.WebrtcLive).DelLive(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveDelLiveArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveDelLiveArgs()
+}
+
+func newWebrtcLiveDelLiveResult() interface{} {
+	return webrtc_live.NewWebrtcLiveDelLiveResult()
+}
+
+func changeUserInLiveHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveChangeUserInLiveArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveChangeUserInLiveResult)
+	success, err := handler.(webrtc_live.WebrtcLive).ChangeUserInLive(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveChangeUserInLiveArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveChangeUserInLiveArgs()
+}
+
+func newWebrtcLiveChangeUserInLiveResult() interface{} {
+	return webrtc_live.NewWebrtcLiveChangeUserInLiveResult()
+}
+
+func changeUserToLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveChangeUserToLessonArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveChangeUserToLessonResult)
+	success, err := handler.(webrtc_live.WebrtcLive).ChangeUserToLesson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveChangeUserToLessonArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveChangeUserToLessonArgs()
+}
+
+func newWebrtcLiveChangeUserToLessonResult() interface{} {
+	return webrtc_live.NewWebrtcLiveChangeUserToLessonResult()
+}
+
+func getLessonInfoByIdHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveGetLessonInfoByIdArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveGetLessonInfoByIdResult)
+	success, err := handler.(webrtc_live.WebrtcLive).GetLessonInfoById(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveGetLessonInfoByIdArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveGetLessonInfoByIdArgs()
+}
+
+func newWebrtcLiveGetLessonInfoByIdResult() interface{} {
+	return webrtc_live.NewWebrtcLiveGetLessonInfoByIdResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -154,6 +279,56 @@ func (p *kClient) View(ctx context.Context, req *webrtc_live.ViewReq) (r *webrtc
 	_args.Req = req
 	var _result webrtc_live.WebrtcLiveViewResult
 	if err = p.c.Call(ctx, "View", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) CreateLive(ctx context.Context, req *webrtc_live.CreateLiveReq) (r *webrtc_live.CreateLiveResp, err error) {
+	var _args webrtc_live.WebrtcLiveCreateLiveArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveCreateLiveResult
+	if err = p.c.Call(ctx, "CreateLive", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) DelLive(ctx context.Context, req *webrtc_live.DelLiveReq) (r *webrtc_live.DelLiveResp, err error) {
+	var _args webrtc_live.WebrtcLiveDelLiveArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveDelLiveResult
+	if err = p.c.Call(ctx, "DelLive", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ChangeUserInLive(ctx context.Context, req *webrtc_live.ChangeUserInLiveReq) (r *webrtc_live.ChangeUserInLiveResp, err error) {
+	var _args webrtc_live.WebrtcLiveChangeUserInLiveArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveChangeUserInLiveResult
+	if err = p.c.Call(ctx, "ChangeUserInLive", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ChangeUserToLesson(ctx context.Context, req *webrtc_live.ChangeUserToLessonReq) (r *webrtc_live.ChangeUserToLessonResp, err error) {
+	var _args webrtc_live.WebrtcLiveChangeUserToLessonArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveChangeUserToLessonResult
+	if err = p.c.Call(ctx, "ChangeUserToLesson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq) (r *webrtc_live.GetLessonInfoByIdResp, err error) {
+	var _args webrtc_live.WebrtcLiveGetLessonInfoByIdArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveGetLessonInfoByIdResult
+	if err = p.c.Call(ctx, "GetLessonInfoById", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

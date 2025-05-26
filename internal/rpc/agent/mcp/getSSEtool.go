@@ -6,35 +6,32 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
-	"log"
 )
 
-func GetMCPTool(ctx context.Context) []tool.BaseTool {
-	cli, err := client.NewSSEMCPClient("http://localhost:12345/sse")
+func GetSSETool(ctx context.Context, url string) []tool.BaseTool {
+	cli, err := client.NewSSEMCPClient(url)
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
 	err = cli.Start(ctx)
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
-
 	initRequest := mcp.InitializeRequest{}
 	initRequest.Params.ProtocolVersion = mcp.LATEST_PROTOCOL_VERSION
 	initRequest.Params.ClientInfo = mcp.Implementation{
-		Name:    "mcp-client",
+		Name:    "example-client",
 		Version: "1.0.0",
 	}
 
 	_, err = cli.Initialize(ctx, initRequest)
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
 
 	tools, err := mcpp.GetTools(ctx, &mcpp.Config{Cli: cli})
 	if err != nil {
-		log.Fatal(err)
+		return nil
 	}
-
 	return tools
 }

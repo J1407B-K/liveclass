@@ -698,6 +698,7 @@
               <option value="file://$PROJECT_DIR$/internal/rpc/live/flag/option.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/flag/option.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/flag/option.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/flag/option.go" />
             </set>
           </value>
         </entry>
@@ -1880,6 +1881,20 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/getSSEtool.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748262178304" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/getStudiotool.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748262191306" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/startMCPserver.go">
           <value>
             <ScannedPath>
@@ -2353,6 +2368,25 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/flag/automigrate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748261597131" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/flag/option.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748261541397" />
+              <option name="schema">
+                <list>
+                  <option value="Option" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/global/global.go">
           <value>
             <ScannedPath>
@@ -2363,7 +2397,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748257850136" />
+              <option name="lastModified" value="1748261637200" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -2396,7 +2430,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748172076234" />
+              <option name="lastModified" value="1748261597122" />
             </ScannedPath>
           </value>
         </entry>
@@ -2434,7 +2468,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcLesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748176127393" />
+              <option name="lastModified" value="1748259566898" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLesson" />

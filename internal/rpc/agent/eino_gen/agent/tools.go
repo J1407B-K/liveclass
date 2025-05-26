@@ -13,7 +13,7 @@ func GetTools(ctx context.Context) ([]tool.BaseTool, error) {
 		return nil, err
 	}
 
-	mcpTools := mcp.GetMCPTool(ctx)
+	mcpTools := mcp.GetSSETool(ctx, "http://localhost:12345/sse")
 
 	var tools []tool.BaseTool
 

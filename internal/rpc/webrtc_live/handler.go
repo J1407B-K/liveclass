@@ -169,3 +169,33 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 	b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
 	return &webrtc_live.ViewResp{Resp: &common.Resp{Data: b64ans}}, nil
 }
+
+// CreateLive implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) CreateLive(ctx context.Context, req *webrtc_live.CreateLiveReq) (resp *webrtc_live.CreateLiveResp, err error) {
+	// TODO: Your code here...
+	return
+}
+
+// DelLive implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) DelLive(ctx context.Context, req *webrtc_live.DelLiveReq) (resp *webrtc_live.DelLiveResp, err error) {
+	// TODO: Your code here...
+	return
+}
+
+// ChangeUserInLive implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) ChangeUserInLive(ctx context.Context, req *webrtc_live.ChangeUserInLiveReq) (resp *webrtc_live.ChangeUserInLiveResp, err error) {
+	// TODO: Your code here...
+	return
+}
+
+// ChangeUserToLesson implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) ChangeUserToLesson(ctx context.Context, req *webrtc_live.ChangeUserToLessonReq) (resp *webrtc_live.ChangeUserToLessonResp, err error) {
+	// TODO: Your code here...
+	return
+}
+
+// GetLessonInfoById implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq) (resp *webrtc_live.GetLessonInfoByIdResp, err error) {
+	// TODO: Your code here...
+	return
+}

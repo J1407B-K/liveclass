@@ -5,6 +5,5 @@ type WebrtcLesson struct {
 	Name        string      `json:"name" gorm:"size:255;not null"`
 	Description string      `json:"description" gorm:"size:255;not null"`
 	Teacher     string      `json:"teacher" gorm:"not null"`
-	Code        string      `json:"code" gorm:"not null"`
 	StudentID   StringArray `json:"studentId" gorm:"type:json"`
 }
