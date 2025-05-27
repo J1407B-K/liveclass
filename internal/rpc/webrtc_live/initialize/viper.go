@@ -2,7 +2,7 @@ package initialize
 
 import (
 	"github.com/spf13/viper"
-	"liveclass/internal/rpc/live/global"
+	"liveclass/internal/rpc/webrtc_live/global"
 )
 
 func SetupViper() {

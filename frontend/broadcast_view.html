@@ -2,17 +2,17 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>LiveClass（可选摄像头/屏幕共享）</title>
+    <title>LiveClass（可选 摄像头/屏幕共享 & 录制）</title>
     <style>
         video { width: 48%; border: 1px solid #ccc; margin: 5px; }
         button, select { margin: 5px; }
     </style>
 </head>
 <body>
-<h2>LiveClass（可选 摄像头 或 屏幕共享）</h2>
+<h2>LiveClass（可选 摄像头 或 屏幕共享 & 录制）</h2>
 <div>
-    <label>Lesson ID: <input id="lessonID" value="lesson123" /></label>
-    <label>JWT Token: <input id="token" style="width:300px" placeholder="your.jwt.token" /></label>
+    <label>Lesson ID: <input id="lessonID" value="123" type="number"/></label>
+    <label>JWT Token: <input id="token" style="width:300px" placeholder="your.jwt.token"/></label>
 </div>
 <div>
     <label>Broadcast Type:
@@ -31,22 +31,24 @@
     <video id="localVideo" autoplay muted playsinline></video>
     <video id="remoteVideo" autoplay playsinline controls></video>
 </div>
+
 <script>
     (async () => {
-        const lessonInput   = document.getElementById('lessonID');
-        const tokenInput    = document.getElementById('token');
-        const typeSelect    = document.getElementById('broadcastType');
-        const localVideo    = document.getElementById('localVideo');
-        const remoteVideo   = document.getElementById('remoteVideo');
-        let pc;
+        const lessonInput = document.getElementById('lessonID');
+        const tokenInput  = document.getElementById('token');
+        const typeSelect  = document.getElementById('broadcastType');
+        const localVideo  = document.getElementById('localVideo');
+        const remoteVideo = document.getElementById('remoteVideo');
 
-        // 根据选择返回摄像头或屏幕+麦克风合流的 MediaStream
+        let pc = null;
+        let localStream = null;
+        let recorder = null;
+        let recordChunks = [];
+
         async function getBroadcastStream() {
             if (typeSelect.value === 'camera') {
-                // 摄像头 + 麦克风
                 return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             } else {
-                // 屏幕共享 + 麦克风
                 const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 const micStream    = await navigator.mediaDevices.getUserMedia({ audio: true });
                 const combined     = new MediaStream();
@@ -61,40 +63,32 @@
             pc = new RTCPeerConnection({ iceServers: [] });
             pc.onicecandidate = e => { if (!e.candidate) console.log('[Browser] ICE gathering complete'); };
             pc.oniceconnectionstatechange = () => { console.log('[Browser] ICE state →', pc.iceConnectionState); };
-
             if (isViewer) {
                 const remoteStream = new MediaStream();
                 remoteVideo.srcObject = remoteStream;
                 pc.addTransceiver('video', { direction: 'recvonly' });
                 pc.addTransceiver('audio', { direction: 'recvonly' });
-                pc.ontrack = e => { remoteStream.addTrack(e.track); };
+                pc.ontrack = ev => { remoteStream.addTrack(ev.track); };
             }
             return pc;
         }
 
         async function doOffer(isBroadcast) {
-            let stream;
             if (isBroadcast) {
-                stream = await getBroadcastStream();
-                localVideo.srcObject = stream;
+                localStream = await getBroadcastStream();
+                localVideo.srcObject = localStream;
                 createPC(false);
-                stream.getTracks().forEach(t => pc.addTrack(t, stream));
+                localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
             } else {
                 createPC(true);
             }
-
             const offer = await pc.createOffer();
-            console.log((isBroadcast ? '[Broadcast]' : '[View]') + ' offer SDP:\n' + offer.sdp);
             await pc.setLocalDescription(offer);
-            await new Promise(resolve => {
-                pc.onicecandidate = e => { if (!e.candidate) resolve(); };
-            });
+            await new Promise(r => pc.onicecandidate = e => { if (!e.candidate) r(); });
             return btoa(JSON.stringify(pc.localDescription));
         }
 
-        async function postFormData(path, body) {
-            const form = new FormData();
-            Object.entries(body).forEach(([k, v]) => form.append(k, v));
+        async function postFormData(path, form) {
             const res = await fetch(path, {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + tokenInput.value },
@@ -105,32 +99,76 @@
         }
 
         async function handleAnswer(b64) {
-            const raw = b64.trim().replace(/[\r\n]/g, '').replace(/-/g, '+').replace(/_/g, '/');
+            const raw = b64.trim().replace(/[\r\n]/g,'').replace(/-/g,'+').replace(/_/g,'/');
             const desc = JSON.parse(atob(raw));
-            console.log('answer SDP:', desc);
             await pc.setRemoteDescription(desc);
         }
 
         document.getElementById('startBroadcast').onclick = async () => {
-            if (!lessonInput.value || !tokenInput.value) return alert('请填写 lesson_id 和 JWT token');
-            const offer = await doOffer(true);
-            const answer = await postFormData('http://127.0.0.1:80/broadcast', {
-                lesson_id: lessonInput.value.trim(), b64offer: offer
-            });
-            await handleAnswer(answer);
+            if (!lessonInput.value.trim() || !tokenInput.value.trim()) {
+                return alert('请填写 lesson_id（数字）和 JWT token');
+            }
+            // 重置录制数据
+            recordChunks = [];
+            recorder = null;
+
+            // WebRTC 推流
+            const offerB64  = await doOffer(true);
+            const formOffer = new FormData();
+            formOffer.append('lesson_id', lessonInput.value.trim());
+            formOffer.append('b64offer', offerB64);
+            const answerB64 = await postFormData('http://127.0.0.1:80/broadcast', formOffer);
+            await handleAnswer(answerB64);
+
+            // 启动录制
+            recorder = new MediaRecorder(localStream);
+            recorder.ondataavailable = e => { if (e.data.size) recordChunks.push(e.data); };
+            recorder.start(1000);
         };
 
-        document.getElementById('stopBroadcast').onclick = () => {
-            if (pc) pc.close(); pc = null; localVideo.srcObject = null;
-        };
+        async function stopBroadcast() {
+            // 停录并上传
+            if (recorder) {
+                recorder.stop();
+                recorder.onstop = async () => {
+                    // 合并 Blob
+                    const blob = new Blob(recordChunks, { type: 'video/webm' });
+                    // 构造 form-data
+                    const form = new FormData();
+                    form.append('lesson_id', lessonInput.value.trim());
+                    form.append('file', blob, 'record.webm');
+                    if (confirm('是否上传本次录制？')) {
+                        await fetch('http://127.0.0.1:80/record_lesson_webrtc', {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + tokenInput.value },
+                            body: form
+                        });
+                        alert('上传完成');
+                    }
+                };
+            }
+            // 断开 WebRTC
+            if (pc) pc.close();
+            pc = null;
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+            localVideo.srcObject = null;
+        }
+        document.getElementById('stopBroadcast').onclick = stopBroadcast;
+        window.addEventListener('beforeunload', stopBroadcast);
 
         document.getElementById('startView').onclick = async () => {
-            if (!lessonInput.value || !tokenInput.value) return alert('请填写 lesson_id 和 JWT token');
-            const offer = await doOffer(false);
-            const answer = await postFormData('http://127.0.0.1:80/view', {
-                lesson_id: lessonInput.value.trim(), b64offer: offer
-            });
-            await handleAnswer(answer);
+            if (!lessonInput.value.trim() || !tokenInput.value.trim()) {
+                return alert('请填写 lesson_id（数字）和 JWT token');
+            }
+            const offerB64  = await doOffer(false);
+            const formView  = new FormData();
+            formView.append('lesson_id', lessonInput.value.trim());
+            formView.append('b64offer', offerB64);
+            const answerB64 = await postFormData('http://127.0.0.1:80/view', formView);
+            await handleAnswer(answerB64);
         };
     })();
 </script>

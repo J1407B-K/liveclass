@@ -220,6 +220,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go" />
             </set>
           </value>
         </entry>
@@ -1705,7 +1706,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748352214605" />
+              <option name="lastModified" value="1748359883921" />
             </ScannedPath>
           </value>
         </entry>
@@ -2470,14 +2471,22 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748273444009" />
+              <option name="lastModified" value="1748357056200" />
               <option name="schema">
                 <list>
                   <option value="Config" />
                   <option value="MysqlConfig" />
                   <option value="RedisConfig" />
+                  <option value="CosConfig" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/cos/cos.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748357056222" />
             </ScannedPath>
           </value>
         </entry>
@@ -2517,12 +2526,19 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748351778997" />
+              <option name="lastModified" value="1748357260593" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/cos.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748357260552" />
             </ScannedPath>
           </value>
         </entry>
@@ -2536,21 +2552,21 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748171502073" />
+              <option name="lastModified" value="1748358675157" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/redis.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748273443282" />
+              <option name="lastModified" value="1748358177062" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/viper.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748171411503" />
+              <option name="lastModified" value="1748358643710" />
             </ScannedPath>
           </value>
         </entry>
@@ -2564,7 +2580,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748273443643" />
+              <option name="lastModified" value="1748357261128" />
             </ScannedPath>
           </value>
         </entry>
@@ -2670,7 +2686,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748352214532" />
+              <option name="lastModified" value="1748360945538" />
             </ScannedPath>
           </value>
         </entry>

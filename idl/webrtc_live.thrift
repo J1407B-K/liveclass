@@ -140,6 +140,16 @@ struct RollCallInRandomResp{
     1:common.resp resp,
 }
 
+struct RecordLessonReq {
+    1: string userid,
+    2: string lessonid,
+    3: binary data,
+}
+
+struct RecordLessonResp {
+    1:common.resp resp,
+}
+
 service webrtc_live {
     BroadcastResp Broadcast(1: BroadcastReq req),
     ViewResp      View(1: ViewReq req),
@@ -156,4 +166,5 @@ service webrtc_live {
     SelectSignInResp    SelectSignIn(1: SelectSignInReq req),
     DelSignInResp       DelSign(1:DelSignInReq req),
     RollCallInRandomResp    RollCallInRandom(1:RollCallInRandomReq req),
+    RecordLessonResp      RecordLesson(1:RecordLessonReq req),
 }

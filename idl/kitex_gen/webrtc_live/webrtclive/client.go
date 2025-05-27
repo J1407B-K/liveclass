@@ -26,6 +26,7 @@ type Client interface {
 	SelectSignIn(ctx context.Context, req *webrtc_live.SelectSignInReq, callOptions ...callopt.Option) (r *webrtc_live.SelectSignInResp, err error)
 	DelSign(ctx context.Context, req *webrtc_live.DelSignInReq, callOptions ...callopt.Option) (r *webrtc_live.DelSignInResp, err error)
 	RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq, callOptions ...callopt.Option) (r *webrtc_live.RollCallInRandomResp, err error)
+	RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq, callOptions ...callopt.Option) (r *webrtc_live.RecordLessonResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -130,4 +131,9 @@ func (p *kWebrtcLiveClient) DelSign(ctx context.Context, req *webrtc_live.DelSig
 func (p *kWebrtcLiveClient) RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq, callOptions ...callopt.Option) (r *webrtc_live.RollCallInRandomResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.RollCallInRandom(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq, callOptions ...callopt.Option) (r *webrtc_live.RecordLessonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.RecordLesson(ctx, req)
 }

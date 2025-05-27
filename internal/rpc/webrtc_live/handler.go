@@ -4,22 +4,28 @@ package main
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/cloudwego/kitex/client"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
+	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/common"
 	"liveclass/idl/kitex_gen/user"
 	"liveclass/idl/kitex_gen/user/userservice"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
+	my_cos "liveclass/internal/rpc/webrtc_live/cos"
 	"liveclass/internal/rpc/webrtc_live/dao"
 	"liveclass/internal/rpc/webrtc_live/global"
 	my_webrtc "liveclass/internal/rpc/webrtc_live/webrtc"
 	"liveclass/internal/utils/cut"
 	"log"
 	"math/rand"
+	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -28,6 +34,7 @@ import (
 type WebrtcLiveImpl struct {
 	DB        *gorm.DB
 	RDB       *redis.Client
+	cosClient *cos.Client
 	countsha  string
 	membersha string
 	delsha    string
@@ -626,4 +633,59 @@ func (s *WebrtcLiveImpl) RollCallInRandom(ctx context.Context, req *webrtc_live.
 	stuname, _ := cut.SplitInfo(stuinfo.Resp.Data)
 
 	return &webrtc_live.RollCallInRandomResp{Resp: &common.Resp{Data: stuname}}, nil
+}
+
+// RecordLesson implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq) (resp *webrtc_live.RecordLessonResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = os.Mkdir(global.Config.TmpBaseDir, 0755)
+	if err != nil && !os.IsExist(err) {
+		return nil, err
+	}
+
+	filename := fmt.Sprintf("%s-record-%s.mp4", req.Lessonid, uuid.NewString())
+	localfile := filepath.Join(global.Config.TmpBaseDir, filename)
+
+	if len(req.Data) == 0 {
+		return nil, errors.New("没有任何数据需要写入")
+	}
+	if err := os.WriteFile(localfile, req.Data, 0o644); err != nil {
+		return nil, fmt.Errorf("写入临时文件失败: %w", err)
+	}
+
+	go func() {
+		if err = my_cos.UploadToCos(ctx, s.cosClient, localfile, req.Lessonid, filename); err != nil {
+			log.Printf("上传到 COS 失败: %v", err)
+		} else {
+			log.Printf("上传到 COS 成功: lesson=%s file=%s", req.Lessonid, filename)
+		}
+		if rmErr := os.Remove(localfile); rmErr != nil {
+			log.Printf("删除临时文件失败: %v", rmErr)
+		}
+	}()
+
+	return &webrtc_live.RecordLessonResp{
+		Resp: &common.Resp{Data: filename},
+	}, nil
 }

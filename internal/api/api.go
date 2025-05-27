@@ -9,7 +9,8 @@ import (
 )
 
 func InitRouter() {
-	h := server.New(server.WithHostPorts(":8080"))
+	h := server.New(server.WithHostPorts(":8080"),
+		server.WithMaxRequestBodySize(1024*1024*1024))
 	h.NoHijackConnPool = true
 
 	h.Use(cors.CORS())
@@ -40,7 +41,7 @@ func InitRouter() {
 		v2.GET("/select_lesson", service.SelectLessonInfo)
 		//MYSQL中课程信息
 		v2.GET("/get_lesson", service.GetLessonInfo)
-		v2.GET("/record_lesson", service.RecordLesson)
+		v2.POST("/record_lesson", service.RecordLesson)
 		v2.POST("/create_signin", service.CreateSignIn)
 		v2.PUT("/signin", service.SignIn)
 		v2.GET("/select_signin", service.SelectSignIn)
@@ -61,6 +62,7 @@ func InitRouter() {
 		v2.GET("/select_signin_webrtc", service.SelectSignIn_WebRTC)
 		v2.DELETE("/del_signin_webrtc", service.DelSignIn_WebRTC)
 		v2.GET("/roll_call_webrtc", service.RollCallInRandom_WebRTC)
+		v2.POST("/record_lesson_webrtc", service.RecordLesson_WebRTC)
 
 		v2.POST("/create_question", service.CreateQuestion)
 		v2.DELETE("/del_question", service.DelQuestion)

@@ -118,6 +118,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"RecordLesson": kitex.NewMethodInfo(
+		recordLessonHandler,
+		newWebrtcLiveRecordLessonArgs,
+		newWebrtcLiveRecordLessonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -454,6 +461,24 @@ func newWebrtcLiveRollCallInRandomResult() interface{} {
 	return webrtc_live.NewWebrtcLiveRollCallInRandomResult()
 }
 
+func recordLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveRecordLessonArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveRecordLessonResult)
+	success, err := handler.(webrtc_live.WebrtcLive).RecordLesson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveRecordLessonArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveRecordLessonArgs()
+}
+
+func newWebrtcLiveRecordLessonResult() interface{} {
+	return webrtc_live.NewWebrtcLiveRecordLessonResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -609,6 +634,16 @@ func (p *kClient) RollCallInRandom(ctx context.Context, req *webrtc_live.RollCal
 	_args.Req = req
 	var _result webrtc_live.WebrtcLiveRollCallInRandomResult
 	if err = p.c.Call(ctx, "RollCallInRandom", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq) (r *webrtc_live.RecordLessonResp, err error) {
+	var _args webrtc_live.WebrtcLiveRecordLessonArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveRecordLessonResult
+	if err = p.c.Call(ctx, "RecordLesson", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

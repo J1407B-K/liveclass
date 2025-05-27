@@ -3,7 +3,7 @@ package initialize
 import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"liveclass/internal/rpc/live/global"
+	"liveclass/internal/rpc/webrtc_live/global"
 	"log"
 )
 

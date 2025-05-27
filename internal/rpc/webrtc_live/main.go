@@ -17,6 +17,7 @@ func main() {
 	rdb := initialize.InitRedisDB()
 	countsha, membersha, delsha, selectsha := initialize.InitScript(rdb)
 	initialize.InitWebRTCEngine()
+	cosClient := initialize.SetUpCos()
 
 	option := flag.Parse()
 	ok := flag.DBOption(db, option)
@@ -35,7 +36,7 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9005")
-	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DB: db, userCli: userCli, RDB: rdb, countsha: countsha, membersha: membersha, selectsha: selectsha, delsha: delsha},
+	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DB: db, userCli: userCli, RDB: rdb, countsha: countsha, membersha: membersha, selectsha: selectsha, delsha: delsha, cosClient: cosClient},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{

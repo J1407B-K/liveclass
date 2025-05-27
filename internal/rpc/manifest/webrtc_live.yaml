@@ -7,3 +7,9 @@ RedisConfig:
   Addr: "localhost:6379"
   Password: ""
   DB: 0
+CosConfig:
+  SecretId: AKIDgIiwgGfuxrcDcopfKm5FGcljaKrCLG0X
+  SecretKey: QdhXCeNwHRO8f1A7sQlsnZJdliRyIUTF
+  BucketnameAppid: lanshan-1338048877
+  CosRegion: ap-chongqing
+TmpBaseDir: "rpc/webrtc_live/tmp"

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"io"
 	"liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/internal/code"
 	"liveclass/internal/global"
@@ -494,6 +495,91 @@ func RollCallInRandom_WebRTC(c context.Context, ctx *app.RequestContext) {
 	resp, err := global.Clients.Webrtc_liveClient.RollCallInRandom(c, &webrtc_live.RollCallInRandomReq{
 		Userid:   userid,
 		LessonId: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func RecordLesson_WebRTC(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+	fileHeader, err := ctx.FormFile("file")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.H{
+			"resp": model.Response{
+				Code: code.InternalError,
+				Msg:  "缺少录制文件",
+				Data: "nil",
+			},
+		})
+		return
+	}
+	f, err := fileHeader.Open()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.InternalError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	defer f.Close()
+
+	dataBytes, err := io.ReadAll(f)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.InternalError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	if len(dataBytes) == 0 {
+		ctx.JSON(http.StatusBadRequest, utils.H{
+			"resp": model.Response{
+				Code: code.InternalError,
+				Msg:  "没有任何数据需要写入",
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	resp, err := global.Clients.Webrtc_liveClient.RecordLesson(c, &webrtc_live.RecordLessonReq{
+		Userid:   userid,
+		Lessonid: lid,
+		Data:     dataBytes,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
