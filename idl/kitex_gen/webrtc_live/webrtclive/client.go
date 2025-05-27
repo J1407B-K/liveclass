@@ -18,6 +18,14 @@ type Client interface {
 	ChangeUserInLive(ctx context.Context, req *webrtc_live.ChangeUserInLiveReq, callOptions ...callopt.Option) (r *webrtc_live.ChangeUserInLiveResp, err error)
 	ChangeUserToLesson(ctx context.Context, req *webrtc_live.ChangeUserToLessonReq, callOptions ...callopt.Option) (r *webrtc_live.ChangeUserToLessonResp, err error)
 	GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonInfoByIdResp, err error)
+	SelectLessonInfo(ctx context.Context, req *webrtc_live.SelectLessonInfoReq, callOptions ...callopt.Option) (r *webrtc_live.SelectLessonInfoResp, err error)
+	GetLessonInfo(ctx context.Context, req *webrtc_live.GetLessonInfoReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonInfoResp, err error)
+	IsStudentInLesson(ctx context.Context, req *webrtc_live.IsStudentInLessonReq, callOptions ...callopt.Option) (r *webrtc_live.IsStudentInLessonResp, err error)
+	CreateSignIn(ctx context.Context, req *webrtc_live.CreateSignInReq, callOptions ...callopt.Option) (r *webrtc_live.CreateSignInResp, err error)
+	SignIn(ctx context.Context, req *webrtc_live.SignInReq, callOptions ...callopt.Option) (r *webrtc_live.SignInResp, err error)
+	SelectSignIn(ctx context.Context, req *webrtc_live.SelectSignInReq, callOptions ...callopt.Option) (r *webrtc_live.SelectSignInResp, err error)
+	DelSign(ctx context.Context, req *webrtc_live.DelSignInReq, callOptions ...callopt.Option) (r *webrtc_live.DelSignInResp, err error)
+	RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq, callOptions ...callopt.Option) (r *webrtc_live.RollCallInRandomResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -82,4 +90,44 @@ func (p *kWebrtcLiveClient) ChangeUserToLesson(ctx context.Context, req *webrtc_
 func (p *kWebrtcLiveClient) GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonInfoByIdResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.GetLessonInfoById(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) SelectLessonInfo(ctx context.Context, req *webrtc_live.SelectLessonInfoReq, callOptions ...callopt.Option) (r *webrtc_live.SelectLessonInfoResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.SelectLessonInfo(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) GetLessonInfo(ctx context.Context, req *webrtc_live.GetLessonInfoReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonInfoResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetLessonInfo(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) IsStudentInLesson(ctx context.Context, req *webrtc_live.IsStudentInLessonReq, callOptions ...callopt.Option) (r *webrtc_live.IsStudentInLessonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.IsStudentInLesson(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) CreateSignIn(ctx context.Context, req *webrtc_live.CreateSignInReq, callOptions ...callopt.Option) (r *webrtc_live.CreateSignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.CreateSignIn(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) SignIn(ctx context.Context, req *webrtc_live.SignInReq, callOptions ...callopt.Option) (r *webrtc_live.SignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.SignIn(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) SelectSignIn(ctx context.Context, req *webrtc_live.SelectSignInReq, callOptions ...callopt.Option) (r *webrtc_live.SelectSignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.SelectSignIn(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) DelSign(ctx context.Context, req *webrtc_live.DelSignInReq, callOptions ...callopt.Option) (r *webrtc_live.DelSignInResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.DelSign(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq, callOptions ...callopt.Option) (r *webrtc_live.RollCallInRandomResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.RollCallInRandom(ctx, req)
 }

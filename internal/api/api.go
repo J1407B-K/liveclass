@@ -37,7 +37,6 @@ func InitRouter() {
 		v2.PUT("/change_user_in_live", service.ChangeUserInLive)
 		v2.PUT("/change_user_to_lesson", service.ChangeUserToLesson)
 		//这个是直播间在线人数信息
-		//TODO:明天实现以下原livego内容
 		v2.GET("/select_lesson", service.SelectLessonInfo)
 		//MYSQL中课程信息
 		v2.GET("/get_lesson", service.GetLessonInfo)
@@ -55,6 +54,13 @@ func InitRouter() {
 		v2.DELETE("/del_lesson_webrtc", service.DelLesson)
 		v2.PUT("/change_user_to_lesson_webrtc", service.ChangeUserToLesson_WebRTC)
 		v2.GET("/change_user_in_live_webrtc", service.ChangeUserInLive_WebRTC)
+		v2.GET("/select_lesson_webrtc", service.SelectLessonInfo)
+		v2.GET("/get_lesson_webrtc", service.GetLessonInfo)
+		v2.POST("/create_signin_webrtc", service.CreateSignIn_WebRTC)
+		v2.PUT("/signin_webrtc", service.SignIn_WebRTC)
+		v2.GET("/select_signin_webrtc", service.SelectSignIn_WebRTC)
+		v2.DELETE("/del_signin_webrtc", service.DelSignIn_WebRTC)
+		v2.GET("/roll_call_webrtc", service.RollCallInRandom_WebRTC)
 
 		v2.POST("/create_question", service.CreateQuestion)
 		v2.DELETE("/del_question", service.DelQuestion)

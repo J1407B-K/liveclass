@@ -265,3 +265,251 @@ func ChangeUserInLive_WebRTC(c context.Context, ctx *app.RequestContext) {
 		},
 	})
 }
+
+func SelectLessonInfo_WebRTC(c context.Context, ctx *app.RequestContext) {
+	lessonid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.SelectLessonInfo(c, &webrtc_live.SelectLessonInfoReq{
+		Lessonid: lessonid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func GetLessonInfo_WebRTC(c context.Context, ctx *app.RequestContext) {
+	lessonname := ctx.PostForm("lesson_name")
+	teacher := ctx.PostForm("teacher")
+
+	resp, err := global.Clients.Webrtc_liveClient.GetLessonInfo(c, &webrtc_live.GetLessonInfoReq{
+		LessonName: lessonname,
+		Teacher:    teacher,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func CreateSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+	resp, err := global.Clients.Webrtc_liveClient.CreateSignIn(c, &webrtc_live.CreateSignInReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func SignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.SignIn(c, &webrtc_live.SignInReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func SelectSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.SelectSignIn(c, &webrtc_live.SelectSignInReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func DelSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.DelSign(c, &webrtc_live.DelSignInReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func RollCallInRandom_WebRTC(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.RollCallInRandom(c, &webrtc_live.RollCallInRandomReq{
+		Userid:   userid,
+		LessonId: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}

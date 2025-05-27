@@ -62,6 +62,62 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"SelectLessonInfo": kitex.NewMethodInfo(
+		selectLessonInfoHandler,
+		newWebrtcLiveSelectLessonInfoArgs,
+		newWebrtcLiveSelectLessonInfoResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetLessonInfo": kitex.NewMethodInfo(
+		getLessonInfoHandler,
+		newWebrtcLiveGetLessonInfoArgs,
+		newWebrtcLiveGetLessonInfoResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"IsStudentInLesson": kitex.NewMethodInfo(
+		isStudentInLessonHandler,
+		newWebrtcLiveIsStudentInLessonArgs,
+		newWebrtcLiveIsStudentInLessonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"CreateSignIn": kitex.NewMethodInfo(
+		createSignInHandler,
+		newWebrtcLiveCreateSignInArgs,
+		newWebrtcLiveCreateSignInResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"SignIn": kitex.NewMethodInfo(
+		signInHandler,
+		newWebrtcLiveSignInArgs,
+		newWebrtcLiveSignInResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"SelectSignIn": kitex.NewMethodInfo(
+		selectSignInHandler,
+		newWebrtcLiveSelectSignInArgs,
+		newWebrtcLiveSelectSignInResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"DelSign": kitex.NewMethodInfo(
+		delSignHandler,
+		newWebrtcLiveDelSignArgs,
+		newWebrtcLiveDelSignResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"RollCallInRandom": kitex.NewMethodInfo(
+		rollCallInRandomHandler,
+		newWebrtcLiveRollCallInRandomArgs,
+		newWebrtcLiveRollCallInRandomResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -254,6 +310,150 @@ func newWebrtcLiveGetLessonInfoByIdResult() interface{} {
 	return webrtc_live.NewWebrtcLiveGetLessonInfoByIdResult()
 }
 
+func selectLessonInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveSelectLessonInfoArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveSelectLessonInfoResult)
+	success, err := handler.(webrtc_live.WebrtcLive).SelectLessonInfo(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveSelectLessonInfoArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveSelectLessonInfoArgs()
+}
+
+func newWebrtcLiveSelectLessonInfoResult() interface{} {
+	return webrtc_live.NewWebrtcLiveSelectLessonInfoResult()
+}
+
+func getLessonInfoHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveGetLessonInfoArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveGetLessonInfoResult)
+	success, err := handler.(webrtc_live.WebrtcLive).GetLessonInfo(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveGetLessonInfoArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveGetLessonInfoArgs()
+}
+
+func newWebrtcLiveGetLessonInfoResult() interface{} {
+	return webrtc_live.NewWebrtcLiveGetLessonInfoResult()
+}
+
+func isStudentInLessonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveIsStudentInLessonArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveIsStudentInLessonResult)
+	success, err := handler.(webrtc_live.WebrtcLive).IsStudentInLesson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveIsStudentInLessonArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveIsStudentInLessonArgs()
+}
+
+func newWebrtcLiveIsStudentInLessonResult() interface{} {
+	return webrtc_live.NewWebrtcLiveIsStudentInLessonResult()
+}
+
+func createSignInHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveCreateSignInArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveCreateSignInResult)
+	success, err := handler.(webrtc_live.WebrtcLive).CreateSignIn(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveCreateSignInArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveCreateSignInArgs()
+}
+
+func newWebrtcLiveCreateSignInResult() interface{} {
+	return webrtc_live.NewWebrtcLiveCreateSignInResult()
+}
+
+func signInHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveSignInArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveSignInResult)
+	success, err := handler.(webrtc_live.WebrtcLive).SignIn(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveSignInArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveSignInArgs()
+}
+
+func newWebrtcLiveSignInResult() interface{} {
+	return webrtc_live.NewWebrtcLiveSignInResult()
+}
+
+func selectSignInHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveSelectSignInArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveSelectSignInResult)
+	success, err := handler.(webrtc_live.WebrtcLive).SelectSignIn(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveSelectSignInArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveSelectSignInArgs()
+}
+
+func newWebrtcLiveSelectSignInResult() interface{} {
+	return webrtc_live.NewWebrtcLiveSelectSignInResult()
+}
+
+func delSignHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveDelSignArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveDelSignResult)
+	success, err := handler.(webrtc_live.WebrtcLive).DelSign(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveDelSignArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveDelSignArgs()
+}
+
+func newWebrtcLiveDelSignResult() interface{} {
+	return webrtc_live.NewWebrtcLiveDelSignResult()
+}
+
+func rollCallInRandomHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveRollCallInRandomArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveRollCallInRandomResult)
+	success, err := handler.(webrtc_live.WebrtcLive).RollCallInRandom(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveRollCallInRandomArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveRollCallInRandomArgs()
+}
+
+func newWebrtcLiveRollCallInRandomResult() interface{} {
+	return webrtc_live.NewWebrtcLiveRollCallInRandomResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -329,6 +529,86 @@ func (p *kClient) GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLes
 	_args.Req = req
 	var _result webrtc_live.WebrtcLiveGetLessonInfoByIdResult
 	if err = p.c.Call(ctx, "GetLessonInfoById", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SelectLessonInfo(ctx context.Context, req *webrtc_live.SelectLessonInfoReq) (r *webrtc_live.SelectLessonInfoResp, err error) {
+	var _args webrtc_live.WebrtcLiveSelectLessonInfoArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveSelectLessonInfoResult
+	if err = p.c.Call(ctx, "SelectLessonInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetLessonInfo(ctx context.Context, req *webrtc_live.GetLessonInfoReq) (r *webrtc_live.GetLessonInfoResp, err error) {
+	var _args webrtc_live.WebrtcLiveGetLessonInfoArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveGetLessonInfoResult
+	if err = p.c.Call(ctx, "GetLessonInfo", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) IsStudentInLesson(ctx context.Context, req *webrtc_live.IsStudentInLessonReq) (r *webrtc_live.IsStudentInLessonResp, err error) {
+	var _args webrtc_live.WebrtcLiveIsStudentInLessonArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveIsStudentInLessonResult
+	if err = p.c.Call(ctx, "IsStudentInLesson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) CreateSignIn(ctx context.Context, req *webrtc_live.CreateSignInReq) (r *webrtc_live.CreateSignInResp, err error) {
+	var _args webrtc_live.WebrtcLiveCreateSignInArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveCreateSignInResult
+	if err = p.c.Call(ctx, "CreateSignIn", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SignIn(ctx context.Context, req *webrtc_live.SignInReq) (r *webrtc_live.SignInResp, err error) {
+	var _args webrtc_live.WebrtcLiveSignInArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveSignInResult
+	if err = p.c.Call(ctx, "SignIn", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SelectSignIn(ctx context.Context, req *webrtc_live.SelectSignInReq) (r *webrtc_live.SelectSignInResp, err error) {
+	var _args webrtc_live.WebrtcLiveSelectSignInArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveSelectSignInResult
+	if err = p.c.Call(ctx, "SelectSignIn", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) DelSign(ctx context.Context, req *webrtc_live.DelSignInReq) (r *webrtc_live.DelSignInResp, err error) {
+	var _args webrtc_live.WebrtcLiveDelSignArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveDelSignResult
+	if err = p.c.Call(ctx, "DelSign", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq) (r *webrtc_live.RollCallInRandomResp, err error) {
+	var _args webrtc_live.WebrtcLiveRollCallInRandomArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveRollCallInRandomResult
+	if err = p.c.Call(ctx, "RollCallInRandom", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

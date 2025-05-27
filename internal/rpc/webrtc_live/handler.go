@@ -19,6 +19,7 @@ import (
 	my_webrtc "liveclass/internal/rpc/webrtc_live/webrtc"
 	"liveclass/internal/utils/cut"
 	"log"
+	"math/rand"
 	"strconv"
 	"time"
 )
@@ -394,4 +395,235 @@ func (s *WebrtcLiveImpl) DelLesson(ctx context.Context, req *webrtc_live.DelLess
 	}
 
 	return &webrtc_live.DelLessonResp{Resp: &common.Resp{Data: "success"}}, nil
+}
+
+// SelectLessonInfo implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) SelectLessonInfo(ctx context.Context, req *webrtc_live.SelectLessonInfoReq) (resp *webrtc_live.SelectLessonInfoResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{linfo.Name + ":" + linfo.Teacher + ":count", linfo.Name + ":" + linfo.Teacher + ":member"}).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	ar, ok := r.([]interface{})
+	if !ok {
+		return nil, errors.New("解析redis lessonInfo 失败")
+	}
+
+	// 解析在线人数
+	countStr := ar[0].(string)
+
+	// 解析成员列表
+	var membersStr string
+	for i := 1; i < len(ar); i++ {
+		membersStr += ar[i].(string)
+		if i%2 == 0 {
+			membersStr += "  "
+		} else {
+			membersStr += "$"
+		}
+	}
+
+	return &webrtc_live.SelectLessonInfoResp{
+		Resp: &common.Resp{Data: "count:" + countStr + "///" + "live member:" + membersStr},
+	}, nil
+}
+
+// GetLessonInfo implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) GetLessonInfo(ctx context.Context, req *webrtc_live.GetLessonInfoReq) (resp *webrtc_live.GetLessonInfoResp, err error) {
+	linfo, err := dao.SelectLessonByNandT(s.DB, req.LessonName, req.Teacher)
+	if err != nil {
+		return nil, err
+	}
+	var stuidStr string
+	for _, uid := range linfo.StudentID {
+		stuidStr += uid + "/"
+	}
+
+	info := strconv.Itoa(linfo.LessonId) + "$" + linfo.Name + "$" + linfo.Teacher + "$" + linfo.Description + "$" + stuidStr
+
+	return &webrtc_live.GetLessonInfoResp{Resp: &common.Resp{
+		Data: info,
+	}}, nil
+}
+
+// IsStudentInLesson implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) IsStudentInLesson(ctx context.Context, req *webrtc_live.IsStudentInLessonReq) (resp *webrtc_live.IsStudentInLessonResp, err error) {
+	r, err := dao.CheckStudentInLesson(s.DB, req.Studentid, req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	return &webrtc_live.IsStudentInLessonResp{
+		Resp: &common.Resp{
+			Data: r,
+		},
+	}, nil
+}
+
+// CreateSignIn implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) CreateSignIn(ctx context.Context, req *webrtc_live.CreateSignInReq) (resp *webrtc_live.CreateSignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID)
+	if err != nil {
+		return nil, err
+	}
+	return &webrtc_live.CreateSignInResp{
+		Resp: &common.Resp{
+			Data: "success",
+		},
+	}, nil
+}
+
+// SignIn implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) SignIn(ctx context.Context, req *webrtc_live.SignInReq) (resp *webrtc_live.SignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, stuid := range linfo.StudentID {
+		if req.Userid == stuid {
+			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return &webrtc_live.SignInResp{Resp: &common.Resp{Data: "success"}}, nil
+	}
+	return nil, errors.New("不是此课程学生")
+}
+
+// SelectSignIn implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) SelectSignIn(ctx context.Context, req *webrtc_live.SelectSignInReq) (resp *webrtc_live.SelectSignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	sinfo, err := dao.SelectSignIn(s.DB, req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &webrtc_live.SelectSignInResp{Resp: &common.Resp{Data: sinfo}}, nil
+}
+
+// DelSign implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) DelSign(ctx context.Context, req *webrtc_live.DelSignInReq) (resp *webrtc_live.DelSignInResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = dao.RemoveSignIn(s.DB, req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	return &webrtc_live.DelSignInResp{Resp: &common.Resp{Data: "success"}}, nil
+}
+
+// RollCallInRandom implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq) (resp *webrtc_live.RollCallInRandomResp, err error) {
+	lid, err := strconv.Atoi(req.LessonId)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	randomIndex := rand.Intn(len(linfo.StudentID))
+
+	stuinfo, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: linfo.StudentID[randomIndex]})
+	if err != nil {
+		return nil, err
+	}
+
+	stuname, _ := cut.SplitInfo(stuinfo.Resp.Data)
+
+	return &webrtc_live.RollCallInRandomResp{Resp: &common.Resp{Data: stuname}}, nil
 }

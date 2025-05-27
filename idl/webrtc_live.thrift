@@ -69,6 +69,77 @@ struct GetLessonInfoByIdResp{
     1:common.resp resp,
 }
 
+struct SelectLessonInfoReq{
+    1: string lessonid,
+}
+
+struct SelectLessonInfoResp{
+    1:common.resp resp,
+}
+
+struct GetLessonInfoReq{
+    1: string lesson_name,
+    2: string teacher,
+}
+
+struct GetLessonInfoResp{
+    1: common.resp resp,
+}
+
+struct IsStudentInLessonReq {
+    1: string studentid,
+    2: string lessonid,
+}
+
+struct IsStudentInLessonResp {
+    1:common.resp resp,
+}
+
+struct CreateSignInReq {
+    1: string userid,
+    2: string lessonid,
+}
+
+struct CreateSignInResp {
+    1:common.resp resp,
+}
+
+struct SignInReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct SignInResp {
+    1:common.resp resp,
+}
+
+struct SelectSignInReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct SelectSignInResp{
+    1:common.resp resp,
+}
+
+struct DelSignInReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct DelSignInResp{
+    1:common.resp resp,
+}
+
+struct RollCallInRandomReq{
+    1:string userid,
+    2:string lesson_id
+}
+
+struct RollCallInRandomResp{
+    1:common.resp resp,
+}
+
 service webrtc_live {
     BroadcastResp Broadcast(1: BroadcastReq req),
     ViewResp      View(1: ViewReq req),
@@ -77,4 +148,12 @@ service webrtc_live {
     ChangeUserInLiveResp ChangeUserInLive(1: ChangeUserInLiveReq req),
     ChangeUserToLessonResp ChangeUserToLesson(1: ChangeUserToLessonReq req),
     GetLessonInfoByIdResp  GetLessonInfoById(1: GetLessonInfoByIdReq req),
+    SelectLessonInfoResp   SelectLessonInfo(1: SelectLessonInfoReq req),
+    GetLessonInfoResp      GetLessonInfo(1: GetLessonInfoReq req),
+    IsStudentInLessonResp  IsStudentInLesson(1: IsStudentInLessonReq req),
+    CreateSignInResp    CreateSignIn(1:CreateSignInReq req),
+    SignInResp          SignIn(1:SignInReq req),
+    SelectSignInResp    SelectSignIn(1: SelectSignInReq req),
+    DelSignInResp       DelSign(1:DelSignInReq req),
+    RollCallInRandomResp    RollCallInRandom(1:RollCallInRandomReq req),
 }
