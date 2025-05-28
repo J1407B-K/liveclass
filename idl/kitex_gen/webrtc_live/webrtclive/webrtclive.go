@@ -125,6 +125,48 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"SaveWhiteBoardJson": kitex.NewMethodInfo(
+		saveWhiteBoardJsonHandler,
+		newWebrtcLiveSaveWhiteBoardJsonArgs,
+		newWebrtcLiveSaveWhiteBoardJsonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetWhiteBoardJson": kitex.NewMethodInfo(
+		getWhiteBoardJsonHandler,
+		newWebrtcLiveGetWhiteBoardJsonArgs,
+		newWebrtcLiveGetWhiteBoardJsonResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"PublishMic": kitex.NewMethodInfo(
+		publishMicHandler,
+		newWebrtcLivePublishMicArgs,
+		newWebrtcLivePublishMicResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"RaiseHand": kitex.NewMethodInfo(
+		raiseHandHandler,
+		newWebrtcLiveRaiseHandArgs,
+		newWebrtcLiveRaiseHandResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetRaiseHand": kitex.NewMethodInfo(
+		getRaiseHandHandler,
+		newWebrtcLiveGetRaiseHandArgs,
+		newWebrtcLiveGetRaiseHandResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"ApproveHand": kitex.NewMethodInfo(
+		approveHandHandler,
+		newWebrtcLiveApproveHandArgs,
+		newWebrtcLiveApproveHandResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -479,6 +521,114 @@ func newWebrtcLiveRecordLessonResult() interface{} {
 	return webrtc_live.NewWebrtcLiveRecordLessonResult()
 }
 
+func saveWhiteBoardJsonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveSaveWhiteBoardJsonArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveSaveWhiteBoardJsonResult)
+	success, err := handler.(webrtc_live.WebrtcLive).SaveWhiteBoardJson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveSaveWhiteBoardJsonArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveSaveWhiteBoardJsonArgs()
+}
+
+func newWebrtcLiveSaveWhiteBoardJsonResult() interface{} {
+	return webrtc_live.NewWebrtcLiveSaveWhiteBoardJsonResult()
+}
+
+func getWhiteBoardJsonHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveGetWhiteBoardJsonArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveGetWhiteBoardJsonResult)
+	success, err := handler.(webrtc_live.WebrtcLive).GetWhiteBoardJson(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveGetWhiteBoardJsonArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveGetWhiteBoardJsonArgs()
+}
+
+func newWebrtcLiveGetWhiteBoardJsonResult() interface{} {
+	return webrtc_live.NewWebrtcLiveGetWhiteBoardJsonResult()
+}
+
+func publishMicHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLivePublishMicArgs)
+	realResult := result.(*webrtc_live.WebrtcLivePublishMicResult)
+	success, err := handler.(webrtc_live.WebrtcLive).PublishMic(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLivePublishMicArgs() interface{} {
+	return webrtc_live.NewWebrtcLivePublishMicArgs()
+}
+
+func newWebrtcLivePublishMicResult() interface{} {
+	return webrtc_live.NewWebrtcLivePublishMicResult()
+}
+
+func raiseHandHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveRaiseHandArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveRaiseHandResult)
+	success, err := handler.(webrtc_live.WebrtcLive).RaiseHand(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveRaiseHandArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveRaiseHandArgs()
+}
+
+func newWebrtcLiveRaiseHandResult() interface{} {
+	return webrtc_live.NewWebrtcLiveRaiseHandResult()
+}
+
+func getRaiseHandHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveGetRaiseHandArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveGetRaiseHandResult)
+	success, err := handler.(webrtc_live.WebrtcLive).GetRaiseHand(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveGetRaiseHandArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveGetRaiseHandArgs()
+}
+
+func newWebrtcLiveGetRaiseHandResult() interface{} {
+	return webrtc_live.NewWebrtcLiveGetRaiseHandResult()
+}
+
+func approveHandHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveApproveHandArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveApproveHandResult)
+	success, err := handler.(webrtc_live.WebrtcLive).ApproveHand(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveApproveHandArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveApproveHandArgs()
+}
+
+func newWebrtcLiveApproveHandResult() interface{} {
+	return webrtc_live.NewWebrtcLiveApproveHandResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -644,6 +794,66 @@ func (p *kClient) RecordLesson(ctx context.Context, req *webrtc_live.RecordLesso
 	_args.Req = req
 	var _result webrtc_live.WebrtcLiveRecordLessonResult
 	if err = p.c.Call(ctx, "RecordLesson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) SaveWhiteBoardJson(ctx context.Context, req *webrtc_live.SaveWhiteBoardJsonReq) (r *webrtc_live.SaveWhiteBoardJsonResp, err error) {
+	var _args webrtc_live.WebrtcLiveSaveWhiteBoardJsonArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveSaveWhiteBoardJsonResult
+	if err = p.c.Call(ctx, "SaveWhiteBoardJson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetWhiteBoardJson(ctx context.Context, req *webrtc_live.GetWhiteBoardJsonReq) (r *webrtc_live.GetWhiteBoardJsonResp, err error) {
+	var _args webrtc_live.WebrtcLiveGetWhiteBoardJsonArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveGetWhiteBoardJsonResult
+	if err = p.c.Call(ctx, "GetWhiteBoardJson", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) PublishMic(ctx context.Context, req *webrtc_live.PublishMicReq) (r *webrtc_live.PublishMicResp, err error) {
+	var _args webrtc_live.WebrtcLivePublishMicArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLivePublishMicResult
+	if err = p.c.Call(ctx, "PublishMic", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) RaiseHand(ctx context.Context, req *webrtc_live.RaiseHandReq) (r *webrtc_live.RaiseHandResp, err error) {
+	var _args webrtc_live.WebrtcLiveRaiseHandArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveRaiseHandResult
+	if err = p.c.Call(ctx, "RaiseHand", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq) (r *webrtc_live.GetRaiseHandResp, err error) {
+	var _args webrtc_live.WebrtcLiveGetRaiseHandArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveGetRaiseHandResult
+	if err = p.c.Call(ctx, "GetRaiseHand", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq) (r *webrtc_live.ApproveHandResp, err error) {
+	var _args webrtc_live.WebrtcLiveApproveHandArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveApproveHandResult
+	if err = p.c.Call(ctx, "ApproveHand", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

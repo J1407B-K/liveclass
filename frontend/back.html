@@ -2,39 +2,26 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8" />
-    <title>LiveClass（摄像头/屏幕共享 & 录制 & 白板协作）</title>
+    <title>LiveClass（可选 摄像头/屏幕共享 & 录制）</title>
     <style>
-        body { font-family: sans-serif; padding:1rem; }
-        video { width:48%; border:1px solid #ccc; margin:0.5rem; }
-        button, select, input { margin:0.5rem; }
-        #whiteboard {
-            width:100%; height:500px;
-            border:1px solid #ccc; margin-top:1rem;
-            display:none;
-        }
-        #whiteboard iframe { width:100%; height:100%; border:none; }
+        video { width: 48%; border: 1px solid #ccc; margin: 5px; }
+        button, select { margin: 5px; }
     </style>
 </head>
 <body>
-<h2>LiveClass — 摄像头/屏幕共享 & 录制 & 白板协作</h2>
-
-<!-- 课堂参数 -->
+<h2>LiveClass（可选 摄像头 或 屏幕共享 & 录制）</h2>
 <div>
-    <label>Lesson ID:
-        <input id="lessonID" type="number" value="123" />
-    </label>
-    <label>JWT Token:
-        <input id="token" style="width:300px" placeholder="your.jwt.token" />
-    </label>
-    <label>类型:
+    <label>Lesson ID: <input id="lessonID" value="123" type="number"/></label>
+    <label>JWT Token: <input id="token" style="width:300px" placeholder="your.jwt.token"/></label>
+</div>
+<div>
+    <label>Broadcast Type:
         <select id="broadcastType">
             <option value="camera">摄像头</option>
             <option value="screen">屏幕共享</option>
         </select>
     </label>
 </div>
-
-<!-- 视频控制 -->
 <div>
     <button id="startBroadcast">老师开播</button>
     <button id="stopBroadcast">停止开播</button>
@@ -45,12 +32,6 @@
     <video id="remoteVideo" autoplay playsinline controls></video>
 </div>
 
-<!-- 白板协作区域 -->
-<h3>Excalidraw 白板（同 Lesson ID 房间）</h3>
-<div id="whiteboard">
-    <iframe allow="clipboard-read; clipboard-write"></iframe>
-</div>
-
 <script>
     (async () => {
         const lessonInput = document.getElementById('lessonID');
@@ -58,8 +39,6 @@
         const typeSelect  = document.getElementById('broadcastType');
         const localVideo  = document.getElementById('localVideo');
         const remoteVideo = document.getElementById('remoteVideo');
-        const wbDiv       = document.getElementById('whiteboard');
-        const iframe      = wbDiv.querySelector('iframe');
 
         let pc = null;
         let localStream = null;
@@ -68,7 +47,7 @@
 
         async function getBroadcastStream() {
             if (typeSelect.value === 'camera') {
-                return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                return await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             } else {
                 const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
                 const micStream    = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -82,14 +61,14 @@
         function createPC(isViewer) {
             if (pc) pc.close();
             pc = new RTCPeerConnection({ iceServers: [] });
-            pc.onicecandidate = e => { if (!e.candidate) console.log('[ICE] done'); };
-            pc.oniceconnectionstatechange = () => console.log('[ICE] state →', pc.iceConnectionState);
+            pc.onicecandidate = e => { if (!e.candidate) console.log('[Browser] ICE gathering complete'); };
+            pc.oniceconnectionstatechange = () => { console.log('[Browser] ICE state →', pc.iceConnectionState); };
             if (isViewer) {
                 const remoteStream = new MediaStream();
                 remoteVideo.srcObject = remoteStream;
                 pc.addTransceiver('video', { direction: 'recvonly' });
                 pc.addTransceiver('audio', { direction: 'recvonly' });
-                pc.ontrack = ev => remoteStream.addTrack(ev.track);
+                pc.ontrack = ev => { remoteStream.addTrack(ev.track); };
             }
             return pc;
         }
@@ -120,48 +99,41 @@
         }
 
         async function handleAnswer(b64) {
-            let raw = b64.trim();
-            if (raw.startsWith('"') && raw.endsWith('"')) raw = JSON.parse(raw);
+            const raw = b64.trim().replace(/[\r\n]/g,'').replace(/-/g,'+').replace(/_/g,'/');
             const desc = JSON.parse(atob(raw));
             await pc.setRemoteDescription(desc);
         }
 
-        function showWhiteboard() {
-            const room = lessonInput.value.trim();
-            iframe.src = `https://excalidraw.com/#room=lesson${encodeURIComponent(room)}`;
-            wbDiv.style.display = 'block';
-        }
-
-        function hideWhiteboard() {
-            iframe.src = '';
-            wbDiv.style.display = 'none';
-        }
-
         document.getElementById('startBroadcast').onclick = async () => {
             if (!lessonInput.value.trim() || !tokenInput.value.trim()) {
-                return alert('请填写 Lesson ID 和 JWT Token');
+                return alert('请填写 lesson_id（数字）和 JWT token');
             }
-            // 显示白板
-            showWhiteboard();
+            // 重置录制数据
+            recordChunks = [];
+            recorder = null;
 
-            recordChunks = []; recorder = null;
-            const offerB64 = await doOffer(true);
-            const form     = new FormData();
-            form.append('lesson_id', lessonInput.value.trim());
-            form.append('b64offer',   offerB64);
-            const answerB64 = await postFormData('http://127.0.0.1:80/broadcast', form);
+            // WebRTC 推流
+            const offerB64  = await doOffer(true);
+            const formOffer = new FormData();
+            formOffer.append('lesson_id', lessonInput.value.trim());
+            formOffer.append('b64offer', offerB64);
+            const answerB64 = await postFormData('http://127.0.0.1:80/broadcast', formOffer);
             await handleAnswer(answerB64);
 
+            // 启动录制
             recorder = new MediaRecorder(localStream);
             recorder.ondataavailable = e => { if (e.data.size) recordChunks.push(e.data); };
             recorder.start(1000);
         };
 
-        document.getElementById('stopBroadcast').onclick = async () => {
+        async function stopBroadcast() {
+            // 停录并上传
             if (recorder) {
                 recorder.stop();
                 recorder.onstop = async () => {
+                    // 合并 Blob
                     const blob = new Blob(recordChunks, { type: 'video/webm' });
+                    // 构造 form-data
                     const form = new FormData();
                     form.append('lesson_id', lessonInput.value.trim());
                     form.append('file', blob, 'record.webm');
@@ -175,6 +147,7 @@
                     }
                 };
             }
+            // 断开 WebRTC
             if (pc) pc.close();
             pc = null;
             if (localStream) {
@@ -182,29 +155,23 @@
                 localStream = null;
             }
             localVideo.srcObject = null;
-            // 隐藏白板
-            hideWhiteboard();
-        };
+        }
+        document.getElementById('stopBroadcast').onclick = stopBroadcast;
+        window.addEventListener('beforeunload', stopBroadcast);
 
         document.getElementById('startView').onclick = async () => {
             if (!lessonInput.value.trim() || !tokenInput.value.trim()) {
-                return alert('请填写 Lesson ID 和 JWT Token');
+                return alert('请填写 lesson_id（数字）和 JWT token');
             }
-            showWhiteboard();
-
-            const offerB64 = await doOffer(false);
-            const formView = new FormData();
+            const offerB64  = await doOffer(false);
+            const formView  = new FormData();
             formView.append('lesson_id', lessonInput.value.trim());
             formView.append('b64offer', offerB64);
             const answerB64 = await postFormData('http://127.0.0.1:80/view', formView);
             await handleAnswer(answerB64);
         };
-
-        window.addEventListener('beforeunload', () => {
-            if (pc) pc.close();
-            hideWhiteboard();
-        });
     })();
 </script>
 </body>
 </html>
+

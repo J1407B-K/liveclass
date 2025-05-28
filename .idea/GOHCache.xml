@@ -60,6 +60,13 @@
             </set>
           </value>
         </entry>
+        <entry key="AppState">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/appstate.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="BroadcastReq">
           <value>
             <set>
@@ -270,6 +277,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -277,6 +285,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -340,6 +349,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -347,6 +357,14 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Element">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/element.go" />
             </set>
           </value>
         </entry>
@@ -354,6 +372,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcEngine.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ExcalidrawDoc">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/excalidrawdoc.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="File">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/file.go" />
             </set>
           </value>
         </entry>
@@ -391,6 +423,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -398,6 +431,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -433,6 +467,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -440,6 +475,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -794,10 +830,18 @@
             </set>
           </value>
         </entry>
+        <entry key="RaiseHand">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/raisehand.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="RecordLessonReq">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -805,6 +849,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -848,6 +893,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -855,6 +901,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -862,6 +909,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -869,6 +917,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -876,6 +925,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -883,6 +933,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -898,6 +949,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -905,6 +957,7 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -1098,6 +1151,20 @@
             </set>
           </value>
         </entry>
+        <entry key="WebrtcLiveCreateSignInArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveCreateSignInResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="WebrtcLiveDelLessonArgs">
           <value>
             <set>
@@ -1106,6 +1173,27 @@
           </value>
         </entry>
         <entry key="WebrtcLiveDelLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveDelSignArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveDelSignResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveGetLessonInfoArgs">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
@@ -1126,10 +1214,101 @@
             </set>
           </value>
         </entry>
+        <entry key="WebrtcLiveGetLessonInfoResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="WebrtcLiveImpl">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveIsStudentInLessonArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveIsStudentInLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveRecordLessonArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveRecordLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveRollCallInRandomArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveRollCallInRandomResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveSelectLessonInfoArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveSelectLessonInfoResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveSelectSignInArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveSelectSignInResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveSignInArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveSignInResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -1344,7 +1523,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607692" />
+              <option name="lastModified" value="1748355459524" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1356,14 +1535,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607749" />
+              <option name="lastModified" value="1748355459619" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607749" />
+              <option name="lastModified" value="1748355459618" />
             </ScannedPath>
           </value>
         </entry>
@@ -1622,21 +1801,21 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607749" />
+              <option name="lastModified" value="1748355459619" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/k-webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607765" />
+              <option name="lastModified" value="1748355459651" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607744" />
+              <option name="lastModified" value="1748355459612" />
               <option name="schema">
                 <list>
                   <option value="BroadcastReq" />
@@ -1653,6 +1832,24 @@
                   <option value="ChangeUserToLessonResp" />
                   <option value="GetLessonInfoByIdReq" />
                   <option value="GetLessonInfoByIdResp" />
+                  <option value="SelectLessonInfoReq" />
+                  <option value="SelectLessonInfoResp" />
+                  <option value="GetLessonInfoReq" />
+                  <option value="GetLessonInfoResp" />
+                  <option value="IsStudentInLessonReq" />
+                  <option value="IsStudentInLessonResp" />
+                  <option value="CreateSignInReq" />
+                  <option value="CreateSignInResp" />
+                  <option value="SignInReq" />
+                  <option value="SignInResp" />
+                  <option value="SelectSignInReq" />
+                  <option value="SelectSignInResp" />
+                  <option value="DelSignInReq" />
+                  <option value="DelSignInResp" />
+                  <option value="RollCallInRandomReq" />
+                  <option value="RollCallInRandomResp" />
+                  <option value="RecordLessonReq" />
+                  <option value="RecordLessonResp" />
                   <option value="WebrtcLiveBroadcastArgs" />
                   <option value="WebrtcLiveBroadcastResult" />
                   <option value="WebrtcLiveViewArgs" />
@@ -1667,6 +1864,24 @@
                   <option value="WebrtcLiveChangeUserToLessonResult" />
                   <option value="WebrtcLiveGetLessonInfoByIdArgs" />
                   <option value="WebrtcLiveGetLessonInfoByIdResult" />
+                  <option value="WebrtcLiveSelectLessonInfoArgs" />
+                  <option value="WebrtcLiveSelectLessonInfoResult" />
+                  <option value="WebrtcLiveGetLessonInfoArgs" />
+                  <option value="WebrtcLiveGetLessonInfoResult" />
+                  <option value="WebrtcLiveIsStudentInLessonArgs" />
+                  <option value="WebrtcLiveIsStudentInLessonResult" />
+                  <option value="WebrtcLiveCreateSignInArgs" />
+                  <option value="WebrtcLiveCreateSignInResult" />
+                  <option value="WebrtcLiveSignInArgs" />
+                  <option value="WebrtcLiveSignInResult" />
+                  <option value="WebrtcLiveSelectSignInArgs" />
+                  <option value="WebrtcLiveSelectSignInResult" />
+                  <option value="WebrtcLiveDelSignArgs" />
+                  <option value="WebrtcLiveDelSignResult" />
+                  <option value="WebrtcLiveRollCallInRandomArgs" />
+                  <option value="WebrtcLiveRollCallInRandomResult" />
+                  <option value="WebrtcLiveRecordLessonArgs" />
+                  <option value="WebrtcLiveRecordLessonResult" />
                 </list>
               </option>
             </ScannedPath>
@@ -1675,7 +1890,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607746" />
+              <option name="lastModified" value="1748355459614" />
               <option name="schema">
                 <list>
                   <option value="kWebrtcLiveClient" />
@@ -1687,14 +1902,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607746" />
+              <option name="lastModified" value="1748355459614" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/webrtclive.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748276607748" />
+              <option name="lastModified" value="1748355459618" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1706,7 +1921,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748359883921" />
+              <option name="lastModified" value="1748449318381" />
             </ScannedPath>
           </value>
         </entry>
@@ -2251,7 +2466,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/model/signin.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748155090854" />
+              <option name="lastModified" value="1748421729367" />
               <option name="schema">
                 <list>
                   <option value="SignIn" />
@@ -2493,14 +2708,14 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748351779286" />
+              <option name="lastModified" value="1748452219306" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/flag/automigrate.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748346501616" />
+              <option name="lastModified" value="1748451509194" />
             </ScannedPath>
           </value>
         </entry>
@@ -2526,7 +2741,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748357260593" />
+              <option name="lastModified" value="1748452219051" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -2584,10 +2799,70 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/appstate.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748421206408" />
+              <option name="schema">
+                <list>
+                  <option value="AppState" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/element.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748421190501" />
+              <option name="schema">
+                <list>
+                  <option value="Element" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/excalidrawdoc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748422086031" />
+              <option name="schema">
+                <list>
+                  <option value="ExcalidrawDoc" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/file.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748421219025" />
+              <option name="schema">
+                <list>
+                  <option value="File" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/raisehand.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748451007748" />
+              <option name="schema">
+                <list>
+                  <option value="RaiseHand" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/signin.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748346501626" />
+              <option name="lastModified" value="1748421729271" />
               <option name="schema">
                 <list>
                   <option value="SignIn" />
@@ -2618,7 +2893,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcLesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748259566898" />
+              <option name="lastModified" value="1748451548744" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLesson" />
@@ -2686,7 +2961,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748360945538" />
+              <option name="lastModified" value="1748450494471" />
             </ScannedPath>
           </value>
         </entry>
@@ -2749,6 +3024,7 @@
         <entry key="agent_service_list_all_user_conv_args" value="AgentServiceListAllUserConvArgs" />
         <entry key="agent_service_list_all_user_conv_result" value="AgentServiceListAllUserConvResult" />
         <entry key="answer" value="Answer" />
+        <entry key="app_state" value="AppState" />
         <entry key="broadcast_req" value="BroadcastReq" />
         <entry key="broadcast_resp" value="BroadcastResp" />
         <entry key="change_user_in_live_req" value="ChangeUserInLiveReq" />
@@ -2789,7 +3065,10 @@
         <entry key="del_question_resp" value="DelQuestionResp" />
         <entry key="del_sign_in_req" value="DelSignInReq" />
         <entry key="del_sign_in_resp" value="DelSignInResp" />
+        <entry key="element" value="Element" />
         <entry key="engine" value="Engine" />
+        <entry key="excalidraw_doc" value="ExcalidrawDoc" />
+        <entry key="file" value="File" />
         <entry key="get_history_req" value="GetHistoryReq" />
         <entry key="get_history_resp" value="GetHistoryResp" />
         <entry key="get_lesson_info_by_id_req" value="GetLessonInfoByIdReq" />
@@ -2858,6 +3137,7 @@
         <entry key="quiz_service_impl" value="QuizServiceImpl" />
         <entry key="quiz_service_tor_f_answer_args" value="QuizServiceTorFAnswerArgs" />
         <entry key="quiz_service_tor_f_answer_result" value="QuizServiceTorFAnswerResult" />
+        <entry key="raise_hand" value="RaiseHand" />
         <entry key="record_lesson_req" value="RecordLessonReq" />
         <entry key="record_lesson_resp" value="RecordLessonResp" />
         <entry key="redis_config" value="RedisConfig" />
@@ -2901,15 +3181,33 @@
         <entry key="webrtc_live_change_user_to_lesson_result" value="WebrtcLiveChangeUserToLessonResult" />
         <entry key="webrtc_live_create_lesson_args" value="WebrtcLiveCreateLessonArgs" />
         <entry key="webrtc_live_create_lesson_result" value="WebrtcLiveCreateLessonResult" />
+        <entry key="webrtc_live_create_sign_in_args" value="WebrtcLiveCreateSignInArgs" />
+        <entry key="webrtc_live_create_sign_in_result" value="WebrtcLiveCreateSignInResult" />
         <entry key="webrtc_live_del_lesson_args" value="WebrtcLiveDelLessonArgs" />
         <entry key="webrtc_live_del_lesson_result" value="WebrtcLiveDelLessonResult" />
+        <entry key="webrtc_live_del_sign_args" value="WebrtcLiveDelSignArgs" />
+        <entry key="webrtc_live_del_sign_result" value="WebrtcLiveDelSignResult" />
+        <entry key="webrtc_live_get_lesson_info_args" value="WebrtcLiveGetLessonInfoArgs" />
         <entry key="webrtc_live_get_lesson_info_by_id_args" value="WebrtcLiveGetLessonInfoByIdArgs" />
         <entry key="webrtc_live_get_lesson_info_by_id_result" value="WebrtcLiveGetLessonInfoByIdResult" />
+        <entry key="webrtc_live_get_lesson_info_result" value="WebrtcLiveGetLessonInfoResult" />
         <entry key="webrtc_live_impl" value="WebrtcLiveImpl" />
+        <entry key="webrtc_live_is_student_in_lesson_args" value="WebrtcLiveIsStudentInLessonArgs" />
+        <entry key="webrtc_live_is_student_in_lesson_result" value="WebrtcLiveIsStudentInLessonResult" />
+        <entry key="webrtc_live_record_lesson_args" value="WebrtcLiveRecordLessonArgs" />
+        <entry key="webrtc_live_record_lesson_result" value="WebrtcLiveRecordLessonResult" />
+        <entry key="webrtc_live_roll_call_in_random_args" value="WebrtcLiveRollCallInRandomArgs" />
+        <entry key="webrtc_live_roll_call_in_random_result" value="WebrtcLiveRollCallInRandomResult" />
+        <entry key="webrtc_live_select_lesson_info_args" value="WebrtcLiveSelectLessonInfoArgs" />
+        <entry key="webrtc_live_select_lesson_info_result" value="WebrtcLiveSelectLessonInfoResult" />
+        <entry key="webrtc_live_select_sign_in_args" value="WebrtcLiveSelectSignInArgs" />
+        <entry key="webrtc_live_select_sign_in_result" value="WebrtcLiveSelectSignInResult" />
+        <entry key="webrtc_live_sign_in_args" value="WebrtcLiveSignInArgs" />
+        <entry key="webrtc_live_sign_in_result" value="WebrtcLiveSignInResult" />
         <entry key="webrtc_live_view_args" value="WebrtcLiveViewArgs" />
         <entry key="webrtc_live_view_result" value="WebrtcLiveViewResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1748329956934" />
+    <option name="lastTimeChecked" value="1748420401012" />
   </component>
 </project>

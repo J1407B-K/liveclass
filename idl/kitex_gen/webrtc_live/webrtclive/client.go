@@ -27,6 +27,12 @@ type Client interface {
 	DelSign(ctx context.Context, req *webrtc_live.DelSignInReq, callOptions ...callopt.Option) (r *webrtc_live.DelSignInResp, err error)
 	RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq, callOptions ...callopt.Option) (r *webrtc_live.RollCallInRandomResp, err error)
 	RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq, callOptions ...callopt.Option) (r *webrtc_live.RecordLessonResp, err error)
+	SaveWhiteBoardJson(ctx context.Context, req *webrtc_live.SaveWhiteBoardJsonReq, callOptions ...callopt.Option) (r *webrtc_live.SaveWhiteBoardJsonResp, err error)
+	GetWhiteBoardJson(ctx context.Context, req *webrtc_live.GetWhiteBoardJsonReq, callOptions ...callopt.Option) (r *webrtc_live.GetWhiteBoardJsonResp, err error)
+	PublishMic(ctx context.Context, req *webrtc_live.PublishMicReq, callOptions ...callopt.Option) (r *webrtc_live.PublishMicResp, err error)
+	RaiseHand(ctx context.Context, req *webrtc_live.RaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.RaiseHandResp, err error)
+	GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.GetRaiseHandResp, err error)
+	ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq, callOptions ...callopt.Option) (r *webrtc_live.ApproveHandResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -136,4 +142,34 @@ func (p *kWebrtcLiveClient) RollCallInRandom(ctx context.Context, req *webrtc_li
 func (p *kWebrtcLiveClient) RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq, callOptions ...callopt.Option) (r *webrtc_live.RecordLessonResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.RecordLesson(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) SaveWhiteBoardJson(ctx context.Context, req *webrtc_live.SaveWhiteBoardJsonReq, callOptions ...callopt.Option) (r *webrtc_live.SaveWhiteBoardJsonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.SaveWhiteBoardJson(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) GetWhiteBoardJson(ctx context.Context, req *webrtc_live.GetWhiteBoardJsonReq, callOptions ...callopt.Option) (r *webrtc_live.GetWhiteBoardJsonResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetWhiteBoardJson(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) PublishMic(ctx context.Context, req *webrtc_live.PublishMicReq, callOptions ...callopt.Option) (r *webrtc_live.PublishMicResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.PublishMic(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) RaiseHand(ctx context.Context, req *webrtc_live.RaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.RaiseHandResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.RaiseHand(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.GetRaiseHandResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetRaiseHand(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq, callOptions ...callopt.Option) (r *webrtc_live.ApproveHandResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ApproveHand(ctx, req)
 }

@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"gorm.io/gorm"
@@ -229,6 +230,71 @@ func SelectSignIn(db *gorm.DB, lessonid string) (string, error) {
 
 func RemoveSignIn(db *gorm.DB, lessonId string) error {
 	return db.Where("lesson_id = ?", lessonId).Unscoped().Delete(&model.SignIn{}).Error
+}
+
+func SaveWhiteBoard(db *gorm.DB, lessonid, file string) error {
+	var doc model.ExcalidrawDoc
+
+	err := json.Unmarshal([]byte(file), &doc)
+	if err != nil {
+		return err
+	}
+
+	doc.LessonId = lessonid
+
+	err = db.Create(&doc).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetWhiteBoardNew(db *gorm.DB, lessonid string) (*model.ExcalidrawDoc, error) {
+	var docs model.ExcalidrawDoc
+
+	err := db.Where("lesson_id = ?", lessonid).First(&docs).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &docs, nil
+}
+
+func RaiseHand(db *gorm.DB, lessonid int, stuid string) error {
+	tx := db.Begin()
+
+	var l model.WebrtcLesson
+	err := tx.Where("lesson = ?", lessonid).First(&l).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	l.RaiseStuId = append(l.RaiseStuId, stuid)
+
+	err = tx.Save(&l).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func ApproveHand(db *gorm.DB, l model.WebrtcLesson, stuid string) error {
+	for _, id := range l.RaiseStuId {
+		if id == stuid {
+			l.ApproveStuID = append(l.ApproveStuID, stuid)
+			return nil
+		}
+	}
+	return errors.New("该学生没有举手！")
 }
 
 func removeValueInArray(array []string, value string) []string {

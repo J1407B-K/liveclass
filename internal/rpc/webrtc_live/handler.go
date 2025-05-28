@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/cloudwego/kitex/client"
@@ -688,4 +689,214 @@ func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.Reco
 	return &webrtc_live.RecordLessonResp{
 		Resp: &common.Resp{Data: filename},
 	}, nil
+}
+
+// SaveWhiteBoardJson implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) SaveWhiteBoardJson(ctx context.Context, req *webrtc_live.SaveWhiteBoardJsonReq) (resp *webrtc_live.SaveWhiteBoardJsonResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	//拿到信息
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = dao.SaveWhiteBoard(s.DB, req.Lessonid, req.File)
+	if err != nil {
+		return nil, err
+	}
+	return &webrtc_live.SaveWhiteBoardJsonResp{Resp: &common.Resp{Data: "success"}}, nil
+}
+
+// GetWhiteBoardJson implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) GetWhiteBoardJson(ctx context.Context, req *webrtc_live.GetWhiteBoardJsonReq) (resp *webrtc_live.GetWhiteBoardJsonResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	docs, err := dao.GetWhiteBoardNew(s.DB, req.Lessonid)
+	if docs == nil && err == nil {
+		return &webrtc_live.GetWhiteBoardJsonResp{Resp: &common.Resp{Data: "not_found"}}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	docByte, err := json.Marshal(docs)
+	if err != nil {
+		return nil, err
+	}
+	return &webrtc_live.GetWhiteBoardJsonResp{Resp: &common.Resp{Data: string(docByte)}}, nil
+}
+
+// PublishMic implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) PublishMic(ctx context.Context, req *webrtc_live.PublishMicReq) (resp *webrtc_live.PublishMicResp, err error) {
+	lid, _ := strconv.Atoi(req.Lessonid)
+	linfo, _ := dao.SelectLesson(s.DB, lid)
+	for _, stuid := range linfo.StudentID {
+		if stuid == req.Userid {
+			offer, _ := my_webrtc.DecodeSDP(req.B64offer)
+
+			pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
+			if err != nil {
+				return nil, err
+			}
+
+			_, err = pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
+				Direction: webrtc.RTPTransceiverDirectionRecvonly,
+			})
+			if err != nil {
+				return nil, err
+			}
+			pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
+				Direction: webrtc.RTPTransceiverDirectionRecvonly,
+			})
+
+			pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
+				local, _ := webrtc.NewTrackLocalStaticRTP(
+					remote.Codec().RTPCodecCapability,
+					"mic-"+req.Lessonid+"-"+req.Userid,
+					"stream-"+req.Lessonid,
+				)
+
+				raw, _ := global.WebRTCEngine.BroadcastTracks.LoadOrStore(req.Lessonid, []*webrtc.TrackLocalStaticRTP{})
+				arr := raw.([]*webrtc.TrackLocalStaticRTP)
+				arr = append(arr, local)
+				global.WebRTCEngine.BroadcastTracks.Store(req.Lessonid, arr)
+			})
+
+			err = pc.SetRemoteDescription(offer)
+			if err != nil {
+				return nil, err
+			}
+			ans, err := pc.CreateAnswer(nil)
+			if err != nil {
+				return nil, err
+			}
+			err = pc.SetLocalDescription(ans)
+			if err != nil {
+				return nil, err
+			}
+
+			<-webrtc.GatheringCompletePromise(pc)
+			b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
+			return &webrtc_live.PublishMicResp{Resp: &common.Resp{Data: b64ans}}, nil
+		}
+	}
+	return &webrtc_live.PublishMicResp{Resp: &common.Resp{Data: "success"}}, errors.New("你不是本课程学生")
+}
+
+// RaiseHand implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) RaiseHand(ctx context.Context, req *webrtc_live.RaiseHandReq) (resp *webrtc_live.RaiseHandResp, err error) {
+	lid, _ := strconv.Atoi(req.Lessonid)
+	linfo, _ := dao.SelectLesson(s.DB, lid)
+	for _, stuid := range linfo.StudentID {
+		if stuid == req.Userid {
+			err = dao.RaiseHand(s.DB, lid, req.Userid)
+			if err != nil {
+				return nil, err
+			}
+			return &webrtc_live.RaiseHandResp{Resp: &common.Resp{Data: "success"}}, nil
+		}
+	}
+
+	return &webrtc_live.RaiseHandResp{Resp: &common.Resp{Data: "不是本课程学生"}}, nil
+}
+
+// GetRaiseHand implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq) (resp *webrtc_live.GetRaiseHandResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	var stuid string
+	for i := 0; i < len(linfo.RaiseStuId); i++ {
+		if i != len(linfo.RaiseStuId)-1 {
+			stuid += linfo.RaiseStuId[i] + "/"
+		}
+		stuid += linfo.RaiseStuId[i]
+	}
+
+	return &webrtc_live.GetRaiseHandResp{Resp: &common.Resp{Data: stuid}}, nil
+}
+
+// ApproveHand implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq) (resp *webrtc_live.ApproveHandResp, err error) {
+	lid, err := strconv.Atoi(req.Lessonid)
+	if err != nil {
+		return nil, err
+	}
+
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	if err != nil {
+		return nil, err
+	}
+
+	linfo, err := dao.SelectLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	username, auth := cut.SplitInfo(info.Resp.Data)
+	if auth != "Teacher" {
+		return nil, errors.New("权限不够！！！你不是老师")
+	} else if username != linfo.Teacher {
+		return nil, errors.New("权限不够！！！你不是当前课程老师")
+	}
+
+	err = dao.ApproveHand(s.DB, *linfo, req.Stuid)
+	if err != nil {
+		return nil, err
+	}
+	return &webrtc_live.ApproveHandResp{Resp: &common.Resp{Data: "success"}}, nil
 }

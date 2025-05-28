@@ -150,6 +150,63 @@ struct RecordLessonResp {
     1:common.resp resp,
 }
 
+struct SaveWhiteBoardJsonReq {
+    1: string userid,
+    2: string lessonid,
+    3: string file,
+}
+
+struct SaveWhiteBoardJsonResp {
+    1: common.resp resp,
+}
+
+struct GetWhiteBoardJsonReq {
+    1: string userid,
+    2: string lessonid,
+}
+
+struct GetWhiteBoardJsonResp{
+    1:common.resp resp,
+}
+
+struct PublishMicReq {
+    1: string userid,
+    2: string lessonid,
+    3: string b64offer,
+}
+
+struct PublishMicResp {
+    1: common.resp resp,
+}
+
+struct RaiseHandReq {
+    1: string userid,
+    2: string lessonid,
+}
+
+struct RaiseHandResp {
+    1:common.resp resp,
+}
+
+struct GetRaiseHandReq{
+    1: string userid,
+    2: string lessonid,
+}
+
+struct GetRaiseHandResp {
+    1:common.resp resp,
+}
+
+struct ApproveHandReq{
+    1:string userid,
+    2:string lessonid,
+    3:string stuid,
+}
+
+struct ApproveHandResp{
+    1:common.resp resp,
+}
+
 service webrtc_live {
     BroadcastResp Broadcast(1: BroadcastReq req),
     ViewResp      View(1: ViewReq req),
@@ -167,4 +224,10 @@ service webrtc_live {
     DelSignInResp       DelSign(1:DelSignInReq req),
     RollCallInRandomResp    RollCallInRandom(1:RollCallInRandomReq req),
     RecordLessonResp      RecordLesson(1:RecordLessonReq req),
+    SaveWhiteBoardJsonResp SaveWhiteBoardJson(1: SaveWhiteBoardJsonReq req),
+    GetWhiteBoardJsonResp  GetWhiteBoardJson(1:GetWhiteBoardJsonReq req),
+    PublishMicResp         PublishMic(1: PublishMicReq req),
+    RaiseHandResp          RaiseHand(1: RaiseHandReq req),
+    GetRaiseHandResp       GetRaiseHand(1: GetRaiseHandReq req),
+    ApproveHandResp        ApproveHand(1: ApproveHandReq req),
 }

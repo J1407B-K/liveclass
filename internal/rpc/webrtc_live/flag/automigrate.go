@@ -11,6 +11,7 @@ func MysqlAutoMigrate(db *gorm.DB) {
 		AutoMigrate(
 			&model.WebrtcLesson{},
 			&model.SignIn{},
+			&model.ExcalidrawDoc{},
 		)
 	if err != nil {
 		log.Println("建表失败")
