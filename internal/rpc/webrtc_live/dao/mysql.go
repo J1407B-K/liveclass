@@ -266,7 +266,7 @@ func RaiseHand(db *gorm.DB, lessonid int, stuid string) error {
 	tx := db.Begin()
 
 	var l model.WebrtcLesson
-	err := tx.Where("lesson = ?", lessonid).First(&l).Error
+	err := tx.Where("lesson_id = ?", lessonid).First(&l).Error
 	if err != nil {
 		tx.Rollback()
 		return err
@@ -291,6 +291,10 @@ func ApproveHand(db *gorm.DB, l model.WebrtcLesson, stuid string) error {
 	for _, id := range l.RaiseStuId {
 		if id == stuid {
 			l.ApproveStuID = append(l.ApproveStuID, stuid)
+			err := db.Save(&l).Error
+			if err != nil {
+				return err
+			}
 			return nil
 		}
 	}

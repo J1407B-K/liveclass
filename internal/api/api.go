@@ -65,7 +65,12 @@ func InitRouter() {
 		v2.POST("/record_lesson_webrtc", service.RecordLesson_WebRTC)
 		v2.POST("/save_whiteboard", service.SaveWhiteBoard)
 		//之后可以用现有WebSocket把白板json广播出去，现在暂时用http吧，而且前端实现中其实是iframe嵌入的网页(简单实现，被调得破防了hhh)
-		v2.POST("/get_whiteboard", service.GetWhiteBoard)
+		v2.GET("/get_whiteboard", service.GetWhiteBoard)
+		v2.PUT("/raise_hand", service.RaiseHand)
+		v2.GET("/get_raise_hand", service.GetRaiseHand)
+		v2.PUT("/approve_hand", service.ApproveHand)
+		v2.POST("/publish_mic", service.PublishMic)
+		v2.POST("/view_mic", service.ViewMic)
 
 		v2.POST("/create_question", service.CreateQuestion)
 		v2.DELETE("/del_question", service.DelQuestion)

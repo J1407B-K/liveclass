@@ -655,7 +655,7 @@ func GetWhiteBoard(c context.Context, ctx *app.RequestContext) {
 	}
 
 	userid := data.(*model.User).UserId
-	lid := ctx.PostForm("lesson_id")
+	lid := ctx.Query("lesson_id")
 
 	resp, err := global.Clients.Webrtc_liveClient.GetWhiteBoardJson(c, &webrtc_live.GetWhiteBoardJsonReq{
 		Userid:   userid,
@@ -702,6 +702,173 @@ func PublishMic(c context.Context, ctx *app.RequestContext) {
 		Userid:   userid,
 		Lessonid: lid,
 		B64offer: offer,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func RaiseHand(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.RaiseHand(c, &webrtc_live.RaiseHandReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func GetRaiseHand(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.Query("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.GetRaiseHand(c, &webrtc_live.GetRaiseHandReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func ApproveHand(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+	uid := ctx.PostForm("stuid")
+
+	resp, err := global.Clients.Webrtc_liveClient.ApproveHand(c, &webrtc_live.ApproveHandReq{
+		Userid:   userid,
+		Lessonid: lid,
+		Stuid:    uid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func ViewMic(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+	b64off := ctx.PostForm("b64offer")
+
+	resp, err := global.Clients.Webrtc_liveClient.ViewMic(c, &webrtc_live.ViewMicReq{
+		Userid:   userid,
+		Lessonid: lid,
+		B64offer: b64off,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{

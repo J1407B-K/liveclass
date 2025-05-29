@@ -33,6 +33,7 @@ type Client interface {
 	RaiseHand(ctx context.Context, req *webrtc_live.RaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.RaiseHandResp, err error)
 	GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.GetRaiseHandResp, err error)
 	ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq, callOptions ...callopt.Option) (r *webrtc_live.ApproveHandResp, err error)
+	ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq, callOptions ...callopt.Option) (r *webrtc_live.ViewMicResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -172,4 +173,9 @@ func (p *kWebrtcLiveClient) GetRaiseHand(ctx context.Context, req *webrtc_live.G
 func (p *kWebrtcLiveClient) ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq, callOptions ...callopt.Option) (r *webrtc_live.ApproveHandResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.ApproveHand(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq, callOptions ...callopt.Option) (r *webrtc_live.ViewMicResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ViewMic(ctx, req)
 }

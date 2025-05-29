@@ -13,5 +13,5 @@ type Engine struct {
 	SettingEngine       webrtc.SettingEngine
 	SfuConfig           webrtc.Configuration
 	BroadcastTracks     sync.Map
-	DuplexConns         sync.Map //map[string][]*webrtc.PeerConnection
+	MicTracks           sync.Map
 }

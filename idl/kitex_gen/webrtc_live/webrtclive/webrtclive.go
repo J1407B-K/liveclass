@@ -167,6 +167,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"ViewMic": kitex.NewMethodInfo(
+		viewMicHandler,
+		newWebrtcLiveViewMicArgs,
+		newWebrtcLiveViewMicResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -629,6 +636,24 @@ func newWebrtcLiveApproveHandResult() interface{} {
 	return webrtc_live.NewWebrtcLiveApproveHandResult()
 }
 
+func viewMicHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveViewMicArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveViewMicResult)
+	success, err := handler.(webrtc_live.WebrtcLive).ViewMic(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveViewMicArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveViewMicArgs()
+}
+
+func newWebrtcLiveViewMicResult() interface{} {
+	return webrtc_live.NewWebrtcLiveViewMicResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -854,6 +879,16 @@ func (p *kClient) ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandR
 	_args.Req = req
 	var _result webrtc_live.WebrtcLiveApproveHandResult
 	if err = p.c.Call(ctx, "ApproveHand", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq) (r *webrtc_live.ViewMicResp, err error) {
+	var _args webrtc_live.WebrtcLiveViewMicArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveViewMicResult
+	if err = p.c.Call(ctx, "ViewMic", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

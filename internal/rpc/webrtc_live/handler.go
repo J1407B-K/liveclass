@@ -136,16 +136,18 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 			}
 		}(uint32(remote.SSRC()))
 
-		for {
-			pkt, _, readErr := remote.ReadRTP()
-			if readErr != nil {
-				return
+		go func() {
+			for {
+				pkt, _, readErr := remote.ReadRTP()
+				if readErr != nil {
+					return
+				}
+				if writeErr := local.WriteRTP(pkt); writeErr != nil {
+					return
+				}
 			}
 
-			if writeErr := local.WriteRTP(pkt); writeErr != nil {
-				return
-			}
-		}
+		}()
 	})
 
 	if err := pc.SetRemoteDescription(offer); err != nil {
@@ -791,10 +793,23 @@ func (s *WebrtcLiveImpl) PublishMic(ctx context.Context, req *webrtc_live.Publis
 					"stream-"+req.Lessonid,
 				)
 
-				raw, _ := global.WebRTCEngine.BroadcastTracks.LoadOrStore(req.Lessonid, []*webrtc.TrackLocalStaticRTP{})
+				raw, _ := global.WebRTCEngine.MicTracks.LoadOrStore(req.Lessonid, []*webrtc.TrackLocalStaticRTP{})
 				arr := raw.([]*webrtc.TrackLocalStaticRTP)
 				arr = append(arr, local)
-				global.WebRTCEngine.BroadcastTracks.Store(req.Lessonid, arr)
+				global.WebRTCEngine.MicTracks.Store(req.Lessonid, arr)
+
+				go func() {
+					for {
+						pkt, _, readErr := remote.ReadRTP()
+						if readErr != nil {
+							return
+						}
+						if writeErr := local.WriteRTP(pkt); writeErr != nil {
+							return
+						}
+					}
+
+				}()
 			})
 
 			err = pc.SetRemoteDescription(offer)
@@ -899,4 +914,60 @@ func (s *WebrtcLiveImpl) ApproveHand(ctx context.Context, req *webrtc_live.Appro
 		return nil, err
 	}
 	return &webrtc_live.ApproveHandResp{Resp: &common.Resp{Data: "success"}}, nil
+}
+
+// ViewMic implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq) (resp *webrtc_live.ViewMicResp, err error) {
+	lid, _ := strconv.Atoi(req.Lessonid)
+	linfo, _ := dao.SelectLesson(s.DB, lid)
+	for _, stuid := range linfo.StudentID {
+		if stuid == req.Userid {
+
+			raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
+			if !ok {
+				return nil, errors.New("目前没有任何学生上麦")
+			}
+
+			tracks := raw.([]*webrtc.TrackLocalStaticRTP)
+
+			offer, err := my_webrtc.DecodeSDP(req.B64offer)
+			if err != nil {
+				return nil, err
+			}
+
+			pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
+			if err != nil {
+				return nil, err
+			}
+
+			for _, t := range tracks {
+				_, err = pc.AddTransceiverFromKind(
+					webrtc.RTPCodecTypeAudio,
+					webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionSendonly},
+				)
+				if err != nil {
+					return nil, err
+				}
+				pc.AddTrack(t)
+			}
+
+			if err := pc.SetRemoteDescription(offer); err != nil {
+				return nil, err
+			}
+
+			// Answer
+			answer, err := pc.CreateAnswer(nil)
+			if err != nil {
+				return nil, err
+			}
+			if err := pc.SetLocalDescription(answer); err != nil {
+				return nil, err
+			}
+			<-webrtc.GatheringCompletePromise(pc)
+
+			b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
+			return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: b64ans}}, nil
+		}
+	}
+	return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: "不是本课程学生"}}, nil
 }

@@ -207,6 +207,16 @@ struct ApproveHandResp{
     1:common.resp resp,
 }
 
+struct ViewMicReq{
+    1:string userid,
+    2:string lessonid,
+    3:string b64offer,
+}
+
+struct ViewMicResp{
+    1:common.resp resp,
+}
+
 service webrtc_live {
     BroadcastResp Broadcast(1: BroadcastReq req),
     ViewResp      View(1: ViewReq req),
@@ -230,4 +240,5 @@ service webrtc_live {
     RaiseHandResp          RaiseHand(1: RaiseHandReq req),
     GetRaiseHandResp       GetRaiseHand(1: GetRaiseHandReq req),
     ApproveHandResp        ApproveHand(1: ApproveHandReq req),
+    ViewMicResp            ViewMic(1: ViewMicReq req),
 }
