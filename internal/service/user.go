@@ -43,6 +43,7 @@ func Register(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusOK, utils.H{
@@ -102,6 +103,7 @@ func GetUserInfo(c context.Context, ctx *app.RequestContext) {
 				Msg:  err.Error() + "userRpc error",
 			},
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusOK, utils.H{
