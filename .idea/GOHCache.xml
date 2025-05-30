@@ -2925,7 +2925,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1748577537365" />
             </ScannedPath>
           </value>
         </entry>
@@ -2958,7 +2958,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1748589189578" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -3098,7 +3098,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcLesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409209" />
+              <option name="lastModified" value="1748577537373" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLesson" />
@@ -3124,7 +3124,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/chat.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
+              <option name="lastModified" value="1748572050781" />
             </ScannedPath>
           </value>
         </entry>
@@ -3159,7 +3159,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
+              <option name="lastModified" value="1748573651802" />
             </ScannedPath>
           </value>
         </entry>

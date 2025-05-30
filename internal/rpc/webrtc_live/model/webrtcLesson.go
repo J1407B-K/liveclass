@@ -7,6 +7,5 @@ type WebrtcLesson struct {
 	Teacher     string      `json:"teacher" gorm:"not null"`
 	StudentID   StringArray `json:"studentId" gorm:"type:json"`
 
-	RaiseStuId   StringArray `json:"raiseStuId" gorm:"type:json"`
-	ApproveStuID StringArray `json:"approveStuId" gorm:"type:json"`
+	RaiseStuId StringArray `json:"raiseStuId" gorm:"type:json"`
 }

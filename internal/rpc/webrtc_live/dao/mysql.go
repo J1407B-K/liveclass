@@ -288,16 +288,28 @@ func RaiseHand(db *gorm.DB, lessonid int, stuid string) error {
 }
 
 func ApproveHand(db *gorm.DB, l model.WebrtcLesson, stuid string) error {
-	for _, id := range l.RaiseStuId {
-		if id == stuid {
-			l.ApproveStuID = append(l.ApproveStuID, stuid)
-			err := db.Save(&l).Error
+	tx := db.Begin()
+
+	for i := 0; i < len(l.RaiseStuId); i++ {
+		if l.RaiseStuId[i] == stuid {
+			l.RaiseStuId = append(l.RaiseStuId[:i], l.RaiseStuId[i+1:]...)
+
+			err := tx.Save(&l).Error
 			if err != nil {
+				tx.Rollback()
 				return err
 			}
+
+			err = tx.Commit().Error
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
+
 			return nil
 		}
 	}
+	tx.Rollback()
 	return errors.New("该学生没有举手！")
 }
 

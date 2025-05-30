@@ -782,6 +782,16 @@ func (s *WebrtcLiveImpl) PublishMic(ctx context.Context, req *webrtc_live.Publis
 			if err != nil {
 				return nil, err
 			}
+
+			pc.OnICECandidate(func(c *webrtc.ICECandidate) {
+				if c != nil {
+					log.Println("[Server][PublishMic] ICE candidate:", c.ToJSON())
+				}
+			})
+			pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
+				log.Println("[Server][PublishMic] ICE state:", s.String())
+			})
+
 			pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
 				Direction: webrtc.RTPTransceiverDirectionRecvonly,
 			})
@@ -875,6 +885,9 @@ func (s *WebrtcLiveImpl) GetRaiseHand(ctx context.Context, req *webrtc_live.GetR
 	}
 
 	var stuid string
+	if len(linfo.RaiseStuId) == 0 {
+		return &webrtc_live.GetRaiseHandResp{Resp: &common.Resp{Data: "当前无举手学生"}}, nil
+	}
 	for i := 0; i < len(linfo.RaiseStuId); i++ {
 		if i != len(linfo.RaiseStuId)-1 {
 			stuid += linfo.RaiseStuId[i] + "/"
@@ -923,13 +936,6 @@ func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicRe
 	for _, stuid := range linfo.StudentID {
 		if stuid == req.Userid {
 
-			raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
-			if !ok {
-				return nil, errors.New("目前没有任何学生上麦")
-			}
-
-			tracks := raw.([]*webrtc.TrackLocalStaticRTP)
-
 			offer, err := my_webrtc.DecodeSDP(req.B64offer)
 			if err != nil {
 				return nil, err
@@ -940,19 +946,28 @@ func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicRe
 				return nil, err
 			}
 
-			for _, t := range tracks {
-				_, err = pc.AddTransceiverFromKind(
-					webrtc.RTPCodecTypeAudio,
-					webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionSendonly},
-				)
-				if err != nil {
-					return nil, err
-				}
-				pc.AddTrack(t)
-			}
-
 			if err := pc.SetRemoteDescription(offer); err != nil {
 				return nil, err
+			}
+
+			pc.OnICECandidate(func(c *webrtc.ICECandidate) {
+				if c != nil {
+					log.Println("[Server][ViewMic] ICE candidate:", c.ToJSON())
+				}
+			})
+			pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
+				log.Println("[Server][ViewMic] ICE state:", s.String())
+			})
+
+			raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
+			if !ok {
+				return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: "目前无任何学生上麦"}}, nil
+			}
+
+			tracks := raw.([]*webrtc.TrackLocalStaticRTP)
+
+			for _, t := range tracks {
+				pc.AddTrack(t)
 			}
 
 			// Answer

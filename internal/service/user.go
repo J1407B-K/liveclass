@@ -2,12 +2,14 @@ package service
 
 import (
 	"context"
-	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/cloudwego/hertz/pkg/common/utils"
+	"errors"
 	"liveclass/internal/code"
 	"liveclass/internal/global"
 	"liveclass/internal/model"
 	"net/http"
+
+	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/common/utils"
 
 	userrpc "liveclass/idl/kitex_gen/user"
 )
@@ -64,7 +66,7 @@ func Login(c context.Context, ctx *app.RequestContext) (interface{}, error) {
 				Data: "nil",
 			},
 		})
-		return nil, nil
+		return nil, errors.New("鉴权失败")
 	}
 
 	rpcResp, err := global.Clients.UserClient.Login(c, &userrpc.LoginReq{
@@ -79,7 +81,7 @@ func Login(c context.Context, ctx *app.RequestContext) (interface{}, error) {
 				Data: "nil",
 			},
 		})
-		return nil, nil
+		return nil, errors.New("鉴权失败")
 	}
 
 	return rpcResp.Resp.Data, nil
