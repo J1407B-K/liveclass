@@ -105,5 +105,23 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 123456
 
-  #mysql和redis暂时没加
+  mysql:
+    image: mysql:8.0
+    container_name: liveclass-mysql
+    restart: unless-stopped
+    environment:
+      # 设置 root 用户密码
+      MYSQL_ROOT_PASSWORD: "123456"
+      # 启动时自动创建 liveclass 数据库
+      MYSQL_DATABASE: "liveclass"
+    ports:
+      - "3306:3306"
 
+  redis:
+    image: redis:6.2
+    container_name: liveclass-redis
+    restart: unless-stopped
+    # 关闭保护模式以允许外部连接，无密码，DB 序号默认为 0
+    command: ["redis-server", "--protected-mode", "no"]
+    ports:
+      - "6379:6379"
