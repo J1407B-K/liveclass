@@ -419,7 +419,7 @@ func (s *WebrtcLiveImpl) SelectLessonInfo(ctx context.Context, req *webrtc_live.
 		return nil, err
 	}
 
-	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{linfo.Name + ":" + linfo.Teacher + ":count", linfo.Name + ":" + linfo.Teacher + ":member"}).Result()
+	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{req.Lessonid + ":" + linfo.Teacher + ":count", req.Lessonid + ":" + linfo.Teacher + ":member"}).Result()
 	if err != nil {
 		return nil, err
 	}

@@ -502,8 +502,6 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 ------
 
-//TODO:明天继续
-
 
 
 ##### Close LiveGo 直播
@@ -512,65 +510,49 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - **接口地址**：`DELETE /close_live`
 
-- **功能说明**：根据课程 ID 向 LiveGo 服务发送关闭直播流请求。
+- **功能说明**：删除mysql中课程信息
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
+  | 参数名称 | 解释     |
+  | -------- | -------- |
+  | livename | 课程名字 |
 
   
 
 - 请求示例：
 
   - Headers：
-
+    - `Content-Type:multipart/form-data`
     - `Authorization: Bearer <jwt_token>`
 
   - Body：
 
-    ```
-    json
-    
-    
-    复制编辑
-    {
-      "lesson_id": "1"
-    }
-    ```
-
+    - livename
+  
 - 返回示例：
 
   - 成功：
 
     ```
-    json
-    
-    
-    复制编辑
     {
-      "resp": {
-        "code": 0,
-        "msg": "ok",
-        "data": "nil"
-      }
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "success"
+        }
     }
     ```
-
+    
   - 错误：
 
     ```
-    json
-    
-    
-    复制编辑
     {
-      "resp": {
-        "code": 5003,
-        "msg": "关闭失败",
-        "data": "nil"
-      }
+        "resp": {
+            "code": 5002,
+            "msg": "remote or network error[remote]: biz error: 权限不够！你不是当前课程老师",
+            "data": "nil"
+        }
     }
     ```
 
@@ -586,74 +568,57 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释                              |
-  | --------- | --------------------------------- |
-  | lesson_id | 课程 ID                           |
-  | user_id   | 用户 ID                           |
-  | in_live   | 布尔值，`true`=进入，`false`=退出 |
-
+  | 参数名称  | 解释                     |
+  | --------- | ------------------------ |
+  | lesson_id | 课程 ID                  |
+  | Options   | enum,"add"or"del"(+1/-1) |
   
-
+  
+  
 - 请求示例：
 
   - Headers：
 
-    - `Content-Type: application/json`
+    - `Content-Type: multipart/form-data`
     - `Authorization: Bearer <jwt_token>`
 
   - Body：
 
-    ```
-    json
+    lesson_id : xxx
     
-    
-    复制编辑
-    {
-      "lesson_id": "1",
-      "user_id": "kq3",
-      "in_live": true
-    }
-    ```
-
+    options: enum(add,del)
+  
 - 返回示例：
 
   - 成功：
 
     ```
-    json
-    
-    
-    复制编辑
     {
-      "resp": {
-        "code": 0,
-        "msg": "ok",
-        "data": "nil"
-      }
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "success"
+        }
     }
     ```
-
+    
   - 错误：
-
+  
     ```
-    json
-    
-    
-    复制编辑
     {
-      "resp": {
-        "code": 5004,
-        "msg": "更新失败",
-        "data": "nil"
-      }
+        "resp": {
+            "code": 5001,
+            "msg": "参数错误",
+            "data": ""
+        }
     }
     ```
 
 ------
 
-##### Change User To Lesson (MySQL)
+##### Change User To Lesson 
 
-简介：学生/教师切换到指定课程（MySQL 版）
+简介：将学生加入课程中
 
 - **接口地址**：`PUT /change_user_to_lesson`
 
@@ -661,11 +626,12 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释                              |
-  | --------- | --------------------------------- |
-  | lesson_id | 课程 ID                           |
-  | user_id   | 用户 ID                           |
-  | in_lesson | 布尔值，`true`=加入，`false`=移出 |
+  | 参数名称    | 解释          |
+  | ----------- | ------------- |
+  | lesson_name | 课程名字      |
+  | teacher     | 老师名字      |
+  | option      | enum(add,del) |
+  | student_id  | 学生ID        |
 
   
 
@@ -673,42 +639,50 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
   - Headers：
 
-    - `Content-Type: application/json`
+    - `Content-Type: multipart/form-data`
     - `Authorization: Bearer <jwt_token>`
 
   - Body：
 
-    ```
-    json
+    lesson_name:xxx
     
+    teacher:xxx,
     
-    复制编辑
-    {
-      "lesson_id": "1",
-      "user_id": "kq3",
-      "in_lesson": true
-    }
-    ```
-
+    option:enum(add,del)
+  
 - 返回示例：
 
+  - 成功:
+  
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": "nil"
-    }
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
+  
+  - 错误:
+  
+    ```
+    {
+        "resp": {
+            "code": 5002,
+            "msg": "remote or network error[remote]: biz error: invalid options",
+            "data": "nil"
+        }
+    }
+    ```
+  
+    ​	
 
 ------
 
-##### Select Lesson Info (MySQL)
+
+
+##### Select Lesson Info 
 
 简介：查询直播间在线人数信息
 
@@ -718,93 +692,110 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程id |
+  | teacher   | 老师   |
 
   
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers：
+    - `Content-Type: multipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
+    - teacher:xxx,
   
-  复制编辑
-  GET /select_lesson?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
+  - 成功
+
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": {
-        "online_count": 42
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "3$class1$kq1$for 2025$a0UgPUNSBnLZbvgpaRJd5E3A7K0bah44iyDVd34dpFAlDl3H$2/10/"
       }
-    }
   }
   ```
+  
+  - 失败或不存在:
+  
+    ```
+    {
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "count:0///live member:"
+        }
+    }
+    ```
+  
+    
 
-------
-
-##### Get Lesson Info (MySQL)
+##### Get Lesson Info 
 
 简介：查询课程详情
 
 - **接口地址**：`GET /get_lesson`
 
-- **功能说明**：返回指定课程的基本信息（名称、开始时间等）。
+- **功能说明**：返回指定课程的基本信息。
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
+  | 参数名称    | 解释     |
+  | ----------- | -------- |
+  | lesson_name | 课程名称 |
+  | teacher     | 老师     |
 
   
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers：
+    - `Content-Type: multipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_name:xxx,
+    - teacher:xxx,
   
-  
-  复制编辑
-  GET /get_lesson?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
+  - 成功:
+  
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": {
-        "lesson_id": "1",
-        "title": "数学 101",
-        "start_time": "2025-06-01T09:00:00+08:00"
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "3$class1$kq1$for 2025$a0UgPUNSBnLZbvgpaRJd5E3A7K0bah44iyDVd34dpFAlDl3H$2/10/"
       }
-    }
   }
   ```
+  
+  - 失败:
+  
+    ```
+    {
+        "resp": {
+            "code": 5002,
+            "msg": "remote or network error[remote]: biz error: record not found",
+            "data": "nil"
+        }
+    }
+    ```
+  
+    
 
 ------
 
-##### Record Lesson (MySQL)
+
+
+##### Record Lesson 
 
 简介：录制并保存直播流信息
 
@@ -814,10 +805,11 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称   | 解释             |
-  | ---------- | ---------------- |
-  | lesson_id  | 课程 ID          |
-  | record_url | 录制文件访问地址 |
+  | 参数名称   | 解释                    |
+  | ---------- | ----------------------- |
+  | stream_url | rmtp地址                |
+  | lesson_id  | 课程id                  |
+  | duration   | 录制时间段(0为从头到尾) |
 
   
 
@@ -825,41 +817,48 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
   - Headers：
 
-    - `Content-Type: application/json`
+    - `Content-Type:mutipart/form-data`
     - `Authorization: Bearer <jwt_token>`
 
   - Body：
 
-    ```
-    json
+    stream_url:rtmp://localhost:1935/live/class1_kq1
     
+    lesson_id:3
     
-    复制编辑
-    {
-      "lesson_id": "1",
-      "record_url": "https://cdn.example.com/record/1.mp4"
-    }
-    ```
-
+    duration:0
+  
 - 返回示例：
 
-  ```
-  json
+  - 成功
   
-  
-  复制编辑
-  {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": "nil"
+    ```
+    {
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "success:https://console.cloud.tencent.com/cos/bucket?bucket=lanshan-1338048877&region=ap-chongqing"
+        }
     }
+    ```
+  
+    
+  
+  - 失败
+  
+  ```
+  {
+      "resp": {
+          "code": 5002,
+          "msg": "remote or network error[remote]: biz error: 你不是当前课程的学生或老师！！！",
+          "data": "nil"
+      }
   }
   ```
 
 ------
 
-##### Create Sign-In (MySQL)
+##### Create Sign-In 
 
 简介：创建一次签到活动
 
@@ -869,47 +868,54 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称   | 解释                 |
-  | ---------- | -------------------- |
-  | lesson_id  | 课程 ID              |
-  | start_time | 签到开始时间 ISO8601 |
-  | end_time   | 签到结束时间 ISO8601 |
-
+  | 参数名称  | 解释    |
+  | --------- | ------- |
+  | lesson_id | 课程 ID |
+  
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers：
   
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "start_time": "2025-06-01T09:00:00+08:00",
-    "end_time":   "2025-06-01T09:10:00+08:00"
-  }
-  ```
-
+  - Body：
+  
+    lesson_id:xxx,
+  
 - 返回示例：
 
-  ```
-  json
+  - 成功
   
-  
-  复制编辑
-  {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": "signin123"
+    ```
+    {
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "success"
+        }
     }
+    ```
+  
+    
+  
+  - 失败
+  
+  ```
+  {
+      "resp": {
+          "code": 5002,
+          "msg": "remote or network error[remote]: biz error: 你已创建过签到",
+          "data": "nil"
+      }
   }
   ```
 
 ------
 
-##### Sign In (MySQL)
+##### Sign In 
 
 简介：学生签到
 
@@ -919,45 +925,58 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释       |
-  | --------- | ---------- |
-  | signin_id | 签到活动ID |
-  | user_id   | 学生ID     |
-
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程ID |
   
-
+  
+  
 - 请求示例：
 
-  ```
-  json
+  - Headers：
   
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
-  复制编辑
-  {
-    "signin_id": "signin123",
-    "user_id":   "kq3"
-  }
-  ```
-
+  - Body：
+  
+    lesson_id:xxx,
+  
 - 返回示例：
 
+  - 成功
+  
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": "nil"
-    }
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
+  
+  - 失败
+  
+    ```
+    {
+        "resp": {
+            "code": 5002,
+            "msg": "remote or network error[remote]: biz error: 不是此课程学生",
+            "data": "nil"
+        }
+    }
+    ```
+  
+    
+
+
 
 ------
 
-##### Select Sign-In (MySQL)
+
+
+##### Select Sign-In 
 
 简介：查询签到结果
 
@@ -967,45 +986,54 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释       |
-  | --------- | ---------- |
-  | signin_id | 签到活动ID |
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程ID |
 
   
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers：
   
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
-  复制编辑
-  GET /select_signin?signin_id=signin123
-  Authorization: Bearer <jwt_token>
-  ```
+  - Body：
+  
+    lesson_id:xxx,
 
 - 返回示例：
 
-  ```
-  json
+  - 成功:
   
-  
-  复制编辑
-  {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": [
-        {"user_id":"kq3","time":"2025-06-01T09:02:15+08:00"},
-        {"user_id":"kq4","time":"2025-06-01T09:05:10+08:00"}
-      ]
+    ```
+    {
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "已签到为, 未签到为2"
+        }
     }
+    ```
+  
+    
+  
+  - 失败:
+  
+  ```
+  {
+      "resp": {
+          "code": 5002,
+          "msg": "remote or network error[remote]: biz error: 权限不够！！！你不是当前课程老师",
+          "data": "nil"
+      }
   }
   ```
 
 ------
 
-##### Delete Sign-In (MySQL)
+##### Delete Sign-In 
 
 简介：删除一次签到
 
@@ -1015,43 +1043,54 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释       |
-  | --------- | ---------- |
-  | signin_id | 签到活动ID |
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程id |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers：
   
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
-  复制编辑
-  {
-    "signin_id": "signin123"
-  }
-  ```
-
+  - Body：
+  
+    lesson_id:xxx,
+  
 - 返回示例：
 
-  ```
-  json
+  - 成功
   
-  
-  复制编辑
-  {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": "nil"
+    ```
+    {
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "success"
+        }
     }
+    ```
+  
+    
+  
+  - 失败
+  
+  ```
+  {
+      "resp": {
+          "code": 5002,
+          "msg": "remote or network error[remote]: biz error: 权限不够！！！你不是当前课程老师",
+          "data": "nil"
+      }
   }
   ```
 
 ------
 
-##### Roll Call (MySQL)
+##### Roll Call 
 
 简介：随机点名一次
 
@@ -1069,34 +1108,46 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers：
   
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
-  复制编辑
-  GET /roll_call?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
+  - Body：
+  
+    lesson_id:xxx,
 
 - 返回示例：
 
-  ```
-  json
+  - 成功
   
-  
-  复制编辑
-  {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": ["kq5","kq8"]
+    ```
+    {
+        "resp": {
+            "code": 0,
+            "msg": "ok",
+            "data": "kq1"
+        }
     }
+    ```
+  
+    
+  
+  - 失败
+  
+  ```
+  {
+      "resp": {
+          "code": 5002,
+          "msg": "remote or network error[remote]: biz error: 权限不够！！！你不是当前课程老师",
+          "data": "nil"
+      }
   }
   ```
 
 ------
 
-##### Broadcast (WebRTC)
+##### Broadcast(WebRTC) 
 
 简介：教师发起 WebRTC 播流
 
@@ -1115,31 +1166,24 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
+    - b64offer:xxx,
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "b64offer": "<base64_offer>"
-  }
-  ```
-
 - 返回示例：
 
+- 成功:
+
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": {
-        "b64answer": "<base64_answer>"
-      }
+      "data": （b64answer）
     }
   }
   ```
@@ -1156,38 +1200,34 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释                     |
-  | --------- | ------------------------ |
-  | lesson_id | 课程 ID                  |
-  | b64answer | Base64 编码的 SDP answer |
+  | 参数名称  | 解释                    |
+  | --------- | ----------------------- |
+  | lesson_id | 课程 ID                 |
+  | b64offer  | Base64 编码的 SDP offer |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  
+  - Body:
+    - lesson_id:xxx,
+    - b64offer:xxx,
   
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "b64answer": "<base64_answer>"
-  }
-  ```
+  
 
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": "nil"
+      "data": (b64answer)
     }
   }
   ```
@@ -1200,40 +1240,39 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - **接口地址**：`POST /create_lesson_webrtc`
 
-- **功能说明**：初始化一次 WebRTC 课程环境，包括信令房间等。
+- **功能说明**：初始化直播源信息
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
+  | 参数名称   | 解释     |
+  | ---------- | -------- |
+  | lessonname | 课程名字 |
+  | desc       | 概述     |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+
+  - Bodys:
+    - lessonname: xxx
+
+    - desc:xxx
+
+
   
-  
-  复制编辑
-  {
-    "lesson_id": "1"
-  }
-  ```
 
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": "nil"
+      "data": "success",
     }
   }
   ```
@@ -1246,7 +1285,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - **接口地址**：`DELETE /del_lesson_webrtc`
 
-- **功能说明**：移除信令房间及相关资源。
+- **功能说明**：移除房间及相关资源源信息。
 
 - 参数解释：
 
@@ -1258,28 +1297,23 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx
   
   
-  复制编辑
-  {
-    "lesson_id": "1"
-  }
-  ```
-
+  
+  
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": "nil"
+      "data": "success"
     }
   }
   ```
@@ -1296,40 +1330,33 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释                      |
-  | --------- | ------------------------- |
-  | lesson_id | 课程 ID                   |
-  | user_id   | 用户 ID                   |
-  | in_room   | `true`=加入，`false`=退出 |
-
+  | 参数名称  | 解释          |
+  | --------- | ------------- |
+  | lesson_id | 课程 ID       |
+  | options   | enum(add,del) |
   
-
+  
+  
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx
+    - options:add
   
-  
-  复制编辑
-  {
-    "lesson_id": "1",
-    "user_id": "kq3",
-    "in_room": true
-  }
-  ```
+
+
 
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": "nil"
+      "data": "success"
     }
   }
   ```
@@ -1346,46 +1373,43 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释           |
-  | --------- | -------------- |
-  | lesson_id | 课程 ID        |
-  | user_id   | 用户 ID        |
-  | in_live   | `true`/`false` |
-
+  | 参数名称  | 解释          |
+  | --------- | ------------- |
+  | lesson_id | 课程 ID       |
+  | options   | enum(add,del) |
   
-
+  
+  
 - 请求示例：
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx
+    - options:add
   
-  
-  复制编辑
-  GET /change_user_in_live_webrtc?lesson_id=1&user_id=kq3&in_live=true
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+    "resp": {
+      "code": 0,
+      "msg": "ok",
+      "data": "success"
+    }
   }
   ```
 
 ------
 
-##### Select Lesson Info (WebRTC)
+##### Select Lesson Info (WebRTC)(TODO)
 
 简介：查询 WebRTC 直播间在线人数
 
 - **接口地址**：`GET /select_lesson_webrtc`
 
-- **功能说明**：返回 WebRTC 模式下当前在线用户数。
+- **功能说明**：返回 WebRTC 当前直播间在线用户数。
 
 - 参数解释：
 
@@ -1395,32 +1419,24 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
   
 
-- 请求示例：
+- 请求示例：	
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx
+    - options:add
   
-  
-  复制编辑
-  GET /select_lesson_webrtc?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": {
-        "online_count": 30
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "3$class1$kq1$for 2025$a0UgPUNSBnLZbvgpaRJd5E3A7K0bah44iyDVd34dpFAlDl3H$2/10/"
       }
-    }
   }
   ```
 
@@ -1436,45 +1452,41 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
+  | 参数名称    | 解释     |
+  | ----------- | -------- |
+  | lesson_name | 课程名称 |
+  | teacher     | 老师     |
 
   
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+
+  - Body:
+    - lesson_name:xxx,
+    - teacher:xxx,
+
+
   
-  
-  复制编辑
-  GET /get_lesson_webrtc?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
 
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {
-      "code": 0,
-      "msg": "ok",
-      "data": {
-        "lesson_id":"1",
-        "created_at":"2025-05-30T14:00:00+08:00"
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "3$class1$kq1$for 2025$a0UgPUNSBnLZbvgpaRJd5E3A7K0bah44iyDVd34dpFAlDl3H$2/10/"
       }
-    }
   }
   ```
 
 ------
 
-##### Create Sign-In (WebRTC)
+##### Create Sign-In (WebRTC)(TODO)
 
 简介：在 WebRTC 环境中创建签到
 

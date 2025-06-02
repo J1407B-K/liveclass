@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"liveclass/internal/rpc/live/model"
+	"strings"
 )
 
 func SaveLesson(db *gorm.DB, livename, desc, username, code, teacherid string) error {
@@ -42,7 +43,7 @@ func SelectLessonByTeacher(db *gorm.DB, username string) ([]model.Lesson, error)
 
 func SelectLessonByNandT(db *gorm.DB, name, teacher string) (model.Lesson, error) {
 	var lesson model.Lesson
-	err := db.Where("teacher = ? and name = ?", teacher, name).Find(&lesson).Error
+	err := db.Where("teacher = ? and name = ?", teacher, name).First(&lesson).Error
 	if err != nil {
 		return model.Lesson{}, err
 	}
@@ -154,7 +155,7 @@ func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string) error {
 	}
 
 	var search model.SignIn
-	err := tx.Where("lesson_id = ?", lessonId).Find(&search).Error
+	err := tx.Where("lesson_id = ?", lessonId).First(&search).Error
 	if err == nil {
 		tx.Rollback()
 		return errors.New("你已创建过签到")
@@ -229,48 +230,31 @@ func StuSignIn(db *gorm.DB, lessonId, userId string) (string, error) {
 
 func SelectSignIn(db *gorm.DB, lessonId string) (string, error) {
 	var s model.SignIn
-
 	if err := db.Where("lesson_id = ?", lessonId).First(&s).Error; err != nil {
 		return "", err
 	}
 
-	var news = s
-	for _, aid := range news.AlreadyUserId {
-		for _, sid := range news.AllUserId {
-			if sid == aid {
-				removeValueInArray(news.AllUserId, aid)
-			}
+	alreadyUsers := s.AlreadyUserId
+
+	//试着用业务逻辑好查一点点hhh
+	signedMap := make(map[string]struct{}, len(alreadyUsers))
+	for _, uid := range alreadyUsers {
+		signedMap[uid] = struct{}{}
+	}
+
+	var notAlreadyUsers []string
+	for _, uid := range s.AllUserId {
+		if _, ok := signedMap[uid]; !ok {
+			notAlreadyUsers = append(notAlreadyUsers, uid)
 		}
 	}
 
-	var already string
-	for i := 0; i < len(news.AlreadyUserId); i++ {
-		if i != len(news.AllUserId)-1 {
-			already += news.AllUserId[i] + "/"
-		}
-		already += news.AllUserId[i]
-	}
+	alreadyStr := strings.Join(alreadyUsers, "/")
+	notAlreadyStr := strings.Join(notAlreadyUsers, "/")
 
-	var notalready string
-	for i := 0; i < len(news.AllUserId); i++ {
-		if i != len(news.AllUserId)-1 {
-			notalready += news.AllUserId[i] + "/"
-		}
-		notalready += news.AllUserId[i]
-	}
-
-	return fmt.Sprintf("已签到为%v,未签到为%v", already, notalready), nil
+	return fmt.Sprintf("已签到为%v, 未签到为%v", alreadyStr, notAlreadyStr), nil
 }
 
 func RemoveSignIn(db *gorm.DB, lessonId string) error {
 	return db.Where("lesson_id = ?", lessonId).Unscoped().Delete(&model.SignIn{}).Error
-}
-
-func removeValueInArray(array []string, value string) []string {
-	for i, v := range array {
-		if v == value {
-			return append(array[:i], array[i+1:]...)
-		}
-	}
-	return nil
 }

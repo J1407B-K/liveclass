@@ -98,12 +98,13 @@ func CloseLive(c context.Context, ctx *app.RequestContext) {
 }
 
 // 查询在线人数
+// TODO
 func SelectLessonInfo(c context.Context, ctx *app.RequestContext) {
-	lessonname := ctx.PostForm("lesson_name")
+	lessonid := ctx.PostForm("lesson_id")
 	teacher := ctx.PostForm("teacher")
 
 	resp, err := global.Clients.LiveClient.SelectLessonInfo(c, &live.SelectLessonInfoReq{
-		Lessonname: lessonname,
+		Lessonname: lessonid,
 		Teacher:    teacher,
 	})
 	if err != nil {
