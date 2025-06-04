@@ -718,7 +718,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
       "resp": {
           "code": 0,
           "msg": "ok",
-          "data": "3$class1$kq1$for 2025$a0UgPUNSBnLZbvgpaRJd5E3A7K0bah44iyDVd34dpFAlDl3H$2/10/"
+          "data": "count:1///live member:kq1$Teacher  "
       }
   }
   ```
@@ -1219,7 +1219,6 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
   
   
   
-
 - 返回示例：
 
   ```
@@ -1263,7 +1262,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
     - desc:xxx
 
 
-  
+
 
 - 返回示例：
 
@@ -1302,7 +1301,6 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
     - `Authorization: Bearer <jwt_token>`
   - Body:
     - lesson_id:xxx
-  
   
   
   
@@ -1403,7 +1401,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 ------
 
-##### Select Lesson Info (WebRTC)(TODO)
+##### Select Lesson Info (WebRTC)
 
 简介：查询 WebRTC 直播间在线人数
 
@@ -1426,7 +1424,6 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
     - `Authorization: Bearer <jwt_token>`
   - Body:
     - lesson_id:xxx
-    - options:add
   
 - 返回示例：
 
@@ -1435,7 +1432,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
       "resp": {
           "code": 0,
           "msg": "ok",
-          "data": "3$class1$kq1$for 2025$a0UgPUNSBnLZbvgpaRJd5E3A7K0bah44iyDVd34dpFAlDl3H$2/10/"
+          "data": "count:1///live member:kq1$Teacher  "
       }
   }
   ```
@@ -1470,7 +1467,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
     - teacher:xxx,
 
 
-  
+
 
 - 返回示例：
 
@@ -1496,37 +1493,30 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称   | 解释                 |
-  | ---------- | -------------------- |
-  | lesson_id  | 课程 ID              |
-  | start_time | 签到开始时间 ISO8601 |
-  | end_time   | 签到结束时间 ISO8601 |
-
+  | 参数名称  | 解释    |
+  | --------- | ------- |
+  | lesson_id | 课程 ID |
+  
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "start_time": "2025-06-01T09:00:00+08:00",
-    "end_time":   "2025-06-01T09:10:00+08:00"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"ws_signin_1"}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
 
@@ -1542,35 +1532,30 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释       |
-  | --------- | ---------- |
-  | signin_id | 签到活动ID |
-  | user_id   | 学生ID     |
-
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程id |
   
-
+  
+  
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  {
-    "signin_id": "ws_signin_1",
-    "user_id":   "kq3"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
 
@@ -1586,32 +1571,30 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称  | 解释       |
-  | --------- | ---------- |
-  | signin_id | 签到活动ID |
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程ID |
 
   
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  GET /select_signin_webrtc?signin_id=ws_signin_1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":[{"user_id":"kq3","time":"2025-06-01T09:02:00+08:00"}]}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "已签到为1, 未签到为2"
+      }
   }
   ```
 
@@ -1623,37 +1606,34 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - **接口地址**：`DELETE /del_signin_webrtc`
 
-- **功能说明**：移除一次 WebRTC 签到及其记录。
+- **功能说明**：人工移除一次 WebRTC 签到及其记录。
 
 - 参数解释：
 
-  | 参数名称  | 解释       |
-  | --------- | ---------- |
-  | signin_id | 签到活动ID |
+  | 参数名称  | 解释 |
+  | --------- | ---- |
+  | lesson_id | 课程 |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  {
-    "signin_id": "ws_signin_1"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
 
@@ -1677,24 +1657,22 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  GET /roll_call_webrtc?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":["kq7","kq9"]}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "kq1"
+      }
   }
   ```
 
@@ -1710,35 +1688,32 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称   | 解释             |
-  | ---------- | ---------------- |
-  | lesson_id  | 课程 ID          |
-  | record_url | 录制文件访问地址 |
+  | 参数名称  | 解释     |
+  | --------- | -------- |
+  | lesson_id | 课程 ID  |
+  | file      | 视频文件 |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
+    - file:(前端发送的整个文件)
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "record_url": "https://cdn.example.com/ws1.mp4"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": (COS中filename)
+      }
   }
   ```
 
@@ -1754,35 +1729,32 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称        | 解释                 |
-  | --------------- | -------------------- |
-  | lesson_id       | 课程 ID              |
-  | whiteboard_json | Excalidraw 导出 JSON |
+  | 参数名称  | 解释                 |
+  | --------- | -------------------- |
+  | lesson_id | 课程 ID              |
+  | file      | Excalidraw 导出 JSON |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
+    - file:(前端发送的整个excalidraw的json)
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "whiteboard_json": { /* excalidraw JSON */ }
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
 
@@ -1806,27 +1778,20 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx,
   
-  
-  复制编辑
-  GET /get_whiteboard?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": { /* excalidraw JSON */ }
+      "data": (mysql中存储的excalidraw的json)
     }
   }
   ```
@@ -1846,32 +1811,27 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
   | 参数名称  | 解释    |
   | --------- | ------- |
   | lesson_id | 课程 ID |
-  | user_id   | 学生 ID |
-
   
-
+  
+  
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "user_id":   "kq3"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
   }
   ```
 
@@ -1895,27 +1855,21 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 请求示例：
 
-  ```
-  sql
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
   
-  复制编辑
-  GET /get_raise_hand?lesson_id=1
-  Authorization: Bearer <jwt_token>
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": ["kq3","kq5"]
+      "data": “1/3/5”
     }
   }
   ```
@@ -1935,32 +1889,29 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
   | 参数名称  | 解释    |
   | --------- | ------- |
   | lesson_id | 课程 ID |
-  | user_id   | 学生 ID |
+  | stuid     | 学生 ID |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
+    - stuid:xxx,
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "user_id":   "kq3"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+    "resp": {
+      "code": 0,
+      "msg": "ok",
+      "data": “success”
+    }
   }
   ```
 
@@ -1979,37 +1930,28 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
   | 参数名称  | 解释                    |
   | --------- | ----------------------- |
   | lesson_id | 课程 ID                 |
-  | mic_offer | Base64 编码的 SDP offer |
+  | b64offer  | Base64 编码的 SDP offer |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
   
+  - Body:
+    - lesson_id:xxx,
+    - b64offer:(offer)
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "mic_offer":  "<base64_offer>"
-  }
-  ```
-
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
     "resp": {
       "code": 0,
       "msg": "ok",
-      "data": {
-        "mic_answer": "<base64_answer>"
-      }
+      "data": (answer)
     }
   }
   ```
@@ -2026,41 +1968,40 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称   | 解释                     |
-  | ---------- | ------------------------ |
-  | lesson_id  | 课程 ID                  |
-  | mic_answer | Base64 编码的 SDP answer |
+  | 参数名称  | 解释                    |
+  | --------- | ----------------------- |
+  | lesson_id | 课程 ID                 |
+  | b64offer  | Base64 编码的 SDP offer |
 
   
 
 - 请求示例：
 
-  ```
-  json
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  
+  - Body:
+    - lesson_id:xxx,
+    - b64offer:(offer)
   
   
-  复制编辑
-  {
-    "lesson_id": "1",
-    "mic_answer": "<base64_answer>"
-  }
-  ```
-
+  
 - 返回示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "resp": {"code":0,"msg":"ok","data":"nil"}
+    "resp": {
+      "code": 0,
+      "msg": "ok",
+      "data": (answer)
+    }
   }
   ```
 
 ------
 
-##### Create Question
+##### Create Question(TODO)
 
 简介：创建一道题目
 

@@ -655,7 +655,7 @@ func GetWhiteBoard(c context.Context, ctx *app.RequestContext) {
 	}
 
 	userid := data.(*model.User).UserId
-	lid := ctx.Query("lesson_id")
+	lid := ctx.PostForm("lesson_id")
 
 	resp, err := global.Clients.Webrtc_liveClient.GetWhiteBoardJson(c, &webrtc_live.GetWhiteBoardJsonReq{
 		Userid:   userid,

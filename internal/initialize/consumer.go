@@ -32,7 +32,6 @@ func ConsumeKafkaMessages() {
 		log.Printf("收到 Kafka 消息: %s\n", string(msg.Value))
 
 		global.Mux.Lock()
-		defer global.Mux.Unlock()
 		for conn, lid := range global.WsConnsChat {
 			if lid == message.LessonID {
 				err = conn.WriteMessage(websocket.TextMessage, msg.Value)
@@ -41,6 +40,7 @@ func ConsumeKafkaMessages() {
 				}
 			}
 		}
+		global.Mux.Unlock()
 	}
 }
 

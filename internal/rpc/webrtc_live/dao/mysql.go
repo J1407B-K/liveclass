@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gorm.io/gorm"
 	"liveclass/internal/rpc/webrtc_live/model"
+	"strings"
 )
 
 func CreateLesson(db *gorm.DB, name, desc, teacher, userid string) error {
@@ -120,7 +121,7 @@ func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string) error {
 	}
 
 	var search model.SignIn
-	err := tx.Where("lesson_id = ?", lessonId).Find(&search).Error
+	err := tx.Where("lesson_id = ?", lessonId).First(&search).Error
 	if err == nil {
 		tx.Rollback()
 		return errors.New("你已创建过签到")
@@ -195,37 +196,29 @@ func StuSignIn(db *gorm.DB, lessonId, userId string) (string, error) {
 
 func SelectSignIn(db *gorm.DB, lessonid string) (string, error) {
 	var s model.SignIn
-
 	if err := db.Where("lesson_id = ?", lessonid).First(&s).Error; err != nil {
 		return "", err
 	}
 
-	var news = s
-	for _, aid := range news.AlreadyUserId {
-		for _, sid := range news.AllUserId {
-			if sid == aid {
-				removeValueInArray(news.AllUserId, aid)
-			}
+	alreadyUsers := s.AlreadyUserId
+
+	//好查一点点hhh
+	signedMap := make(map[string]struct{}, len(alreadyUsers))
+	for _, uid := range alreadyUsers {
+		signedMap[uid] = struct{}{}
+	}
+
+	var notAlreadyUsers []string
+	for _, uid := range s.AllUserId {
+		if _, ok := signedMap[uid]; !ok {
+			notAlreadyUsers = append(notAlreadyUsers, uid)
 		}
 	}
 
-	var already string
-	for i := 0; i < len(news.AlreadyUserId); i++ {
-		if i != len(news.AllUserId)-1 {
-			already += news.AllUserId[i] + "/"
-		}
-		already += news.AllUserId[i]
-	}
+	alreadyStr := strings.Join(alreadyUsers, "/")
+	notAlreadyStr := strings.Join(notAlreadyUsers, "/")
 
-	var notalready string
-	for i := 0; i < len(news.AllUserId); i++ {
-		if i != len(news.AllUserId)-1 {
-			notalready += news.AllUserId[i] + "/"
-		}
-		notalready += news.AllUserId[i]
-	}
-
-	return fmt.Sprintf("已签到为%v,未签到为%v", already, notalready), nil
+	return fmt.Sprintf("已签到为%v, 未签到为%v", alreadyStr, notAlreadyStr), nil
 }
 
 func RemoveSignIn(db *gorm.DB, lessonId string) error {

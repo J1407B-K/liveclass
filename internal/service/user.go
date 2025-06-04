@@ -19,7 +19,7 @@ func Register(c context.Context, ctx *app.RequestContext) {
 
 	err := ctx.BindJSON(&user)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, utils.H{
+		ctx.JSON(http.StatusBadRequest, utils.H{
 			"resp": model.Response{
 				Code: code.BadRequest,
 				Msg:  err.Error() + "参数错误",

@@ -1712,7 +1712,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1748836641799" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1724,35 +1724,35 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1748836641799" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1748836474627" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1748836474628" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1748836641799" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409193" />
+              <option name="lastModified" value="1748836641800" />
               <option name="schema">
                 <list>
                   <option value="CreateLiveReq" />
@@ -1819,7 +1819,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1748836641800" />
               <option name="schema">
                 <list>
                   <option value="kLiveServiceClient" />
@@ -1831,7 +1831,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1748836641800" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1843,7 +1843,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1748836641800" />
             </ScannedPath>
           </value>
         </entry>
@@ -2138,7 +2138,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409197" />
+              <option name="lastModified" value="1749021158912" />
             </ScannedPath>
           </value>
         </entry>
@@ -2173,7 +2173,7 @@
         <entry key="file://$PROJECT_DIR$/internal/initialize/consumer.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409198" />
+              <option name="lastModified" value="1749009635924" />
             </ScannedPath>
           </value>
         </entry>
@@ -2565,7 +2565,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748838159681" />
+              <option name="lastModified" value="1749022787365" />
             </ScannedPath>
           </value>
         </entry>
@@ -2598,7 +2598,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409204" />
+              <option name="lastModified" value="1748836641801" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -2925,7 +2925,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748577537365" />
+              <option name="lastModified" value="1749022787371" />
             </ScannedPath>
           </value>
         </entry>
@@ -3159,14 +3159,14 @@
         <entry key="file://$PROJECT_DIR$/internal/service/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748627703551" />
+              <option name="lastModified" value="1749010609049" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
+              <option name="lastModified" value="1749023953654" />
             </ScannedPath>
           </value>
         </entry>
@@ -3440,6 +3440,6 @@
         <entry key="webrtc_live_view_result" value="WebrtcLiveViewResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1748569972585" />
+    <option name="lastTimeChecked" value="1749020391029" />
   </component>
 </project>

@@ -236,7 +236,7 @@ func SelectSignIn(db *gorm.DB, lessonId string) (string, error) {
 
 	alreadyUsers := s.AlreadyUserId
 
-	//试着用业务逻辑好查一点点hhh
+	//好查一点点hhh
 	signedMap := make(map[string]struct{}, len(alreadyUsers))
 	for _, uid := range alreadyUsers {
 		signedMap[uid] = struct{}{}
