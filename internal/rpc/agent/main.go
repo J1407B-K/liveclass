@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9003")
+	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9006")
 	svr := agent.NewServer(&AgentServiceImpl{userCli: userCli},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),

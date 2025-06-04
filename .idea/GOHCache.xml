@@ -1712,7 +1712,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641799" />
+              <option name="lastModified" value="1749049842983" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1724,35 +1724,35 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641799" />
+              <option name="lastModified" value="1749049842983" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836474627" />
+              <option name="lastModified" value="1749049780266" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836474628" />
+              <option name="lastModified" value="1749049780266" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641799" />
+              <option name="lastModified" value="1749049842983" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641800" />
+              <option name="lastModified" value="1749049842984" />
               <option name="schema">
                 <list>
                   <option value="CreateLiveReq" />
@@ -1819,7 +1819,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641800" />
+              <option name="lastModified" value="1749049842985" />
               <option name="schema">
                 <list>
                   <option value="kLiveServiceClient" />
@@ -1831,7 +1831,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641800" />
+              <option name="lastModified" value="1749049842985" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1843,7 +1843,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641800" />
+              <option name="lastModified" value="1749049842985" />
             </ScannedPath>
           </value>
         </entry>
@@ -2422,7 +2422,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409202" />
+              <option name="lastModified" value="1749051873751" />
             </ScannedPath>
           </value>
         </entry>
@@ -2598,7 +2598,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836641801" />
+              <option name="lastModified" value="1749051345082" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -3138,7 +3138,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748836741971" />
+              <option name="lastModified" value="1749051368922" />
             </ScannedPath>
           </value>
         </entry>

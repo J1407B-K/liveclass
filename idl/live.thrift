@@ -33,7 +33,7 @@ struct ChangeUserInLiveResp {
 
 
 struct SelectLessonInfoReq{
-    1: string lessonname,
+    1: string lessonid,
     2: string teacher,
 }
 

@@ -147,7 +147,7 @@ func (s *LiveServiceImpl) CloseLive(ctx context.Context, req *live.CloseLiveReq)
 // SelectLessonInfo implements the LiveServiceImpl interface.
 // 获取人数等信息
 func (s *LiveServiceImpl) SelectLessonInfo(ctx context.Context, req *live.SelectLessonInfoReq) (resp *live.SelectLessonInfoResp, err error) {
-	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{req.Lessonname + ":" + req.Teacher + ":count", req.Lessonname + ":" + req.Teacher + ":member"}).Result()
+	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{req.Lessonid + ":" + req.Teacher + ":count", req.Lessonid + ":" + req.Teacher + ":member"}).Result()
 	if err != nil {
 		return nil, err
 	}

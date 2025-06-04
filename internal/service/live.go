@@ -104,8 +104,8 @@ func SelectLessonInfo(c context.Context, ctx *app.RequestContext) {
 	teacher := ctx.PostForm("teacher")
 
 	resp, err := global.Clients.LiveClient.SelectLessonInfo(c, &live.SelectLessonInfoReq{
-		Lessonname: lessonid,
-		Teacher:    teacher,
+		Lessonid: lessonid,
+		Teacher:  teacher,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{

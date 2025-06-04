@@ -1308,8 +1308,8 @@ func (p *ChangeUserInLiveResp) Field1DeepEqual(src *common.Resp) bool {
 }
 
 type SelectLessonInfoReq struct {
-	Lessonname string `thrift:"lessonname,1" frugal:"1,default,string" json:"lessonname"`
-	Teacher    string `thrift:"teacher,2" frugal:"2,default,string" json:"teacher"`
+	Lessonid string `thrift:"lessonid,1" frugal:"1,default,string" json:"lessonid"`
+	Teacher  string `thrift:"teacher,2" frugal:"2,default,string" json:"teacher"`
 }
 
 func NewSelectLessonInfoReq() *SelectLessonInfoReq {
@@ -1319,22 +1319,22 @@ func NewSelectLessonInfoReq() *SelectLessonInfoReq {
 func (p *SelectLessonInfoReq) InitDefault() {
 }
 
-func (p *SelectLessonInfoReq) GetLessonname() (v string) {
-	return p.Lessonname
+func (p *SelectLessonInfoReq) GetLessonid() (v string) {
+	return p.Lessonid
 }
 
 func (p *SelectLessonInfoReq) GetTeacher() (v string) {
 	return p.Teacher
 }
-func (p *SelectLessonInfoReq) SetLessonname(val string) {
-	p.Lessonname = val
+func (p *SelectLessonInfoReq) SetLessonid(val string) {
+	p.Lessonid = val
 }
 func (p *SelectLessonInfoReq) SetTeacher(val string) {
 	p.Teacher = val
 }
 
 var fieldIDToName_SelectLessonInfoReq = map[int16]string{
-	1: "lessonname",
+	1: "lessonid",
 	2: "teacher",
 }
 
@@ -1410,7 +1410,7 @@ func (p *SelectLessonInfoReq) ReadField1(iprot thrift.TProtocol) error {
 	} else {
 		_field = v
 	}
-	p.Lessonname = _field
+	p.Lessonid = _field
 	return nil
 }
 func (p *SelectLessonInfoReq) ReadField2(iprot thrift.TProtocol) error {
@@ -1459,10 +1459,10 @@ WriteStructEndError:
 }
 
 func (p *SelectLessonInfoReq) writeField1(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("lessonname", thrift.STRING, 1); err != nil {
+	if err = oprot.WriteFieldBegin("lessonid", thrift.STRING, 1); err != nil {
 		goto WriteFieldBeginError
 	}
-	if err := oprot.WriteString(p.Lessonname); err != nil {
+	if err := oprot.WriteString(p.Lessonid); err != nil {
 		return err
 	}
 	if err = oprot.WriteFieldEnd(); err != nil {
@@ -1506,7 +1506,7 @@ func (p *SelectLessonInfoReq) DeepEqual(ano *SelectLessonInfoReq) bool {
 	} else if p == nil || ano == nil {
 		return false
 	}
-	if !p.Field1DeepEqual(ano.Lessonname) {
+	if !p.Field1DeepEqual(ano.Lessonid) {
 		return false
 	}
 	if !p.Field2DeepEqual(ano.Teacher) {
@@ -1517,7 +1517,7 @@ func (p *SelectLessonInfoReq) DeepEqual(ano *SelectLessonInfoReq) bool {
 
 func (p *SelectLessonInfoReq) Field1DeepEqual(src string) bool {
 
-	if strings.Compare(p.Lessonname, src) != 0 {
+	if strings.Compare(p.Lessonid, src) != 0 {
 		return false
 	}
 	return true
