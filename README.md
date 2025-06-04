@@ -1483,7 +1483,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 ------
 
-##### Create Sign-In (WebRTC)(TODO)
+##### Create Sign-In (WebRTC)
 
 简介：在 WebRTC 环境中创建签到
 
@@ -1978,7 +1978,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 - 请求示例：
 
   - Headers:
-    - `Content-Type:mutipart/form-data`
+    - `Content-Type:application/json`
     - `Authorization: Bearer <jwt_token>`
   
   - Body:
@@ -2011,23 +2011,33 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 - 参数解释：
 
-  | 参数名称      | 解释      |
-  | ------------- | --------- |
-  | lesson_id     | 课程 ID   |
-  | question_data | 题目 JSON |
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+
+  - Body:
+    - lesson_id:xxx,
+    - b64offer:(offer)
+
+  | 参数名称    | 解释      |
+  | ----------- | --------- |
+  | lesson_id   | 课程 ID   |
+  | content     | 题目 内容 |
+  | option_nums | 选项个数  |
+  | options     | 选项内容  |
+  | answer      | 答案      |
 
   
 
 - 请求示例：
 
   ```
-  json
-  
-  
-  复制编辑
   {
-    "lesson_id": "1",
-    "question_data": { /* 题目内容 */ }
+      "lesson_id":"9",
+      "content":"math",
+      "option_nums":4,
+      "options":["kq","hyx","azh","jzj"],
+      "answer":"A"
   }
   ```
 
