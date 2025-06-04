@@ -2318,11 +2318,11 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 ##### Quiz(WebSocket)
 
-简介:课程中聊天
+简介:实时回答
 
-- **j**
+- **接口地址**：`GET ws/quiz`
 
-- **功能说明**:课程实时聊天
+- **功能说明**: 教师实时接受学生回答，学生实时回答
 
 - 参数解释:
 
@@ -2333,10 +2333,25 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
   
 
-- 请求示例（链接）：
+- 请求示例(链接)：
 
   `QueryString`
 
   - Body:
     - lesson_id:xxx
     - token:xxx
+  
+- 请求示例(作答):
+
+  `Content-Type:application/json`
+
+  Body:
+  
+  ```
+  {
+  	"question_id":"xxx",
+  	"answer":"xxx"
+  }
+  ```
+  
+  教师端就能实时接收
