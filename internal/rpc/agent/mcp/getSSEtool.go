@@ -6,6 +6,7 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/mark3labs/mcp-go/client"
 	"github.com/mark3labs/mcp-go/mcp"
+	"log"
 )
 
 func GetSSETool(ctx context.Context, url string) []tool.BaseTool {
@@ -33,5 +34,8 @@ func GetSSETool(ctx context.Context, url string) []tool.BaseTool {
 	if err != nil {
 		return nil
 	}
+
+	log.Println("GetSSETool success")
+
 	return tools
 }

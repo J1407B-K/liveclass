@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/cloudwego/kitex/client"
+	"github.com/coze-dev/cozeloop-go"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	agent "liveclass/idl/kitex_gen/agent"
 	"liveclass/idl/kitex_gen/common"
@@ -18,6 +19,8 @@ import (
 // AgentServiceImpl implements the last service interface defined in the IDL.
 type AgentServiceImpl struct {
 	userCli userservice.Client
+
+	cozeloopClient cozeloop.Client
 }
 
 func NewUserClient() (userservice.Client, error) {
@@ -30,6 +33,13 @@ func NewUserClient() (userservice.Client, error) {
 
 // ChatWithAgent implements the AgentServiceImpl interface.
 func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWithAgentReq) (resp *agent.ChatWithAgentResp, err error) {
+	input := map[string]interface{}{
+		"message": req.Message,
+	}
+
+	cozeCtx, root := s.cozeloopClient.StartSpan(context.Background(), req.Userid, "graph")
+	root.SetInput(cozeCtx, input)
+
 	agentResp, err := myagent.ChatWithAgent(ctx, req.Userid, req.Message)
 	if err != nil {
 		var respAgain string
@@ -41,6 +51,11 @@ func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWit
 		}
 		agentResp = respAgain
 	}
+
+	root.SetOutput(cozeCtx, agentResp)
+	root.Finish(cozeCtx)
+
+	s.cozeloopClient.Close(cozeCtx)
 
 	return &agent.ChatWithAgentResp{Resp: &common.Resp{Data: agentResp}}, nil
 }

@@ -2396,14 +2396,14 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/global/global.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409201" />
+              <option name="lastModified" value="1749112117489" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409201" />
+              <option name="lastModified" value="1749114967977" />
               <option name="schema">
                 <list>
                   <option value="AgentServiceImpl" />
@@ -2422,14 +2422,14 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749051873751" />
+              <option name="lastModified" value="1749113366471" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/getSSEtool.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409202" />
+              <option name="lastModified" value="1749114134101" />
             </ScannedPath>
           </value>
         </entry>
@@ -2443,7 +2443,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/startMCPserver.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409202" />
+              <option name="lastModified" value="1749114134095" />
             </ScannedPath>
           </value>
         </entry>
@@ -3440,6 +3440,6 @@
         <entry key="webrtc_live_view_result" value="WebrtcLiveViewResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1749020391029" />
+    <option name="lastTimeChecked" value="1749111781052" />
   </component>
 </project>

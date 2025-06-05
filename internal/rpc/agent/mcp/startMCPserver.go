@@ -53,6 +53,7 @@ func StartMCPServer() {
 	), timeHandler)
 
 	go func() {
+		log.Println("Start MCP server on http://localhost:12345")
 		if err := server.NewSSEServer(svr, server.WithBaseURL("http://localhost:12345")).Start("localhost:12345"); err != nil {
 			log.Fatal(err)
 		}
