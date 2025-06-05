@@ -2138,7 +2138,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749021158912" />
+              <option name="lastModified" value="1749124293050" />
             </ScannedPath>
           </value>
         </entry>
@@ -2177,10 +2177,17 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/initialize/jaeger.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1749115781855" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/initialize/rpc.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409199" />
+              <option name="lastModified" value="1749122985825" />
             </ScannedPath>
           </value>
         </entry>
@@ -2422,7 +2429,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749113366471" />
+              <option name="lastModified" value="1749124293048" />
             </ScannedPath>
           </value>
         </entry>
@@ -2524,7 +2531,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409203" />
+              <option name="lastModified" value="1749124293042" />
             </ScannedPath>
           </value>
         </entry>
@@ -2652,7 +2659,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409205" />
+              <option name="lastModified" value="1749124293055" />
             </ScannedPath>
           </value>
         </entry>
@@ -2774,7 +2781,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409206" />
+              <option name="lastModified" value="1749124293057" />
             </ScannedPath>
           </value>
         </entry>
@@ -2884,7 +2891,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409207" />
+              <option name="lastModified" value="1749124293053" />
             </ScannedPath>
           </value>
         </entry>
@@ -3012,7 +3019,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409209" />
+              <option name="lastModified" value="1749124293052" />
             </ScannedPath>
           </value>
         </entry>

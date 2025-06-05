@@ -105,6 +105,23 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: 123456
 
+  jaeger:
+    image: jaegertracing/all-in-one:1.46
+    container_name: jaeger
+    ports:
+      - "16686:16686"    # Jaeger UI
+      - "4317:4317"      # OTLP/gRPC 接收
+      - "14268:14268"    # HTTP Collector（可选）
+      - "6831:6831/udp"  # UDP Agent（可选）
+    
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: prometheus
+    volumes:
+      - ./data/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"        # Prometheus Web UI
+
   mysql:
     image: mysql:8.0
     container_name: liveclass-mysql

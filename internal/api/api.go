@@ -1,7 +1,11 @@
 package api
 
 import (
+	"context"
 	"github.com/cloudwego/hertz/pkg/app/server"
+	prometheus "github.com/hertz-contrib/monitor-prometheus"
+	"github.com/hertz-contrib/obs-opentelemetry/provider"
+	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 	"liveclass/internal/service"
 	"liveclass/internal/utils/cors"
 	"liveclass/internal/utils/jwt"
@@ -9,11 +13,25 @@ import (
 )
 
 func InitRouter() {
-	h := server.New(server.WithHostPorts(":8080"),
-		server.WithMaxRequestBodySize(1024*1024*1024))
-	h.NoHijackConnPool = true
+	p := provider.NewOpenTelemetryProvider(
+		provider.WithServiceName("liveclass-api"),
+		provider.WithExportEndpoint("localhost:4317"),
+		provider.WithInsecure(),
+	)
+	defer p.Shutdown(context.Background())
 
+	tracer, cfg := tracing.NewServerTracer()
+
+	prom := prometheus.NewServerTracer(":10001", "/metrics")
+
+	h := server.New(server.WithHostPorts(":8080"),
+		server.WithMaxRequestBodySize(1024*1024*1024),
+		server.WithTracer(prom),
+		tracer)
+
+	h.NoHijackConnPool = true
 	h.Use(cors.CORS())
+	h.Use(tracing.ServerMiddleware(cfg))
 
 	authMiddlewire, err := jwt.NewMiddle()
 	if err != nil {

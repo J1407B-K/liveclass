@@ -30,6 +30,8 @@
 
 - EINO DEV可视化开发
 
+- CozeLoop(扣子罗盘)
+
 - GORM
 
 - JWT
@@ -56,7 +58,15 @@
 
 - 腾讯云COS存储
 
+- Jaeger(链路追踪:localhost:16686)
+
+  ![1](images/1.png)
   
+  
+  
+- Prometheus(指标测量:localhost:9090)
+
+  ![2](images/2.png)
 
 今后仍有等等等等……敬请期待~
 
