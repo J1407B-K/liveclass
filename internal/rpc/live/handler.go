@@ -28,6 +28,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 // LiveServiceImpl implements the last service interface defined in the IDL.
@@ -405,7 +406,7 @@ func (s *LiveServiceImpl) CreateSignIn(ctx context.Context, req *live.CreateSign
 		return nil, errors.New("权限不够！！！你不是当前课程老师")
 	}
 
-	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID)
+	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID, time.Now().Add(time.Duration(req.Duration)))
 	if err != nil {
 		return nil, err
 	}
@@ -426,7 +427,7 @@ func (s *LiveServiceImpl) SignIn(ctx context.Context, req *live.SignInReq) (resp
 
 	for _, stuid := range linfo.StudentID {
 		if req.Userid == stuid {
-			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid)
+			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid, time.Now())
 			if err != nil {
 				return nil, err
 			}

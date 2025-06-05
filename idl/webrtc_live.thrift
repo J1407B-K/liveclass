@@ -98,6 +98,7 @@ struct IsStudentInLessonResp {
 struct CreateSignInReq {
     1: string userid,
     2: string lessonid,
+    3: i64  duration,
 }
 
 struct CreateSignInResp {

@@ -6,6 +6,7 @@ import (
 	"gorm.io/gorm"
 	"liveclass/internal/rpc/live/model"
 	"strings"
+	"time"
 )
 
 func SaveLesson(db *gorm.DB, livename, desc, username, code, teacherid string) error {
@@ -147,7 +148,7 @@ func CheckStudentInLesson(db *gorm.DB, studentId, lessonid string) (string, erro
 	return "not_in", nil
 }
 
-func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string) error {
+func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string, closeTime time.Time) error {
 	tx := db.Begin()
 	if tx.Error != nil {
 		tx.Rollback()
@@ -164,7 +165,7 @@ func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string) error {
 		return err
 	}
 
-	s := model.SignIn{LessonId: lessonId, AllUserId: alluserid, AlreadyUserId: []string{}}
+	s := model.SignIn{LessonId: lessonId, AllUserId: alluserid, AlreadyUserId: []string{}, CloseTime: closeTime}
 
 	if err := tx.Create(&s).Error; err != nil {
 		tx.Rollback()
@@ -180,7 +181,7 @@ func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string) error {
 	return nil
 }
 
-func StuSignIn(db *gorm.DB, lessonId, userId string) (string, error) {
+func StuSignIn(db *gorm.DB, lessonId, userId string, timeNow time.Time) (string, error) {
 	tx := db.Begin()
 	if tx.Error != nil {
 		return "", tx.Error
@@ -199,6 +200,12 @@ func StuSignIn(db *gorm.DB, lessonId, userId string) (string, error) {
 	if SignIn.LessonId != lessonId {
 		tx.Rollback()
 		return "", errors.New("课程不匹配")
+	}
+
+	delta := timeNow.Sub(SignIn.CloseTime)
+	if delta >= 0 {
+		tx.Rollback()
+		return "", errors.New("")
 	}
 
 	if err != nil {

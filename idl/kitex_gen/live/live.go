@@ -3904,6 +3904,7 @@ func (p *RecordLessonResp) Field1DeepEqual(src *common.Resp) bool {
 type CreateSignInReq struct {
 	Userid   string `thrift:"userid,1" frugal:"1,default,string" json:"userid"`
 	Lessonid string `thrift:"lessonid,2" frugal:"2,default,string" json:"lessonid"`
+	Duration int64  `thrift:"duration,3" frugal:"3,default,i64" json:"duration"`
 }
 
 func NewCreateSignInReq() *CreateSignInReq {
@@ -3920,16 +3921,24 @@ func (p *CreateSignInReq) GetUserid() (v string) {
 func (p *CreateSignInReq) GetLessonid() (v string) {
 	return p.Lessonid
 }
+
+func (p *CreateSignInReq) GetDuration() (v int64) {
+	return p.Duration
+}
 func (p *CreateSignInReq) SetUserid(val string) {
 	p.Userid = val
 }
 func (p *CreateSignInReq) SetLessonid(val string) {
 	p.Lessonid = val
 }
+func (p *CreateSignInReq) SetDuration(val int64) {
+	p.Duration = val
+}
 
 var fieldIDToName_CreateSignInReq = map[int16]string{
 	1: "userid",
 	2: "lessonid",
+	3: "duration",
 }
 
 func (p *CreateSignInReq) Read(iprot thrift.TProtocol) (err error) {
@@ -3962,6 +3971,14 @@ func (p *CreateSignInReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -4018,6 +4035,17 @@ func (p *CreateSignInReq) ReadField2(iprot thrift.TProtocol) error {
 	p.Lessonid = _field
 	return nil
 }
+func (p *CreateSignInReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Duration = _field
+	return nil
+}
 
 func (p *CreateSignInReq) Write(oprot thrift.TProtocol) (err error) {
 
@@ -4032,6 +4060,10 @@ func (p *CreateSignInReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -4086,6 +4118,23 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
 
+func (p *CreateSignInReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("duration", thrift.I64, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Duration); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
 func (p *CreateSignInReq) String() string {
 	if p == nil {
 		return "<nil>"
@@ -4106,6 +4155,9 @@ func (p *CreateSignInReq) DeepEqual(ano *CreateSignInReq) bool {
 	if !p.Field2DeepEqual(ano.Lessonid) {
 		return false
 	}
+	if !p.Field3DeepEqual(ano.Duration) {
+		return false
+	}
 	return true
 }
 
@@ -4119,6 +4171,13 @@ func (p *CreateSignInReq) Field1DeepEqual(src string) bool {
 func (p *CreateSignInReq) Field2DeepEqual(src string) bool {
 
 	if strings.Compare(p.Lessonid, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *CreateSignInReq) Field3DeepEqual(src int64) bool {
+
+	if p.Duration != src {
 		return false
 	}
 	return true

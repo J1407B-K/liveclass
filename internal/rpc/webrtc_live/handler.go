@@ -504,7 +504,7 @@ func (s *WebrtcLiveImpl) CreateSignIn(ctx context.Context, req *webrtc_live.Crea
 		return nil, errors.New("权限不够！！！你不是当前课程老师")
 	}
 
-	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID)
+	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID, time.Now().Add(time.Duration(req.Duration)))
 	if err != nil {
 		return nil, err
 	}
@@ -529,7 +529,7 @@ func (s *WebrtcLiveImpl) SignIn(ctx context.Context, req *webrtc_live.SignInReq)
 
 	for _, stuid := range linfo.StudentID {
 		if req.Userid == stuid {
-			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid)
+			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid, time.Now())
 			if err != nil {
 				return nil, err
 			}
