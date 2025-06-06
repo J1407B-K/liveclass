@@ -1,0 +1,11 @@
+apiVersion: 1
+
+datasources:
+  - name: Prometheus             # 在 Grafana 里显示的名字
+    type: prometheus             # 类型固定写 prometheus
+    access: proxy                # 访问方式
+    url: http://prometheus:9090  # “prometheus” 是 docker-compose 里的服务名
+    isDefault: true              # 默认数据源
+    editable: false              # 不允许在 UI 中改动
+    jsonData:
+      timeInterval: "15s"

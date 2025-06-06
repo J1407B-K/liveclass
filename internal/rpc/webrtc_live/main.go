@@ -39,6 +39,7 @@ func main() {
 		provider.WithServiceName("webrtc_liveservice"),
 		provider.WithExportEndpoint("localhost:4317"),
 		provider.WithInsecure(),
+		provider.WithEnableMetrics(false),
 	)
 	defer p.Shutdown(context.Background())
 

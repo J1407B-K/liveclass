@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/coze-dev/cozeloop-go"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	agent "liveclass/idl/kitex_gen/agent"
 	"liveclass/idl/kitex_gen/common"
@@ -28,7 +30,9 @@ func NewUserClient() (userservice.Client, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return userservice.NewClient("userservice", client.WithResolver(r)) // 指定 Resolver
+	return userservice.NewClient("userservice", client.WithResolver(r),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
 }
 
 // ChatWithAgent implements the AgentServiceImpl interface.

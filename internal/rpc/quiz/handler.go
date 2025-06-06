@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/common"
@@ -30,7 +32,9 @@ func NewLiveClient() (liveservice.Client, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return liveservice.NewClient("liveservice", client.WithResolver(r)) // 指定 Resolver
+	return liveservice.NewClient("liveservice", client.WithResolver(r),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
 }
 
 func NewUserClient() (userservice.Client, error) {
@@ -38,7 +42,9 @@ func NewUserClient() (userservice.Client, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return userservice.NewClient("userservice", client.WithResolver(r))
+	return userservice.NewClient("userservice", client.WithResolver(r),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
 }
 
 // CreateQuestion implements the QuizServiceImpl interface.

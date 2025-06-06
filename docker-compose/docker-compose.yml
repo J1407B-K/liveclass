@@ -122,9 +122,24 @@ services:
     ports:
       - "9090:9090"        # Prometheus Web UI
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+      - jaeger
+    ports:
+      - "3000:3000"      # Grafana UI (http://`localhost:3000)
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_PROVISIONING_DATASOURCES_PATH=/etc/grafana/provisioning/datasources
+    volumes:
+      - ./data/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+
   mysql:
     image: mysql:8.0
-    container_name: liveclass-mysql
+    container_name: mysql
     restart: unless-stopped
     environment:
       # 设置 root 用户密码
@@ -136,7 +151,7 @@ services:
 
   redis:
     image: redis:6.2
-    container_name: liveclass-redis
+    container_name: redis
     restart: unless-stopped
     # 关闭保护模式以允许外部连接，无密码，DB 序号默认为 0
     command: ["redis-server", "--protected-mode", "no"]

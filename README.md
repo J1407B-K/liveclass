@@ -36,7 +36,7 @@
 
 - JWT
 
-- WebRTC(仅写出开播关播逻辑，没前端配合www)
+- WebRTC
 
 - RAG
 
@@ -68,11 +68,15 @@
 
   ![2](images/2.png)
 
+- Grafana(默认username,password均为admin)，可以查看Prometheus数据
+
+![3](images/3.png)
+
 今后仍有等等等等……敬请期待~
 
 ------
 
-### 功能实现:(把华神提到的基本都“丐版”实现了嘿嘿)
+### 功能实现:(提到的基本都“丐版”实现了嘿嘿)
 
 **基础要求**:
 
@@ -134,6 +138,17 @@ go run ./rpc/chat
 #webrtc_live
 cd ./internal
 go run ./rpc/webrtc_live(可选--db自动建表)
+```
+
+
+
+indexer:(更新.md后加入向量数据库)
+
+```bash
+cd ./internal/rpc/agent/cmd/indexer/
+go run main.go
+
+#md文件放在liveclass/internal/rpc/agent/cmd/indexer/data/memory中
 ```
 
 
@@ -214,7 +229,7 @@ MCP:简易使用了SSE(支持studio)以及自身实现的如hash、加减乘除�
 
 
 
-工作室AI巨佬学长的看法:
+AI巨佬学长的看法:
 
 ![IMG_20250523_012143](images/IMG_20250523_012143.png)
 

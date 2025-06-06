@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"go.mongodb.org/mongo-driver/mongo"
 	chat "liveclass/idl/kitex_gen/chat"
@@ -29,7 +31,9 @@ func NewLiveClient() (liveservice.Client, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return liveservice.NewClient("liveservice", client.WithResolver(r)) // 指定 Resolver
+	return liveservice.NewClient("liveservice", client.WithResolver(r),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
 }
 
 // LiveChat implements the ChatServiceImpl interface.

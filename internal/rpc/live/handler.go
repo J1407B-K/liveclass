@@ -6,8 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"github.com/tencentyun/cos-go-sdk-v5"
 	"gorm.io/gorm"
@@ -49,7 +51,9 @@ func NewUserClient() (userservice.Client, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return userservice.NewClient("userservice", client.WithResolver(r)) // 指定 Resolver
+	return userservice.NewClient("userservice", client.WithResolver(r),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
 }
 
 // CreateLive implements the LiveServiceImpl interface.

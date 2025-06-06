@@ -7,8 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
@@ -49,7 +51,9 @@ func NewUserClient() (userservice.Client, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return userservice.NewClient("userservice", client.WithResolver(r))
+	return userservice.NewClient("userservice", client.WithResolver(r),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
 }
 
 func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.BroadcastReq) (*webrtc_live.BroadcastResp, error) {
