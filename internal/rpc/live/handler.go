@@ -532,9 +532,16 @@ func (s *LiveServiceImpl) RollCallInRandom(ctx context.Context, req *live.RollCa
 		return nil, errors.New("权限不够！！！你不是当前课程老师")
 	}
 
-	randomIndex := rand.Intn(len(linfo.StudentID))
+	var stuid []string
+	for i := 0; i < len(linfo.StudentID); i++ {
+		if linfo.StudentID[i] != req.Userid {
+			stuid = append(stuid, linfo.StudentID[i])
+		}
+	}
 
-	stuinfo, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: linfo.StudentID[randomIndex]})
+	randomIndex := rand.Intn(len(stuid))
+
+	stuinfo, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: stuid[randomIndex]})
 	if err != nil {
 		return nil, err
 	}

@@ -2701,7 +2701,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749468511470" />
+              <option name="lastModified" value="1749480438570" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -3066,7 +3066,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749468350487" />
+              <option name="lastModified" value="1749480438529" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />

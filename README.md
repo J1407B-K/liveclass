@@ -4,7 +4,7 @@
 
 **liveclass集成了许多技术，运用hertz+kitex的分布式架构构成了一个实时在线直播课堂，同时框架一致，扩展性强，API统一管理，RPC服务文件结构格式化，参数传递使用统一接口，学习成本较低，容易扩展开发。包含用户，直播，实时答题，ai智能助教等部分，未来将不断完善(也许，Test代码都没写呢hhh**
 
-
+### 技术栈（部分）:
 
 - Nginx
 
@@ -42,7 +42,9 @@
 
 - MCP
 
-- REACT AGENT
+- Thrift
+
+- REACT AGENT(ARK DOUBAO EMBEDDING/ARK DOUBAO 32k-pro)
 
 - Viper
 
@@ -52,9 +54,13 @@
 
 - Livego
 
+- ffmpeg
+
 - Kafka
 
 - MongoDB
+
+- Excalidraw
 
 - 腾讯云COS存储
 
@@ -899,10 +905,11 @@ AI巨佬学长的看法:
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
-  
+  | 参数名称  | 解释       |
+  | --------- | ---------- |
+  | lesson_id | 课程 ID    |
+  | duration  | 过多久关闭 |
+
   
 
 - 请求示例：
@@ -915,6 +922,8 @@ AI巨佬学长的看法:
   - Body：
   
     lesson_id:xxx,
+    
+    duration:xxx
   
 - 返回示例：
 
@@ -1524,10 +1533,11 @@ AI巨佬学长的看法:
 
 - 参数解释：
 
-  | 参数名称  | 解释    |
-  | --------- | ------- |
-  | lesson_id | 课程 ID |
-  
+  | 参数名称  | 解释       |
+  | --------- | ---------- |
+  | lesson_id | 课程 ID    |
+  | duration  | 过多久关闭 |
+
   
 
 - 请求示例：
@@ -1538,6 +1548,7 @@ AI巨佬学长的看法:
   
   - Body:
     - lesson_id:xxx,
+    - duration:xxx,
   
 - 返回示例：
 
