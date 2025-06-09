@@ -61,7 +61,7 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	err = broadcastToTeacher(question.LessonId, utils.H{
+	err = broadcastToLesson(question.LessonId, utils.H{
 		"Content": question.Content,
 		"Options": question.Options,
 	})
@@ -106,6 +106,47 @@ func DelQuestion(c context.Context, ctx *app.RequestContext) {
 	resp, err := global.Clients.QuizClient.DelQuestion(c, &quiz.DelQuestionReq{
 		Userid:     uid,
 		QuestionId: qid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func GetAllLessonQuiz(c context.Context, ctx *app.RequestContext) {
+	//鉴权获得userid
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	uid := data.(*model.User).UserId
+	lessonid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.QuizClient.GetAllLessonQuiz(c, &quiz.GetAllLessonQuizReq{
+		Userid:   uid,
+		LessonId: lessonid,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{

@@ -449,6 +449,20 @@
             </set>
           </value>
         </entry>
+        <entry key="GetLessonRecordReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetLessonRecordResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="GetRaiseHandReq">
           <value>
             <set>
@@ -525,6 +539,20 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ListAllLessonRecordReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ListAllLessonRecordResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -1326,6 +1354,20 @@
             </set>
           </value>
         </entry>
+        <entry key="WebrtcLiveGetLessonRecordArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveGetLessonRecordResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="WebrtcLiveGetRaiseHandArgs">
           <value>
             <set>
@@ -1369,6 +1411,20 @@
           </value>
         </entry>
         <entry key="WebrtcLiveIsStudentInLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveListAllLessonRecordArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveListAllLessonRecordResult">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
@@ -1719,7 +1775,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147180" />
+              <option name="lastModified" value="1749450223481" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1731,14 +1787,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147201" />
+              <option name="lastModified" value="1749450223500" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147201" />
+              <option name="lastModified" value="1749450223500" />
             </ScannedPath>
           </value>
         </entry>
@@ -1997,21 +2053,21 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147201" />
+              <option name="lastModified" value="1749450223500" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/k-webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147213" />
+              <option name="lastModified" value="1749450223511" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147199" />
+              <option name="lastModified" value="1749450223498" />
               <option name="schema">
                 <list>
                   <option value="BroadcastReq" />
@@ -2060,6 +2116,10 @@
                   <option value="ApproveHandResp" />
                   <option value="ViewMicReq" />
                   <option value="ViewMicResp" />
+                  <option value="ListAllLessonRecordReq" />
+                  <option value="ListAllLessonRecordResp" />
+                  <option value="GetLessonRecordReq" />
+                  <option value="GetLessonRecordResp" />
                   <option value="WebrtcLiveBroadcastArgs" />
                   <option value="WebrtcLiveBroadcastResult" />
                   <option value="WebrtcLiveViewArgs" />
@@ -2106,6 +2166,10 @@
                   <option value="WebrtcLiveApproveHandResult" />
                   <option value="WebrtcLiveViewMicArgs" />
                   <option value="WebrtcLiveViewMicResult" />
+                  <option value="WebrtcLiveListAllLessonRecordArgs" />
+                  <option value="WebrtcLiveListAllLessonRecordResult" />
+                  <option value="WebrtcLiveGetLessonRecordArgs" />
+                  <option value="WebrtcLiveGetLessonRecordResult" />
                 </list>
               </option>
             </ScannedPath>
@@ -2114,7 +2178,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147199" />
+              <option name="lastModified" value="1749450223499" />
               <option name="schema">
                 <list>
                   <option value="kWebrtcLiveClient" />
@@ -2126,14 +2190,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147200" />
+              <option name="lastModified" value="1749450223499" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/webrtclive.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126147201" />
+              <option name="lastModified" value="1749450223500" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -2145,7 +2209,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749451563806" />
+              <option name="lastModified" value="1749460545891" />
             </ScannedPath>
           </value>
         </entry>
@@ -2173,7 +2237,7 @@
         <entry key="file://$PROJECT_DIR$/internal/global/ws.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409198" />
+              <option name="lastModified" value="1749457566647" />
             </ScannedPath>
           </value>
         </entry>
@@ -2722,7 +2786,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409206" />
+              <option name="lastModified" value="1749459879715" />
             </ScannedPath>
           </value>
         </entry>
@@ -2755,7 +2819,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749171579347" />
+              <option name="lastModified" value="1749460769461" />
               <option name="schema">
                 <list>
                   <option value="QuizServiceImpl" />
@@ -3157,14 +3221,14 @@
         <entry key="file://$PROJECT_DIR$/internal/service/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
+              <option name="lastModified" value="1749460545864" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/service/quiz_ws.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
+              <option name="lastModified" value="1749457566686" />
             </ScannedPath>
           </value>
         </entry>
@@ -3185,7 +3249,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/ws_global.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
+              <option name="lastModified" value="1749457566662" />
               <option name="schema">
                 <list>
                   <option value="Claims" />
@@ -3294,6 +3358,8 @@
         <entry key="get_lesson_info_by_id_resp" value="GetLessonInfoByIdResp" />
         <entry key="get_lesson_info_req" value="GetLessonInfoReq" />
         <entry key="get_lesson_info_resp" value="GetLessonInfoResp" />
+        <entry key="get_lesson_record_req" value="GetLessonRecordReq" />
+        <entry key="get_lesson_record_resp" value="GetLessonRecordResp" />
         <entry key="get_raise_hand_req" value="GetRaiseHandReq" />
         <entry key="get_raise_hand_resp" value="GetRaiseHandResp" />
         <entry key="get_user_info_by_name_req" value="GetUserInfoByNameReq" />
@@ -3312,6 +3378,8 @@
         <entry key="k_user_service_client" value="kUserServiceClient" />
         <entry key="k_webrtc_live_client" value="kWebrtcLiveClient" />
         <entry key="lesson" value="Lesson" />
+        <entry key="list_all_lesson_record_req" value="ListAllLessonRecordReq" />
+        <entry key="list_all_lesson_record_resp" value="ListAllLessonRecordResp" />
         <entry key="list_all_user_conv_req" value="ListAllUserConvReq" />
         <entry key="list_all_user_conv_resp" value="ListAllUserConvResp" />
         <entry key="live_chat_req" value="LiveChatReq" />
@@ -3424,6 +3492,8 @@
         <entry key="webrtc_live_get_lesson_info_by_id_args" value="WebrtcLiveGetLessonInfoByIdArgs" />
         <entry key="webrtc_live_get_lesson_info_by_id_result" value="WebrtcLiveGetLessonInfoByIdResult" />
         <entry key="webrtc_live_get_lesson_info_result" value="WebrtcLiveGetLessonInfoResult" />
+        <entry key="webrtc_live_get_lesson_record_args" value="WebrtcLiveGetLessonRecordArgs" />
+        <entry key="webrtc_live_get_lesson_record_result" value="WebrtcLiveGetLessonRecordResult" />
         <entry key="webrtc_live_get_raise_hand_args" value="WebrtcLiveGetRaiseHandArgs" />
         <entry key="webrtc_live_get_raise_hand_result" value="WebrtcLiveGetRaiseHandResult" />
         <entry key="webrtc_live_get_white_board_json_args" value="WebrtcLiveGetWhiteBoardJsonArgs" />
@@ -3431,6 +3501,8 @@
         <entry key="webrtc_live_impl" value="WebrtcLiveImpl" />
         <entry key="webrtc_live_is_student_in_lesson_args" value="WebrtcLiveIsStudentInLessonArgs" />
         <entry key="webrtc_live_is_student_in_lesson_result" value="WebrtcLiveIsStudentInLessonResult" />
+        <entry key="webrtc_live_list_all_lesson_record_args" value="WebrtcLiveListAllLessonRecordArgs" />
+        <entry key="webrtc_live_list_all_lesson_record_result" value="WebrtcLiveListAllLessonRecordResult" />
         <entry key="webrtc_live_publish_mic_args" value="WebrtcLivePublishMicArgs" />
         <entry key="webrtc_live_publish_mic_result" value="WebrtcLivePublishMicResult" />
         <entry key="webrtc_live_raise_hand_args" value="WebrtcLiveRaiseHandArgs" />
@@ -3453,6 +3525,6 @@
         <entry key="webrtc_live_view_result" value="WebrtcLiveViewResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1749304810320" />
+    <option name="lastTimeChecked" value="1749457230126" />
   </component>
 </project>

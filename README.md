@@ -2130,13 +2130,13 @@ AI巨佬学长的看法:
     - lesson_id:xxx,
     - b64offer:(offer)
 
-  | 参数名称    | 解释      |
-  | ----------- | --------- |
-  | lesson_id   | 课程 ID   |
-  | content     | 题目 内容 |
-  | option_nums | 选项个数  |
-  | options     | 选项内容  |
-  | answer      | 答案      |
+  | 参数名称    | 解释                   |
+  | ----------- | ---------------------- |
+  | lesson_id   | 课程 ID                |
+  | content     | 题目 内容              |
+  | option_nums | 选项个数(当前最高为4)  |
+  | options     | 选项内容(前后对应ABCD) |
+  | answer      | 答案                   |
 
   
 
@@ -2185,7 +2185,7 @@ AI巨佬学长的看法:
 - 请求示例：
 
   - Headers:
-    - `Content-Type:application/json`
+    - `Content-Type:mutipart/form-data`
     - `Authorization: Bearer <jwt_token>`
   
   - Body:
@@ -2204,6 +2204,49 @@ AI巨佬学长的看法:
   ```
 
 ------
+
+##### Get Question
+
+简介：获取课程下所有题目
+
+- **接口地址**：`GET /get_question`
+
+- **功能说明**：从题库中获取某一课程所有题目。
+
+- 参数解释：
+
+  | 参数名称  | 解释   |
+  | --------- | ------ |
+  | lesson_id | 课程ID |
+
+  
+
+- 请求示例：
+
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+
+  - Body:
+    - lesson_id:xxx
+
+- 返回示例：
+
+  ```
+  {
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "问题ID:10$问题内容:ls$问题选项:kq|hyx|azh|$正确答案:C\n"
+      }
+  }
+  ```
+
+  
+
+------
+
+
 
 ##### Chat with Agent
 
@@ -2460,8 +2503,8 @@ AI巨佬学长的看法:
   
   ```
   {
-  	"question_id":"xxx",
-  	"answer":"xxx"
+      "question_id":"1",
+      "answer": "A"(A/B/C/D)
   }
   ```
   

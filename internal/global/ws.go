@@ -15,8 +15,9 @@ var (
 	}
 
 	//储存连接的map
-	WsConnsQuiz = make(map[*websocket.Conn]string)
-	WsConnsChat = make(map[*websocket.Conn]string)
+	WsConnsQuiz       = make(map[*websocket.Conn]string) //userid
+	WsConnsQuizLesson = make(map[*websocket.Conn]string) //lessonid
+	WsConnsChat       = make(map[*websocket.Conn]string)
 	//锁
 	Mux = sync.Mutex{}
 

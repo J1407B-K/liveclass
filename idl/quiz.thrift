@@ -34,8 +34,18 @@ struct DelQuestionResp {
     1: common.resp resp,
 }
 
+struct GetAllLessonQuizReq {
+    1:string userid,
+    2:string lesson_id,
+}
+
+struct GetAllLessonQuizResp{
+    1:common.resp resp,
+}
+
 service QuizService {
     CreateQuestionResp CreateQuestion(1: CreateQuestionReq req),
     TorFAnswerResp     TorFAnswer(1: TorFAnswerReq req),
     DelQuestionResp    DelQuestion(1: DelQuestionReq req),
+    GetAllLessonQuizResp GetAllLessonQuiz(1: GetAllLessonQuizReq req),
 }

@@ -95,6 +95,7 @@ func InitRouter() {
 
 		v2.POST("/create_question", service.CreateQuestion)
 		v2.DELETE("/del_question", service.DelQuestion)
+		v2.GET("/get_question", service.GetAllLessonQuiz)
 
 		v2.POST("/chat_agent", service.ChatWithAgent)
 		v2.GET("/list_user_conv", service.ListAllUserConv)

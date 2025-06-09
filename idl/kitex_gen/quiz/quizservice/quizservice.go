@@ -34,6 +34,13 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"GetAllLessonQuiz": kitex.NewMethodInfo(
+		getAllLessonQuizHandler,
+		newQuizServiceGetAllLessonQuizArgs,
+		newQuizServiceGetAllLessonQuizResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -154,6 +161,24 @@ func newQuizServiceDelQuestionResult() interface{} {
 	return quiz.NewQuizServiceDelQuestionResult()
 }
 
+func getAllLessonQuizHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*quiz.QuizServiceGetAllLessonQuizArgs)
+	realResult := result.(*quiz.QuizServiceGetAllLessonQuizResult)
+	success, err := handler.(quiz.QuizService).GetAllLessonQuiz(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newQuizServiceGetAllLessonQuizArgs() interface{} {
+	return quiz.NewQuizServiceGetAllLessonQuizArgs()
+}
+
+func newQuizServiceGetAllLessonQuizResult() interface{} {
+	return quiz.NewQuizServiceGetAllLessonQuizResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -189,6 +214,16 @@ func (p *kClient) DelQuestion(ctx context.Context, req *quiz.DelQuestionReq) (r 
 	_args.Req = req
 	var _result quiz.QuizServiceDelQuestionResult
 	if err = p.c.Call(ctx, "DelQuestion", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetAllLessonQuiz(ctx context.Context, req *quiz.GetAllLessonQuizReq) (r *quiz.GetAllLessonQuizResp, err error) {
+	var _args quiz.QuizServiceGetAllLessonQuizArgs
+	_args.Req = req
+	var _result quiz.QuizServiceGetAllLessonQuizResult
+	if err = p.c.Call(ctx, "GetAllLessonQuiz", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

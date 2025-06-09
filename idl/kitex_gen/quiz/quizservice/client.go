@@ -14,6 +14,7 @@ type Client interface {
 	CreateQuestion(ctx context.Context, req *quiz.CreateQuestionReq, callOptions ...callopt.Option) (r *quiz.CreateQuestionResp, err error)
 	TorFAnswer(ctx context.Context, req *quiz.TorFAnswerReq, callOptions ...callopt.Option) (r *quiz.TorFAnswerResp, err error)
 	DelQuestion(ctx context.Context, req *quiz.DelQuestionReq, callOptions ...callopt.Option) (r *quiz.DelQuestionResp, err error)
+	GetAllLessonQuiz(ctx context.Context, req *quiz.GetAllLessonQuizReq, callOptions ...callopt.Option) (r *quiz.GetAllLessonQuizResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -58,4 +59,9 @@ func (p *kQuizServiceClient) TorFAnswer(ctx context.Context, req *quiz.TorFAnswe
 func (p *kQuizServiceClient) DelQuestion(ctx context.Context, req *quiz.DelQuestionReq, callOptions ...callopt.Option) (r *quiz.DelQuestionResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.DelQuestion(ctx, req)
+}
+
+func (p *kQuizServiceClient) GetAllLessonQuiz(ctx context.Context, req *quiz.GetAllLessonQuizReq, callOptions ...callopt.Option) (r *quiz.GetAllLessonQuizResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetAllLessonQuiz(ctx, req)
 }

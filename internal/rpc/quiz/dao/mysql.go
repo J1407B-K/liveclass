@@ -149,3 +149,12 @@ func DelQuestionAndAnswer(db *gorm.DB, questionId int) error {
 
 	return tx.Commit().Error
 }
+
+func GetQustionByLesson(db *gorm.DB, lessonId int) ([]model.Question, error) {
+	var questions []model.Question
+	err := db.Where("lesson_id = ?", lessonId).Find(&questions).Error
+	if err != nil {
+		return nil, err
+	}
+	return questions, nil
+}

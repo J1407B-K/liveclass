@@ -40,3 +40,17 @@ func broadcastToTeacher(userid string, message interface{}) error {
 	}
 	return nil
 }
+
+func broadcastToLesson(lessonid string, quiz interface{}) error {
+	global.Mux.Lock()
+	defer global.Mux.Unlock()
+	for conn, lid := range global.WsConnsQuizLesson {
+		if lid == lessonid {
+			err := conn.WriteJSON(quiz)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

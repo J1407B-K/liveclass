@@ -144,7 +144,7 @@ func (s *QuizServiceImpl) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerRe
 
 	return &quiz.TorFAnswerResp{
 		Resp: &common.Resp{
-			Data: strconv.Itoa(q.TeacherId) + "$" + cut.ShowOptions(so) + "|right answer:" + q.Answer,
+			Data: strconv.Itoa(q.TeacherId) + "$" + "问题ID:" + strconv.Itoa(q.ID) + "   " + cut.ShowOptions(so) + "|right answer:" + q.Answer,
 		},
 	}, nil
 }
@@ -193,4 +193,39 @@ func (s *QuizServiceImpl) DelQuestion(ctx context.Context, req *quiz.DelQuestion
 			Data: "success",
 		},
 	}, nil
+}
+
+// GetAllLessonQuiz implements the QuizServiceImpl interface.
+func (s *QuizServiceImpl) GetAllLessonQuiz(ctx context.Context, req *quiz.GetAllLessonQuizReq) (resp *quiz.GetAllLessonQuizResp, err error) {
+	lid, err := strconv.Atoi(req.LessonId)
+	if err != nil {
+		return nil, err
+	}
+	res, err := s.liveCli.IsStudentInLesson(ctx, &live.IsStudentInLessonReq{
+		Studentid: req.Userid,
+		Lessonid:  req.LessonId,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if res.Resp.Data == "not_in" {
+		return &quiz.GetAllLessonQuizResp{Resp: &common.Resp{Data: "学生不在当前课程中"}}, nil
+	}
+	qs, err := dao.GetQustionByLesson(s.DB, lid)
+	if err != nil {
+		return nil, err
+	}
+
+	var str string
+	var ops string
+	for _, q := range qs {
+		id := q.ID
+		content := q.Content
+		ans := q.Answer
+		for _, o := range q.Options {
+			ops += o + "|"
+		}
+		str += "问题ID:" + strconv.Itoa(id) + "$" + "问题内容:" + content + "$" + "问题选项:" + ops + "$" + "正确答案:" + ans + "\n"
+	}
+	return &quiz.GetAllLessonQuizResp{Resp: &common.Resp{Data: str}}, nil
 }
