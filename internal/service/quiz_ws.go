@@ -70,15 +70,16 @@ func ansHandler(c context.Context, userId, lessonid string) websocket.HertzHandl
 				global.Mux.Unlock()
 				break
 			}
-
-			teacherid, options := cut.SplitAnsResp(resp.Resp.Data)
-			err = broadcastToTeacher(teacherid, options)
-			if err != nil {
-				global.Mux.Lock()
-				delete(global.WsConnsQuiz, conn)
-				delete(global.WsConnsQuizLesson, conn)
-				global.Mux.Unlock()
-				break
+			if resp.Resp.Data != "" {
+				teacherid, options := cut.SplitAnsResp(resp.Resp.Data)
+				err = broadcastToTeacher(teacherid, options)
+				if err != nil {
+					global.Mux.Lock()
+					delete(global.WsConnsQuiz, conn)
+					delete(global.WsConnsQuizLesson, conn)
+					global.Mux.Unlock()
+					break
+				}
 			}
 		}
 	}

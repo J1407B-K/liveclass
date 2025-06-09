@@ -120,7 +120,7 @@ func (s *QuizServiceImpl) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerRe
 	err = dao.CheckCloseTime(s.DB, qid)
 	if err != nil {
 		if err.Error() == "close" {
-			return &quiz.TorFAnswerResp{Resp: &common.Resp{Data: "问题已经关闭"}}, nil
+			return &quiz.TorFAnswerResp{Resp: &common.Resp{Data: req.Userid + "$" + "问题已经关闭"}}, nil
 		}
 		return nil, err
 	}

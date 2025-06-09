@@ -433,6 +433,9 @@ func (s *LiveServiceImpl) SignIn(ctx context.Context, req *live.SignInReq) (resp
 		if req.Userid == stuid {
 			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid, time.Now())
 			if err != nil {
+				if err.Error() == "close" {
+					return &live.SignInResp{Resp: &common.Resp{Data: "签到关闭"}}, nil
+				}
 				return nil, err
 			}
 		}

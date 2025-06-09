@@ -1803,7 +1803,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725581" />
+              <option name="lastModified" value="1749465636084" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1815,14 +1815,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725587" />
+              <option name="lastModified" value="1749465636089" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725587" />
+              <option name="lastModified" value="1749465636089" />
             </ScannedPath>
           </value>
         </entry>
@@ -1941,21 +1941,21 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725587" />
+              <option name="lastModified" value="1749465636090" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/k-quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725590" />
+              <option name="lastModified" value="1749465636092" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725586" />
+              <option name="lastModified" value="1749465636088" />
               <option name="schema">
                 <list>
                   <option value="CreateQuestionReq" />
@@ -1982,7 +1982,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725586" />
+              <option name="lastModified" value="1749465636089" />
               <option name="schema">
                 <list>
                   <option value="kQuizServiceClient" />
@@ -1994,7 +1994,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/quizservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725587" />
+              <option name="lastModified" value="1749465636089" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -2006,7 +2006,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459725586" />
+              <option name="lastModified" value="1749465636089" />
             </ScannedPath>
           </value>
         </entry>
@@ -2668,7 +2668,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126807651" />
+              <option name="lastModified" value="1749468511462" />
             </ScannedPath>
           </value>
         </entry>
@@ -2701,7 +2701,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749171579390" />
+              <option name="lastModified" value="1749468511470" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -2818,7 +2818,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749466460951" />
+              <option name="lastModified" value="1749467864095" />
             </ScannedPath>
           </value>
         </entry>
@@ -2851,7 +2851,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749466460993" />
+              <option name="lastModified" value="1749467864045" />
               <option name="schema">
                 <list>
                   <option value="QuizServiceImpl" />
@@ -3033,7 +3033,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126807709" />
+              <option name="lastModified" value="1749468410843" />
             </ScannedPath>
           </value>
         </entry>
@@ -3066,7 +3066,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749451801317" />
+              <option name="lastModified" value="1749468350487" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -3260,7 +3260,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/quiz_ws.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749457566686" />
+              <option name="lastModified" value="1749467779349" />
             </ScannedPath>
           </value>
         </entry>
@@ -3274,7 +3274,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749452149013" />
+              <option name="lastModified" value="1749468174683" />
             </ScannedPath>
           </value>
         </entry>

@@ -11,6 +11,7 @@ import (
 	"liveclass/internal/global"
 	"liveclass/internal/model"
 	"net/http"
+	"strconv"
 )
 
 func Broadcast(c context.Context, ctx *app.RequestContext) {
@@ -336,9 +337,23 @@ func CreateSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
 
 	userid := data.(*model.User).UserId
 	lid := ctx.PostForm("lesson_id")
+	duration := ctx.PostForm("duration")
+
+	iduration, err := strconv.Atoi(duration)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.H{
+			"resp": model.Response{
+				Code: code.BadRequest,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
 	resp, err := global.Clients.Webrtc_liveClient.CreateSignIn(c, &webrtc_live.CreateSignInReq{
 		Userid:   userid,
 		Lessonid: lid,
+		Duration: int64(iduration),
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{

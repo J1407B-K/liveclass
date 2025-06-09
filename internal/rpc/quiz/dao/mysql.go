@@ -18,7 +18,7 @@ func SaveQuestion(db *gorm.DB, lessonId int, teacherId int, now time.Time, req *
 		Options:    req.Options,
 		Answer:     req.Answer,
 		TeacherId:  teacherId,
-		CloseTime:  now.Add(time.Duration(req.Duration)),
+		CloseTime:  now.Add(time.Duration(req.Duration) * time.Second),
 	}
 
 	return db.Create(&question).Error
@@ -36,7 +36,7 @@ func CreateAnswer(db *gorm.DB, questionId, optionNums int, right string, now tim
 		OptionNums:      optionNums,
 		SelectedOptions: arrayStr,
 		AnsweredId:      []string{},
-		CloseTime:       now.Add(time.Duration(duration)),
+		CloseTime:       now.Add(time.Duration(duration) * time.Second),
 	}
 
 	return db.Create(&answer).Error

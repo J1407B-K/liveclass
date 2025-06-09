@@ -170,8 +170,14 @@ func StuSignIn(db *gorm.DB, lessonId, userId string, timeNow time.Time) (string,
 
 	delta := timeNow.Sub(SignIn.CloseTime)
 	if delta >= 0 {
-		tx.Rollback()
-		return "", errors.New("")
+		tx.Delete(&SignIn)
+
+		err = tx.Commit().Error
+		if err != nil {
+			tx.Rollback()
+			return "", err
+		}
+		return "", errors.New("close")
 	}
 
 	if err != nil {

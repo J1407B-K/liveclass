@@ -509,7 +509,7 @@ func (s *WebrtcLiveImpl) CreateSignIn(ctx context.Context, req *webrtc_live.Crea
 		return nil, errors.New("权限不够！！！你不是当前课程老师")
 	}
 
-	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID, time.Now().Add(time.Duration(req.Duration)))
+	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID, time.Now().Add(time.Duration(req.Duration)*time.Second))
 	if err != nil {
 		return nil, err
 	}
@@ -536,6 +536,9 @@ func (s *WebrtcLiveImpl) SignIn(ctx context.Context, req *webrtc_live.SignInReq)
 		if req.Userid == stuid {
 			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid, time.Now())
 			if err != nil {
+				if err.Error() == "close" {
+					return &webrtc_live.SignInResp{Resp: &common.Resp{Data: "签到关闭"}}, nil
+				}
 				return nil, err
 			}
 		}
