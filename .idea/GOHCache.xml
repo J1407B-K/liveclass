@@ -1569,6 +1569,13 @@
             </set>
           </value>
         </entry>
+        <entry key="myProgressListener">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/cos/cos.go" />
+            </set>
+          </value>
+        </entry>
       </map>
     </option>
     <option name="scannedPathMapping">
@@ -2138,7 +2145,7 @@
         <entry key="file://$PROJECT_DIR$/internal/api/api.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749176831016" />
+              <option name="lastModified" value="1749451563806" />
             </ScannedPath>
           </value>
         </entry>
@@ -2918,7 +2925,12 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/cos/cos.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1749452339583" />
+              <option name="schema">
+                <list>
+                  <option value="myProgressListener" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -2958,7 +2970,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749171579432" />
+              <option name="lastModified" value="1749451801317" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -3166,7 +3178,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749023953654" />
+              <option name="lastModified" value="1749452149013" />
             </ScannedPath>
           </value>
         </entry>
@@ -3338,6 +3350,7 @@
         <entry key="login_resp" value="LoginResp" />
         <entry key="message" value="Message" />
         <entry key="mongo_config" value="MongoConfig" />
+        <entry key="my_progress_listener" value="myProgressListener" />
         <entry key="mysql_config" value="MysqlConfig" />
         <entry key="option" value="Option" />
         <entry key="publish_mic_req" value="PublishMicReq" />

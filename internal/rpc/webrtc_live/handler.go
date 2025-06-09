@@ -30,6 +30,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -989,4 +990,57 @@ func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicRe
 		}
 	}
 	return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: "不是本课程学生"}}, nil
+}
+
+// ListAllLessonRecord implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) ListAllLessonRecord(ctx context.Context, req *webrtc_live.ListAllLessonRecordReq) (resp *webrtc_live.ListAllLessonRecordResp, err error) {
+	lid, _ := strconv.Atoi(req.Lessonid)
+	linfo, _ := dao.SelectLesson(s.DB, lid)
+	for _, stuid := range linfo.StudentID {
+		if stuid == req.Userid {
+			prifix := "lesson_" + req.Lessonid
+
+			opt := &cos.BucketGetOptions{
+				MaxKeys: 100,
+				Prefix:  prifix,
+			}
+			result, _, err := s.cosClient.Bucket.Get(ctx, opt)
+			if err != nil {
+				return nil, err
+			}
+
+			var b strings.Builder
+			for i, v := range result.Contents {
+				sizeKB := float64(v.Size) / 1024
+				b.WriteString(fmt.Sprintf("[%d] %s (%.1f KB)\n", i, v.Key, sizeKB))
+			}
+			return &webrtc_live.ListAllLessonRecordResp{Resp: &common.Resp{Data: b.String()}}, nil
+		}
+	}
+	return &webrtc_live.ListAllLessonRecordResp{Resp: &common.Resp{Data: "不是本课程学生/老师"}}, nil
+}
+
+// GetLessonRecord implements the WebrtcLiveImpl interface.
+func (s *WebrtcLiveImpl) GetLessonRecord(ctx context.Context, req *webrtc_live.GetLessonRecordReq) (resp *webrtc_live.GetLessonRecordResp, err error) {
+	lid, _ := strconv.Atoi(req.Lessonid)
+	linfo, _ := dao.SelectLesson(s.DB, lid)
+	for _, stuid := range linfo.StudentID {
+		if stuid == req.Userid {
+			key := "lesson_" + req.Lessonid + "/" + req.Key
+
+			filename := req.Key
+			localfile := filepath.Join(global.Config.TmpBaseDir, filename)
+
+			data, err := my_cos.DownloadFromCos(ctx, s.cosClient, localfile, key)
+			if err != nil {
+				return nil, err
+			}
+			if rmErr := os.Remove(localfile); rmErr != nil {
+				log.Printf("删除临时文件失败: %v", rmErr)
+			}
+
+			return &webrtc_live.GetLessonRecordResp{Data: data}, nil
+		}
+	}
+	return &webrtc_live.GetLessonRecordResp{}, nil
 }

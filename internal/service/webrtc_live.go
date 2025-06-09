@@ -889,3 +889,86 @@ func ViewMic(c context.Context, ctx *app.RequestContext) {
 		},
 	})
 }
+
+func ListAllLessonRecord(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+
+	resp, err := global.Clients.Webrtc_liveClient.ListAllLessonRecord(c, &webrtc_live.ListAllLessonRecordReq{
+		Userid:   userid,
+		Lessonid: lid,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}
+
+func GetLessonRecord(c context.Context, ctx *app.RequestContext) {
+	data, e := ctx.Get("userid")
+	if !e {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model.Response{
+				Code: code.AuthError,
+				Msg:  errors.New("无法获取userid").Error(),
+				Data: "nil",
+			},
+		})
+
+		return
+	}
+
+	userid := data.(*model.User).UserId
+	lid := ctx.PostForm("lesson_id")
+	key := ctx.PostForm("key")
+
+	file, err := global.Clients.Webrtc_liveClient.GetLessonRecord(c, &webrtc_live.GetLessonRecordReq{
+		Userid:   userid,
+		Lessonid: lid,
+		Key:      key,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, utils.H{
+			"resp": model.Response{
+				Code: code.RPCError,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: "success",
+		},
+		"file": file,
+	})
+}

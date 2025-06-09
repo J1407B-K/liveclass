@@ -174,6 +174,20 @@ var serviceMethods = map[string]kitex.MethodInfo{
 		false,
 		kitex.WithStreamingMode(kitex.StreamingNone),
 	),
+	"ListAllLessonRecord": kitex.NewMethodInfo(
+		listAllLessonRecordHandler,
+		newWebrtcLiveListAllLessonRecordArgs,
+		newWebrtcLiveListAllLessonRecordResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
+	"GetLessonRecord": kitex.NewMethodInfo(
+		getLessonRecordHandler,
+		newWebrtcLiveGetLessonRecordArgs,
+		newWebrtcLiveGetLessonRecordResult,
+		false,
+		kitex.WithStreamingMode(kitex.StreamingNone),
+	),
 }
 
 var (
@@ -654,6 +668,42 @@ func newWebrtcLiveViewMicResult() interface{} {
 	return webrtc_live.NewWebrtcLiveViewMicResult()
 }
 
+func listAllLessonRecordHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveListAllLessonRecordArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveListAllLessonRecordResult)
+	success, err := handler.(webrtc_live.WebrtcLive).ListAllLessonRecord(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveListAllLessonRecordArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveListAllLessonRecordArgs()
+}
+
+func newWebrtcLiveListAllLessonRecordResult() interface{} {
+	return webrtc_live.NewWebrtcLiveListAllLessonRecordResult()
+}
+
+func getLessonRecordHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	realArg := arg.(*webrtc_live.WebrtcLiveGetLessonRecordArgs)
+	realResult := result.(*webrtc_live.WebrtcLiveGetLessonRecordResult)
+	success, err := handler.(webrtc_live.WebrtcLive).GetLessonRecord(ctx, realArg.Req)
+	if err != nil {
+		return err
+	}
+	realResult.Success = success
+	return nil
+}
+func newWebrtcLiveGetLessonRecordArgs() interface{} {
+	return webrtc_live.NewWebrtcLiveGetLessonRecordArgs()
+}
+
+func newWebrtcLiveGetLessonRecordResult() interface{} {
+	return webrtc_live.NewWebrtcLiveGetLessonRecordResult()
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -889,6 +939,26 @@ func (p *kClient) ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq) (r *
 	_args.Req = req
 	var _result webrtc_live.WebrtcLiveViewMicResult
 	if err = p.c.Call(ctx, "ViewMic", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) ListAllLessonRecord(ctx context.Context, req *webrtc_live.ListAllLessonRecordReq) (r *webrtc_live.ListAllLessonRecordResp, err error) {
+	var _args webrtc_live.WebrtcLiveListAllLessonRecordArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveListAllLessonRecordResult
+	if err = p.c.Call(ctx, "ListAllLessonRecord", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) GetLessonRecord(ctx context.Context, req *webrtc_live.GetLessonRecordReq) (r *webrtc_live.GetLessonRecordResp, err error) {
+	var _args webrtc_live.WebrtcLiveGetLessonRecordArgs
+	_args.Req = req
+	var _result webrtc_live.WebrtcLiveGetLessonRecordResult
+	if err = p.c.Call(ctx, "GetLessonRecord", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

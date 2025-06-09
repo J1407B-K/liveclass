@@ -218,6 +218,25 @@ struct ViewMicResp{
     1:common.resp resp,
 }
 
+struct ListAllLessonRecordReq{
+    1:string userid,
+    2:string lessonid,
+}
+
+struct ListAllLessonRecordResp{
+    1:common.resp resp,
+}
+
+struct GetLessonRecordReq{
+    1:string userid,
+    2:string lessonid,
+    3:string key,
+}
+
+struct GetLessonRecordResp{
+    1: binary data,
+}
+
 service webrtc_live {
     BroadcastResp Broadcast(1: BroadcastReq req),
     ViewResp      View(1: ViewReq req),
@@ -242,4 +261,6 @@ service webrtc_live {
     GetRaiseHandResp       GetRaiseHand(1: GetRaiseHandReq req),
     ApproveHandResp        ApproveHand(1: ApproveHandReq req),
     ViewMicResp            ViewMic(1: ViewMicReq req),
+    ListAllLessonRecordResp ListAllLessonRecord(1: ListAllLessonRecordReq req),
+    GetLessonRecordResp      GetLessonRecord(1:GetLessonRecordReq req),
 }

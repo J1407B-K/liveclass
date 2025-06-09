@@ -87,7 +87,7 @@
   - 学生端提交答案，教师端实时统计结果。
   - 支持选择题、判断题等题型。
 
-**进阶要求**:
+**进阶要求**:（有些功能为webrtc独占）
 
 - AI Agent智能助教:RAG、MCP
 - 业务功能完善:
@@ -97,12 +97,12 @@
   - 实时文字聊天（敏感词屏蔽）
   - 支持屏幕共享（与直播共享一个逻辑，只不过前端推的流从摄像头变成了屏幕捕捉）
   - 白板协作（后端其实写了对应json存储和获取的路由，本来打算通过最简单的轮询来同步，只不过ai跑的前端有点小问题...）
-  - 课堂录制与回放(采用腾讯COS实现，其实本质上不与直播耦合，采用前端直接捕捉整个视频然后传给后端)
+  - 课堂录制与回放(采用腾讯COS实现，本质上不与直播耦合，采用前端直接捕捉整个视频然后传给后端，回放在cos到rpc端采用断点续传，所以不管怎样都拉得下来，可能api返回给前端会出问题，之后打算采用多次rpc调用，记录offset来分块)
   - 课堂数据统计（只实现了目前课堂人数与具体学生，采用redis，前端调用接口来实现用户的+1/-1 atomically）
 
 
 
-TODO:之后支持消息队列添加任务、异步入库等等等内容（大部分时间耍朋友去了www，实现较为简单QAQ）
+TODO:之后支持消息队列添加任务、异步入库等等等“精致”一点的内容hhh（大部分时间耍朋友去了www，实现较为简单QAQ）
 
 ------
 
@@ -1749,6 +1749,86 @@ AI巨佬学长的看法:
   ```
 
 ------
+
+##### List Lesson Record(WebRTC)
+
+简介: 列出课程所有录像
+
+- **接口地址**：`GET /list_lesson_record`
+
+- **功能说明**：列出所有录像
+
+- 参数解释：
+
+  | 参数名称  | 解释    |
+  | --------- | ------- |
+  | lesson_id | 课程 ID |
+
+- 请求示例：
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx,	
+
+- 返回示例：
+
+  ```
+  {
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "[0] lesson_1/ (0.0 KB)\n[1] lesson_1/1-record-673e6f0b-4cce-4180-b6c5-a004fc416e4c.mp4 (27941.0 KB)\n[2] lesson_1/1-record-8728e6b2-cb4f-4ad2-a279-eb2643c34197.mp4 (1255.2 KB)\n"
+      }
+  }
+  ```
+
+------
+
+##### Get Lesson Record(WebRTC)
+
+简介: 下载录像
+
+- **接口地址**：`GET /get_lesson_record`
+
+- **功能说明**：下载录像
+
+- 参数解释：
+
+  | 参数名称  | 解释        |
+  | --------- | ----------- |
+  | lesson_id | 课程 ID     |
+  | key       | COS中文件名 |
+
+- 请求示例：
+
+  - Headers:
+    - `Content-Type:mutipart/form-data`
+    - `Authorization: Bearer <jwt_token>`
+  - Body:
+    - lesson_id:xxx,	
+    - key:xxx,（由list_lesson_record指定出，如:1-record-673e6f0b-4cce-4180-b6c5-a004fc416e4c.mp4）
+
+- 返回示例：
+
+  ```
+  {
+      "data": {
+      "data":"xxxxxx"(二进制文件)
+      },
+      "resp": {
+          "code": 0,
+          "msg": "ok",
+          "data": "success"
+      }
+  }
+  ```
+  
+  
+
+------
+
+
 
 ##### Save Whiteboard
 

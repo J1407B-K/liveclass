@@ -34,6 +34,8 @@ type Client interface {
 	GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq, callOptions ...callopt.Option) (r *webrtc_live.GetRaiseHandResp, err error)
 	ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq, callOptions ...callopt.Option) (r *webrtc_live.ApproveHandResp, err error)
 	ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq, callOptions ...callopt.Option) (r *webrtc_live.ViewMicResp, err error)
+	ListAllLessonRecord(ctx context.Context, req *webrtc_live.ListAllLessonRecordReq, callOptions ...callopt.Option) (r *webrtc_live.ListAllLessonRecordResp, err error)
+	GetLessonRecord(ctx context.Context, req *webrtc_live.GetLessonRecordReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonRecordResp, err error)
 }
 
 // NewClient creates a client for the service defined in IDL.
@@ -178,4 +180,14 @@ func (p *kWebrtcLiveClient) ApproveHand(ctx context.Context, req *webrtc_live.Ap
 func (p *kWebrtcLiveClient) ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq, callOptions ...callopt.Option) (r *webrtc_live.ViewMicResp, err error) {
 	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
 	return p.kClient.ViewMic(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) ListAllLessonRecord(ctx context.Context, req *webrtc_live.ListAllLessonRecordReq, callOptions ...callopt.Option) (r *webrtc_live.ListAllLessonRecordResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.ListAllLessonRecord(ctx, req)
+}
+
+func (p *kWebrtcLiveClient) GetLessonRecord(ctx context.Context, req *webrtc_live.GetLessonRecordReq, callOptions ...callopt.Option) (r *webrtc_live.GetLessonRecordResp, err error) {
+	ctx = client.NewCtxWithCallOptions(ctx, callOptions)
+	return p.kClient.GetLessonRecord(ctx, req)
 }
