@@ -17,6 +17,7 @@ type CreateQuestionReq struct {
 	OptionsNum int32    `thrift:"OptionsNum,4" frugal:"4,default,i32" json:"OptionsNum"`
 	Options    []string `thrift:"Options,5" frugal:"5,default,list<string>" json:"Options"`
 	Answer     string   `thrift:"Answer,6" frugal:"6,default,string" json:"Answer"`
+	Duration   int32    `thrift:"duration,7" frugal:"7,default,i32" json:"duration"`
 }
 
 func NewCreateQuestionReq() *CreateQuestionReq {
@@ -49,6 +50,10 @@ func (p *CreateQuestionReq) GetOptions() (v []string) {
 func (p *CreateQuestionReq) GetAnswer() (v string) {
 	return p.Answer
 }
+
+func (p *CreateQuestionReq) GetDuration() (v int32) {
+	return p.Duration
+}
 func (p *CreateQuestionReq) SetLessonId(val string) {
 	p.LessonId = val
 }
@@ -67,6 +72,9 @@ func (p *CreateQuestionReq) SetOptions(val []string) {
 func (p *CreateQuestionReq) SetAnswer(val string) {
 	p.Answer = val
 }
+func (p *CreateQuestionReq) SetDuration(val int32) {
+	p.Duration = val
+}
 
 var fieldIDToName_CreateQuestionReq = map[int16]string{
 	1: "LessonId",
@@ -75,6 +83,7 @@ var fieldIDToName_CreateQuestionReq = map[int16]string{
 	4: "OptionsNum",
 	5: "Options",
 	6: "Answer",
+	7: "duration",
 }
 
 func (p *CreateQuestionReq) Read(iprot thrift.TProtocol) (err error) {
@@ -139,6 +148,14 @@ func (p *CreateQuestionReq) Read(iprot thrift.TProtocol) (err error) {
 		case 6:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField6(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 7:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField7(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -251,6 +268,17 @@ func (p *CreateQuestionReq) ReadField6(iprot thrift.TProtocol) error {
 	p.Answer = _field
 	return nil
 }
+func (p *CreateQuestionReq) ReadField7(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Duration = _field
+	return nil
+}
 
 func (p *CreateQuestionReq) Write(oprot thrift.TProtocol) (err error) {
 
@@ -281,6 +309,10 @@ func (p *CreateQuestionReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
+			goto WriteFieldError
+		}
+		if err = p.writeField7(oprot); err != nil {
+			fieldId = 7
 			goto WriteFieldError
 		}
 	}
@@ -411,6 +443,23 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 
+func (p *CreateQuestionReq) writeField7(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("duration", thrift.I32, 7); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Duration); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 7 end error: ", p), err)
+}
+
 func (p *CreateQuestionReq) String() string {
 	if p == nil {
 		return "<nil>"
@@ -441,6 +490,9 @@ func (p *CreateQuestionReq) DeepEqual(ano *CreateQuestionReq) bool {
 		return false
 	}
 	if !p.Field6DeepEqual(ano.Answer) {
+		return false
+	}
+	if !p.Field7DeepEqual(ano.Duration) {
 		return false
 	}
 	return true
@@ -490,6 +542,13 @@ func (p *CreateQuestionReq) Field5DeepEqual(src []string) bool {
 func (p *CreateQuestionReq) Field6DeepEqual(src string) bool {
 
 	if strings.Compare(p.Answer, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *CreateQuestionReq) Field7DeepEqual(src int32) bool {
+
+	if p.Duration != src {
 		return false
 	}
 	return true

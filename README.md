@@ -2137,6 +2137,7 @@ AI巨佬学长的看法:
   | option_nums | 选项个数(当前最高为4)  |
   | options     | 选项内容(前后对应ABCD) |
   | answer      | 答案                   |
+  | duration    | 时间段，到了就关闭     |
 
   
 
@@ -2148,7 +2149,8 @@ AI巨佬学长的看法:
       "content":"math",
       "option_nums":4,
       "options":["kq","hyx","azh","jzj"],
-      "answer":"A"
+      "answer":"A",
+      "duration":123
   }
   ```
 

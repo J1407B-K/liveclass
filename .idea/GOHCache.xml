@@ -403,6 +403,20 @@
             </set>
           </value>
         </entry>
+        <entry key="GetAllLessonQuizReq">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="GetAllLessonQuizResp">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="GetHistoryReq">
           <value>
             <set>
@@ -887,6 +901,20 @@
           </value>
         </entry>
         <entry key="QuizServiceDelQuestionResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="QuizServiceGetAllLessonQuizArgs">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="QuizServiceGetAllLessonQuizResult">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
@@ -1775,7 +1803,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223481" />
+              <option name="lastModified" value="1749459725581" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
@@ -1787,14 +1815,14 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223500" />
+              <option name="lastModified" value="1749459725587" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223500" />
+              <option name="lastModified" value="1749459725587" />
             </ScannedPath>
           </value>
         </entry>
@@ -1913,21 +1941,21 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1749459725587" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/k-quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1749459725590" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1749459725586" />
               <option name="schema">
                 <list>
                   <option value="CreateQuestionReq" />
@@ -1936,12 +1964,16 @@
                   <option value="TorFAnswerResp" />
                   <option value="DelQuestionReq" />
                   <option value="DelQuestionResp" />
+                  <option value="GetAllLessonQuizReq" />
+                  <option value="GetAllLessonQuizResp" />
                   <option value="QuizServiceCreateQuestionArgs" />
                   <option value="QuizServiceCreateQuestionResult" />
                   <option value="QuizServiceTorFAnswerArgs" />
                   <option value="QuizServiceTorFAnswerResult" />
                   <option value="QuizServiceDelQuestionArgs" />
                   <option value="QuizServiceDelQuestionResult" />
+                  <option value="QuizServiceGetAllLessonQuizArgs" />
+                  <option value="QuizServiceGetAllLessonQuizResult" />
                 </list>
               </option>
             </ScannedPath>
@@ -1950,7 +1982,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1749459725586" />
               <option name="schema">
                 <list>
                   <option value="kQuizServiceClient" />
@@ -1962,7 +1994,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/quizservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409194" />
+              <option name="lastModified" value="1749459725587" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1974,7 +2006,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1749459725586" />
             </ScannedPath>
           </value>
         </entry>
@@ -2282,7 +2314,7 @@
         <entry key="file://$PROJECT_DIR$/internal/model/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409199" />
+              <option name="lastModified" value="1749466460854" />
               <option name="schema">
                 <list>
                   <option value="Question" />
@@ -2786,7 +2818,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749459879715" />
+              <option name="lastModified" value="1749466460951" />
             </ScannedPath>
           </value>
         </entry>
@@ -2819,7 +2851,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749460769461" />
+              <option name="lastModified" value="1749466460993" />
               <option name="schema">
                 <list>
                   <option value="QuizServiceImpl" />
@@ -2852,7 +2884,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/model/answer.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409206" />
+              <option name="lastModified" value="1749466460966" />
               <option name="schema">
                 <list>
                   <option value="Answer" />
@@ -2864,7 +2896,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/model/question.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409206" />
+              <option name="lastModified" value="1749466460925" />
               <option name="schema">
                 <list>
                   <option value="Question" />
@@ -3221,7 +3253,7 @@
         <entry key="file://$PROJECT_DIR$/internal/service/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749460545864" />
+              <option name="lastModified" value="1749466460861" />
             </ScannedPath>
           </value>
         </entry>
@@ -3352,6 +3384,8 @@
         <entry key="engine" value="Engine" />
         <entry key="excalidraw_doc" value="ExcalidrawDoc" />
         <entry key="file" value="File" />
+        <entry key="get_all_lesson_quiz_req" value="GetAllLessonQuizReq" />
+        <entry key="get_all_lesson_quiz_resp" value="GetAllLessonQuizResp" />
         <entry key="get_history_req" value="GetHistoryReq" />
         <entry key="get_history_resp" value="GetHistoryResp" />
         <entry key="get_lesson_info_by_id_req" value="GetLessonInfoByIdReq" />
@@ -3428,6 +3462,8 @@
         <entry key="quiz_service_create_question_result" value="QuizServiceCreateQuestionResult" />
         <entry key="quiz_service_del_question_args" value="QuizServiceDelQuestionArgs" />
         <entry key="quiz_service_del_question_result" value="QuizServiceDelQuestionResult" />
+        <entry key="quiz_service_get_all_lesson_quiz_args" value="QuizServiceGetAllLessonQuizArgs" />
+        <entry key="quiz_service_get_all_lesson_quiz_result" value="QuizServiceGetAllLessonQuizResult" />
         <entry key="quiz_service_impl" value="QuizServiceImpl" />
         <entry key="quiz_service_tor_f_answer_args" value="QuizServiceTorFAnswerArgs" />
         <entry key="quiz_service_tor_f_answer_result" value="QuizServiceTorFAnswerResult" />

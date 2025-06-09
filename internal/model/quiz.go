@@ -6,6 +6,7 @@ type Question struct {
 	OptionNums int      `json:"option_nums"`
 	Options    []string `json:"options"`
 	Answer     string   `json:"answer"`
+	Duration   int32    `json:"duration"`
 }
 
 type Answer struct {

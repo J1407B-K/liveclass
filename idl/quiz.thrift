@@ -9,6 +9,7 @@ struct CreateQuestionReq {
     4: i32 OptionsNum,
     5: list<string> Options,
     6: string Answer,
+    7: i32 duration,
 }
 
 struct CreateQuestionResp {

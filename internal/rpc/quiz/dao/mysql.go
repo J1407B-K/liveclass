@@ -7,9 +7,10 @@ import (
 	"liveclass/idl/kitex_gen/quiz"
 	"liveclass/internal/rpc/quiz/model"
 	"strconv"
+	"time"
 )
 
-func SaveQuestion(db *gorm.DB, lessonId int, teacherId int, req *quiz.CreateQuestionReq) error {
+func SaveQuestion(db *gorm.DB, lessonId int, teacherId int, now time.Time, req *quiz.CreateQuestionReq) error {
 	question := model.Question{
 		LessonId:   lessonId,
 		Content:    req.Content,
@@ -17,12 +18,13 @@ func SaveQuestion(db *gorm.DB, lessonId int, teacherId int, req *quiz.CreateQues
 		Options:    req.Options,
 		Answer:     req.Answer,
 		TeacherId:  teacherId,
+		CloseTime:  now.Add(time.Duration(req.Duration)),
 	}
 
 	return db.Create(&question).Error
 }
 
-func CreateAnswer(db *gorm.DB, questionId, optionNums int, right string) error {
+func CreateAnswer(db *gorm.DB, questionId, optionNums int, right string, now time.Time, duration int32) error {
 	arrayStr := make([]string, optionNums)
 	for i := 0; i < optionNums; i++ {
 		arrayStr[i] = "0"
@@ -34,6 +36,7 @@ func CreateAnswer(db *gorm.DB, questionId, optionNums int, right string) error {
 		OptionNums:      optionNums,
 		SelectedOptions: arrayStr,
 		AnsweredId:      []string{},
+		CloseTime:       now.Add(time.Duration(duration)),
 	}
 
 	return db.Create(&answer).Error
@@ -157,4 +160,23 @@ func GetQustionByLesson(db *gorm.DB, lessonId int) ([]model.Question, error) {
 		return nil, err
 	}
 	return questions, nil
+}
+
+func CheckCloseTime(db *gorm.DB, questionId int) error {
+	var q model.Question
+	err := db.Where("id = ?", questionId).First(&q).Error
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	delta := now.Sub(q.CloseTime)
+	if delta >= 0 {
+		err = DelQuestionAndAnswer(db, questionId)
+		if err != nil {
+			return err
+		}
+		return errors.New("close")
+	}
+	return nil
 }

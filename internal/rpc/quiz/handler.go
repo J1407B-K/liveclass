@@ -18,6 +18,7 @@ import (
 	"liveclass/internal/utils/cut"
 	"log"
 	"strconv"
+	"time"
 )
 
 // QuizServiceImpl implements the last service interface defined in the IDL.
@@ -81,7 +82,8 @@ func (s *QuizServiceImpl) CreateQuestion(ctx context.Context, req *quiz.CreateQu
 		return nil, err
 	}
 
-	err = dao.SaveQuestion(s.DB, lid, uid, req)
+	now := time.Now()
+	err = dao.SaveQuestion(s.DB, lid, uid, now, req)
 	if err != nil {
 		return nil, err
 	}
@@ -91,7 +93,7 @@ func (s *QuizServiceImpl) CreateQuestion(ctx context.Context, req *quiz.CreateQu
 		return nil, err
 	}
 
-	err = dao.CreateAnswer(s.DB, qid, int(req.OptionsNum), req.Answer)
+	err = dao.CreateAnswer(s.DB, qid, int(req.OptionsNum), req.Answer, now, req.Duration)
 	if err != nil {
 		return nil, err
 	}
@@ -112,6 +114,14 @@ func (s *QuizServiceImpl) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerRe
 
 	uid, err := strconv.Atoi(req.Userid)
 	if err != nil {
+		return nil, err
+	}
+
+	err = dao.CheckCloseTime(s.DB, qid)
+	if err != nil {
+		if err.Error() == "close" {
+			return &quiz.TorFAnswerResp{Resp: &common.Resp{Data: "问题已经关闭"}}, nil
+		}
 		return nil, err
 	}
 

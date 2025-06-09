@@ -49,6 +49,7 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 		OptionsNum: int32(question.OptionNums),
 		Options:    question.Options,
 		Answer:     question.Answer,
+		Duration:   question.Duration,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
