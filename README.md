@@ -1,5 +1,9 @@
 # LiveClass -- 一款新时代的实时课堂(并非)
 
+![5](images/5.jpg)
+
+
+
 ### 概要：
 
 **liveclass集成了许多技术，运用hertz+kitex的分布式架构构成了一个实时在线直播课堂，同时框架一致，扩展性强，API统一管理，RPC服务文件结构格式化，参数传递使用统一接口，学习成本较低，容易扩展开发。包含用户，直播，实时答题，ai智能助教等部分，未来将不断完善(也许，Test代码都没写呢hhh**
@@ -165,7 +169,7 @@ go run main.go
 
 ### 架构图:
 
-![liveclass简易架构图](images/liveclass简易架构图.png)
+![4](images/4.png)
 
 
 
