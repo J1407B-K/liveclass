@@ -2,18 +2,14 @@ package initialize
 
 import (
 	"context"
-	"github.com/go-redis/redis/v8"
 	"os"
+
+	"github.com/go-redis/redis/v8"
 )
 
-func InitScript(rdb *redis.Client) (string, string, string, string) {
+func InitScript(rdb *redis.Client) (string, string, string) {
 	//读取lua脚本
-	countscriptb, err := os.ReadFile("./rpc/webrtc_live/lua/live_room_count.lua")
-	if err != nil {
-		panic(err)
-	}
-
-	memberscriptb, err := os.ReadFile("./rpc/webrtc_live/lua/live_room_member.lua")
+	changescriptb, err := os.ReadFile("./rpc/webrtc_live/lua/live_room_change.lua")
 	if err != nil {
 		panic(err)
 	}
@@ -28,17 +24,11 @@ func InitScript(rdb *redis.Client) (string, string, string, string) {
 		panic(err)
 	}
 
-	countscript := string(countscriptb)
-	memberscript := string(memberscriptb)
+	changescript := string(changescriptb)
 	deletescript := string(deletescriptb)
 	selectscript := string(selectscriptb)
 
-	//加载到redis缓存
-	countsha, err := rdb.ScriptLoad(context.Background(), countscript).Result()
-	if err != nil {
-		panic(err)
-	}
-	membersha, err := rdb.ScriptLoad(context.Background(), memberscript).Result()
+	changesha, err := rdb.ScriptLoad(context.Background(), changescript).Result()
 	if err != nil {
 		panic(err)
 	}
@@ -51,5 +41,5 @@ func InitScript(rdb *redis.Client) (string, string, string, string) {
 		panic(err)
 	}
 
-	return countsha, membersha, deletesha, selectsha
+	return changesha, deletesha, selectsha
 }

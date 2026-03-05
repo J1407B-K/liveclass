@@ -3,22 +3,23 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/cloudwego/kitex/client"
-	"github.com/cloudwego/kitex/pkg/transmeta"
-	"github.com/kitex-contrib/obs-opentelemetry/tracing"
-	etcd "github.com/kitex-contrib/registry-etcd"
-	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/common"
 	"liveclass/idl/kitex_gen/live"
 	"liveclass/idl/kitex_gen/live/liveservice"
 	quiz "liveclass/idl/kitex_gen/quiz"
 	"liveclass/idl/kitex_gen/user"
 	"liveclass/idl/kitex_gen/user/userservice"
+	"liveclass/internal/api/utils/cut"
 	"liveclass/internal/rpc/quiz/dao"
-	"liveclass/internal/utils/cut"
 	"log"
 	"strconv"
 	"time"
+
+	"github.com/cloudwego/kitex/client"
+	"github.com/cloudwego/kitex/pkg/transmeta"
+	"github.com/kitex-contrib/obs-opentelemetry/tracing"
+	etcd "github.com/kitex-contrib/registry-etcd"
+	"gorm.io/gorm"
 )
 
 // QuizServiceImpl implements the last service interface defined in the IDL.

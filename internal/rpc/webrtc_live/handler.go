@@ -6,6 +6,23 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"liveclass/idl/kitex_gen/common"
+	"liveclass/idl/kitex_gen/user"
+	"liveclass/idl/kitex_gen/user/userservice"
+	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
+	my_cos "liveclass/internal/rpc/webrtc_live/cos"
+	"liveclass/internal/rpc/webrtc_live/dao"
+	"liveclass/internal/rpc/webrtc_live/global"
+	"liveclass/internal/rpc/webrtc_live/model"
+	my_webrtc "liveclass/internal/rpc/webrtc_live/webrtc"
+	"log"
+	"math/rand"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/transmeta"
 	"github.com/go-redis/redis/v8"
@@ -15,37 +32,24 @@ import (
 	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
 	"github.com/tencentyun/cos-go-sdk-v5"
+	"golang.org/x/sync/singleflight"
 	"gorm.io/gorm"
-	"liveclass/idl/kitex_gen/common"
-	"liveclass/idl/kitex_gen/user"
-	"liveclass/idl/kitex_gen/user/userservice"
-	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
-	my_cos "liveclass/internal/rpc/webrtc_live/cos"
-	"liveclass/internal/rpc/webrtc_live/dao"
-	"liveclass/internal/rpc/webrtc_live/global"
-	my_webrtc "liveclass/internal/rpc/webrtc_live/webrtc"
-	"liveclass/internal/utils/cut"
-	"log"
-	"math/rand"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"time"
 )
 
 // WebrtcLiveImpl implements the Kitex webrtc_live service
 type WebrtcLiveImpl struct {
-	DB        *gorm.DB
-	RDB       *redis.Client
+	DBManager *dao.DBManager
 	cosClient *cos.Client
-	countsha  string
-	membersha string
+	changesha string
 	delsha    string
 	selectsha string
 
 	userCli userservice.Client
+
+	sfLesson singleflight.Group
 }
+
+var ErrLessonNotExist = errors.New("lesson not exist")
 
 func NewUserClient() (userservice.Client, error) {
 	r, err := etcd.NewEtcdResolver([]string{"127.0.0.1:2379"})
@@ -58,48 +62,58 @@ func NewUserClient() (userservice.Client, error) {
 }
 
 func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.BroadcastReq) (*webrtc_live.BroadcastResp, error) {
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	_, _, err := s.requireTeacherOfLesson(ctx, req.LessonId, req.Userid)
 	if err != nil {
 		return nil, err
 	}
-
-	//拿到信息
-	username, _ := cut.SplitInfo(info.Resp.Data)
-
-	lid, err := strconv.Atoi(req.LessonId)
-	if err != nil {
-		return nil, err
-	}
-
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-	if linfo.Teacher != username {
-		return nil, errors.New("你不是该课程老师！无法开播")
-	}
-
 	//先解码
 	offer, err := my_webrtc.DecodeSDP(req.B64offer)
 	if err != nil {
 		return nil, err
 	}
+	ok := false
 
 	//全局配置创建pc
 	pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if !ok {
+			_ = pc.Close()
+		}
+	}()
 
-	//需要的类型
-	pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly})
-	vt, _ := pc.AddTransceiverFromKind(webrtc.RTPCodecTypeVideo, webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly})
-	vt.SetCodecPreferences([]webrtc.RTPCodecParameters{
+	//transceivers
+	if _, err = pc.AddTransceiverFromKind(
+		webrtc.RTPCodecTypeAudio,
+		webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly},
+	); err != nil {
+		return nil, err
+	}
+
+	vt, err := pc.AddTransceiverFromKind(
+		webrtc.RTPCodecTypeVideo,
+		webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = vt.SetCodecPreferences([]webrtc.RTPCodecParameters{
 		{RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeVP8, ClockRate: 90000}},
 		{RTPCodecCapability: webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeH264, ClockRate: 90000}},
-	})
+	}); err != nil {
+		return nil, err
+	}
 
-	// 日志
+	sessionID := uuid.NewString()
+	bundle := &model.BroadcastBundle{
+		SessionID: sessionID,
+		Tracks:    make([]*webrtc.TrackLocalStaticRTP, 0, 2),
+	}
+	global.WebRTCEngine.BroadcastTracks.Store(req.LessonId, bundle)
+
 	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
 		if c != nil {
 			log.Println("[Server][Broadcast] ICE candidate:", c.ToJSON())
@@ -112,9 +126,12 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	//收到流时的逻辑
 	pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
 		log.Println("[Server][Broadcast] OnTrack kind=", remote.Kind())
-		local, err := webrtc.NewTrackLocalStaticRTP(remote.Codec().RTPCodecCapability, //编码器
-			remote.Kind().String()+"-"+req.LessonId, //trackID
-			"stream-"+req.LessonId,                  //媒体流名称，归类用
+		trackID := fmt.Sprintf("%s-%d-%d", remote.Kind().String(), req.LessonId, remote.SSRC())
+		streamID := fmt.Sprintf("stream-%d", req.LessonId)
+		local, err := webrtc.NewTrackLocalStaticRTP(
+			remote.Codec().RTPCodecCapability,
+			trackID,
+			streamID,
 		)
 		if err != nil {
 			log.Println("track create error:", err)
@@ -122,24 +139,38 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		}
 
 		//存储
-		raw, _ := global.WebRTCEngine.BroadcastTracks.LoadOrStore(req.LessonId, []*webrtc.TrackLocalStaticRTP{})
-		arr := raw.([]*webrtc.TrackLocalStaticRTP)
-		arr = append(arr, local)
-		global.WebRTCEngine.BroadcastTracks.Store(req.LessonId, arr)
+		v, ok := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
+		if !ok {
+			return
+		}
+		b := v.(*model.BroadcastBundle)
+		if b.SessionID != sessionID {
+			return
+		}
 
-		//不断请求关键帧
-		go func(ssrc uint32) {
-			ticker := time.NewTicker(2 * time.Second)
-			defer ticker.Stop()
-			for range ticker.C {
-				if err := pc.WriteRTCP([]rtcp.Packet{
-					&rtcp.PictureLossIndication{MediaSSRC: ssrc},
-				}); err != nil {
-					// PC 关闭或出错就停止
-					return
+		b.Mu.Lock()
+		b.Tracks = append(b.Tracks, local)
+		b.Mu.Unlock()
+
+		//请求关键帧
+		if remote.Kind() == webrtc.RTPCodecTypeVideo {
+			go func(ssrc uint32) {
+				ticker := time.NewTicker(2 * time.Second)
+				defer ticker.Stop()
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case <-ticker.C:
+						if err := pc.WriteRTCP([]rtcp.Packet{
+							&rtcp.PictureLossIndication{MediaSSRC: ssrc},
+						}); err != nil {
+							return
+						}
+					}
 				}
-			}
-		}(uint32(remote.SSRC()))
+			}(uint32(remote.SSRC()))
+		}
 
 		go func() {
 			for {
@@ -151,11 +182,10 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 					return
 				}
 			}
-
 		}()
 	})
 
-	if err := pc.SetRemoteDescription(offer); err != nil {
+	if err = pc.SetRemoteDescription(offer); err != nil {
 		return nil, err
 	}
 
@@ -165,8 +195,16 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		if state == webrtc.PeerConnectionStateFailed ||
 			state == webrtc.PeerConnectionStateClosed ||
 			state == webrtc.PeerConnectionStateDisconnected {
-			log.Println("[Server][Broadcast] Cleaning up maps for lesson", req.LessonId)
-			global.WebRTCEngine.BroadcastTracks.Delete(req.LessonId)
+
+			v, ok := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
+			if ok {
+				b := v.(*model.BroadcastBundle)
+				if b.SessionID == sessionID {
+					log.Println("[Server][Broadcast] Cleaning up maps for lesson", req.LessonId, "session", sessionID)
+					global.WebRTCEngine.BroadcastTracks.Delete(req.LessonId)
+				}
+			}
+			_ = pc.Close()
 		}
 	})
 
@@ -174,257 +212,326 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	if err != nil {
 		return nil, err
 	}
-	if err := pc.SetLocalDescription(answer); err != nil {
+	if err = pc.SetLocalDescription(answer); err != nil {
 		return nil, err
 	}
 	<-webrtc.GatheringCompletePromise(pc)
 
 	//编码
-	b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
-	return &webrtc_live.BroadcastResp{Resp: &common.Resp{Data: b64ans}}, nil
+	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
+	if err != nil {
+		return nil, err
+	}
+	ok = true
+	return &webrtc_live.BroadcastResp{
+		Resp: &common.Resp{Data: &common.Data{Sdp: strptr(b64ans)}},
+	}, nil
 }
 
 func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*webrtc_live.ViewResp, error) {
-	lid, err := strconv.Atoi(req.LessonId)
+	_, err := s.ensureLessonExists(ctx, req.LessonId)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.ViewResp{Resp: &common.Resp{Msg: "not exist"}}, nil
+		}
+		return nil, err
+	}
+
+	ok, err := s.DBManager.IsStudentInLesson(req.LessonId, req.Userid)
 	if err != nil {
 		return nil, err
 	}
-	linfo, err := dao.SelectLesson(s.DB, lid)
+	if !ok {
+		return nil, errors.New("你不是当前课程学生！")
+	}
+
+	log.Println("[Server][View] req lessonId =", req.LessonId, "uid =", req.Userid)
+
+	offer, err := my_webrtc.DecodeSDP(req.B64offer)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, stuid := range linfo.StudentID {
-		if stuid == req.Userid {
-			offer, err := my_webrtc.DecodeSDP(req.B64offer)
-			if err != nil {
-				return nil, err
-			}
+	pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
+	if err != nil {
+		return nil, err
+	}
+	ok = false
+	defer func() {
+		if !ok {
+			_ = pc.Close()
+		}
+	}()
 
-			pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
-			if err != nil {
-				return nil, err
-			}
+	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
+		if c != nil {
+			log.Println("[Server][View] ICE candidate:", c.ToJSON())
+		}
+	})
+	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
+		log.Println("[Server][View] ICE state:", s.String())
+	})
+	pc.OnConnectionStateChange(func(st webrtc.PeerConnectionState) {
+		log.Println("[Server][View] PeerConnection state:", st.String())
+		if st == webrtc.PeerConnectionStateFailed ||
+			st == webrtc.PeerConnectionStateDisconnected ||
+			st == webrtc.PeerConnectionStateClosed {
+			_ = pc.Close()
+		}
+	})
 
-			pc.OnICECandidate(func(c *webrtc.ICECandidate) {
-				if c != nil {
-					log.Println("[Server][View] ICE candidate:", c.ToJSON())
-				}
-			})
-			pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-				log.Println("[Server][View] ICE state:", s.String())
-			})
+	raw, ok2 := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
+	if !ok2 {
+		return nil, errors.New("未开播: " + strconv.FormatInt(req.LessonId, 10))
+	}
+	b := raw.(*model.BroadcastBundle)
 
-			if err := pc.SetRemoteDescription(offer); err != nil {
-				return nil, err
-			}
+	var picked []*webrtc.TrackLocalStaticRTP
+	deadline := time.NewTimer(3 * time.Second)
+	ticker := time.NewTicker(100 * time.Millisecond)
+	defer deadline.Stop()
+	defer ticker.Stop()
 
-			raw, ok := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
-			if !ok {
-				return nil, errors.New("未开播: " + req.LessonId)
-			}
-			//将轨道加入view pc
-			for _, t := range raw.([]*webrtc.TrackLocalStaticRTP) {
-				pc.AddTrack(t)
-			}
+	for {
+		b.Mu.Lock()
 
-			answer, err := pc.CreateAnswer(nil)
-			if err != nil {
-				return nil, err
-			}
-			if err := pc.SetLocalDescription(answer); err != nil {
-				return nil, err
-			}
-			<-webrtc.GatheringCompletePromise(pc)
+		var videoTrack *webrtc.TrackLocalStaticRTP
+		var audioTrack *webrtc.TrackLocalStaticRTP
 
-			b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
-			return &webrtc_live.ViewResp{Resp: &common.Resp{Data: b64ans}}, nil
+		for _, t := range b.Tracks {
+			if t == nil {
+				continue
+			}
+			if strings.HasPrefix(t.ID(), "video-") && videoTrack == nil {
+				videoTrack = t
+			}
+			if strings.HasPrefix(t.ID(), "audio-") && audioTrack == nil {
+				audioTrack = t
+			}
+		}
+
+		if videoTrack != nil {
+			picked = make([]*webrtc.TrackLocalStaticRTP, 0, 2)
+			picked = append(picked, videoTrack)
+			if audioTrack != nil {
+				picked = append(picked, audioTrack)
+			}
+			b.Mu.Unlock()
+			break
+		}
+
+		b.Mu.Unlock()
+
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-deadline.C:
+			return nil, errors.New("老师视频轨尚未就绪，请稍后再试")
+		case <-ticker.C:
 		}
 	}
-	return nil, errors.New("你不是当前课程学生！")
+
+	if err = pc.SetRemoteDescription(offer); err != nil {
+		return nil, err
+	}
+
+	for _, t := range picked {
+		log.Println("[Server][View] AddTrack:", t.ID(), t.StreamID())
+
+		sender, err := pc.AddTrack(t)
+		if err != nil {
+			return nil, err
+		}
+
+		go func(s *webrtc.RTPSender) {
+			buf := make([]byte, 1500)
+			for {
+				n, _, readErr := s.Read(buf)
+				if readErr != nil {
+					log.Println("[Server][View] RTCP Read error:", readErr)
+					return
+				}
+				_, _ = rtcp.Unmarshal(buf[:n])
+			}
+		}(sender)
+	}
+
+	answer, err := pc.CreateAnswer(nil)
+	if err != nil {
+		return nil, err
+	}
+	if err = pc.SetLocalDescription(answer); err != nil {
+		return nil, err
+	}
+	<-webrtc.GatheringCompletePromise(pc)
+
+	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
+	if err != nil {
+		return nil, err
+	}
+
+	ok = true
+	return &webrtc_live.ViewResp{
+		Resp: &common.Resp{
+			Data: &common.Data{Sdp: strptr(b64ans)},
+		},
+	}, nil
 }
 
 // ChangeUserInLive implements the WebrtcLiveImpl interface.
 // 同livego，给前端用的，进入退出直播间直接调
 func (s *WebrtcLiveImpl) ChangeUserInLive(ctx context.Context, req *webrtc_live.ChangeUserInLiveReq) (resp *webrtc_live.ChangeUserInLiveResp, err error) {
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.ChangeUserInLiveResp{Resp: &common.Resp{Msg: "not exist"}}, nil
+		}
+		return nil, err
+	}
+
+	userinfo, err := s.getUserInfo(ctx, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
+	countKey := dao.LiveCountKey(req.Lessonid)
+	memberKey := dao.LiveMembersKey(req.Lessonid)
 
-	lid, err := strconv.Atoi(req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	var c int
-	if req.Options == "add" {
-		c = 1
-	} else {
-		c = -1
-	}
-
-	_, err = s.RDB.EvalSha(ctx, s.countsha, []string{req.Lessonid + ":" + linfo.Teacher + ":count"}, c).Result()
-	if err != nil {
-		return nil, err
-	}
-	_, err = s.RDB.EvalSha(ctx, s.membersha, []string{req.Lessonid + ":" + linfo.Teacher + ":member"}, req.Options, username, auth).Result()
+	_, err = s.DBManager.RDB.EvalSha(ctx, s.changesha,
+		[]string{countKey, memberKey},
+		req.Options, req.Userid, userinfo.UserName, userinfo.Auth,
+	).Result()
 	if err != nil {
 		return nil, err
 	}
 
 	return &webrtc_live.ChangeUserInLiveResp{Resp: &common.Resp{
-		Data: "success",
+		Msg: "success",
 	}}, nil
 }
 
 // ChangeUserToLesson implements the WebrtcLiveImpl interface.
-func (s *WebrtcLiveImpl) ChangeUserToLesson(ctx context.Context, req *webrtc_live.ChangeUserToLessonReq) (resp *webrtc_live.ChangeUserToLessonResp, err error) {
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+func (s *WebrtcLiveImpl) ChangeUserToLesson(ctx context.Context, req *webrtc_live.ChangeUserToLessonReq) (*webrtc_live.ChangeUserToLessonResp, error) {
+	_, _, err := s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
-	}
-
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	}
-
-	lid, err := strconv.Atoi(req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	if linfo.Teacher != username {
-		return nil, errors.New("权限不够！！！你不是老师")
 	}
 
 	if req.Options != "add" && req.Options != "del" {
 		return nil, errors.New("invalid options")
 	}
 
-	err = dao.ChangeUserToLesson(s.DB, lid, req.Userid, req.Options)
-	if err != nil {
+	if err = s.DBManager.ChangeUserToLesson(req.Lessonid, req.Stuid, req.Options); err != nil {
 		return nil, err
 	}
 
-	return &webrtc_live.ChangeUserToLessonResp{Resp: &common.Resp{Data: "success"}}, nil
+	return &webrtc_live.ChangeUserToLessonResp{Resp: &common.Resp{Msg: "success"}}, nil
 }
 
 // GetLessonInfoById implements the WebrtcLiveImpl interface.
-func (s *WebrtcLiveImpl) GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq) (resp *webrtc_live.GetLessonInfoByIdResp, err error) {
-	id, err := strconv.Atoi(req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-	lesson, err := dao.SelectLesson(s.DB, id)
+func (s *WebrtcLiveImpl) GetLessonInfoById(ctx context.Context, req *webrtc_live.GetLessonInfoByIdReq) (*webrtc_live.GetLessonInfoByIdResp, error) {
+	lesson, err := s.DBManager.SelectLesson(req.Lessonid)
 	if err != nil {
 		return nil, err
 	}
 
-	var stuidStr string
-	for _, uid := range lesson.StudentID {
-		stuidStr += uid + "/"
+	ids, err := s.DBManager.ListLessonStudentIDs(lesson.LessonId)
+	if err != nil {
+		return nil, err
 	}
 
-	info := strconv.Itoa(lesson.LessonId) + "$" + lesson.Name + "$" + lesson.Teacher + "$" + lesson.Description + "$" + "/" + stuidStr
+	var b strings.Builder
+	for i, uid := range ids {
+		if i > 0 {
+			b.WriteByte('/')
+		}
+		b.WriteString(strconv.FormatInt(uid, 10))
+	}
 
 	return &webrtc_live.GetLessonInfoByIdResp{
 		Resp: &common.Resp{
-			Data: info,
+			Data: &common.Data{
+				LessonInfo: &common.Lesson{
+					LessonID:    lesson.LessonId,
+					Name:        lesson.Name,
+					TeacherName: lesson.TeacherName,
+					Description: lesson.Description,
+					StudentID:   ids,
+				},
+			},
 		},
 	}, nil
 }
 
 // CreateLesson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) CreateLesson(ctx context.Context, req *webrtc_live.CreateLessonReq) (resp *webrtc_live.CreateLessonResp, err error) {
-	//请求userrpc拿到userinfo
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	userinfo, err := s.getUserInfo(ctx, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
+	if userinfo.Auth != "Teacher" {
 		return nil, errors.New("权限不够！非老师不能创建课程/直播")
 	}
 
-	err = dao.CreateLesson(s.DB, req.LessonName, req.Description, username, req.Userid)
+	lessonid, err := s.DBManager.CreateLesson(req.LessonName, req.Description, userinfo.UserName, userinfo.Auth, req.Userid)
 	if err != nil {
 		return nil, err
 	}
+
+	_ = s.DBManager.RDB.Del(ctx, fmt.Sprintf("lesson:info:%d", lessonid)).Err()
+
 	return &webrtc_live.CreateLessonResp{Resp: &common.Resp{
-		Data: "success",
+		Code: 0,
+		Msg:  "success",
+		Data: &common.Data{
+			LessonInfo: &common.Lesson{
+				LessonID: lessonid,
+			},
+		},
 	}}, nil
 }
 
 // DelLesson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) DelLesson(ctx context.Context, req *webrtc_live.DelLessonReq) (resp *webrtc_live.DelLessonResp, err error) {
-	//请求userrpc拿到userinfo
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	linfo, err := s.DBManager.SelectLesson(req.Lessonid)
 	if err != nil {
 		return nil, err
 	}
 
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！你不是当前课程老师")
-	}
-
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-	if linfo.Teacher != username {
-		return nil, errors.New("权限不够！你不是当前课程老师")
-	}
-
-	_, err = s.RDB.EvalSha(ctx, s.delsha, []string{strconv.Itoa(linfo.LessonId) + ":" + username + ":count", strconv.Itoa(linfo.LessonId) + ":" + username + ":member"}).Result()
-	if err != nil {
+	if _, err = s.DBManager.RDB.EvalSha(ctx, s.delsha, []string{
+		fmt.Sprintf("%d:%s:count", linfo.LessonId, linfo.TeacherName),
+		fmt.Sprintf("%d:%s:member", linfo.LessonId, linfo.TeacherName),
+	}).Result(); err != nil {
 		return nil, err
 	}
 
-	err = dao.DelLesson(s.DB, lid)
+	err = s.DBManager.DelLesson(req.Lessonid)
 	if err != nil {
 		return nil, err
 	}
 
-	return &webrtc_live.DelLessonResp{Resp: &common.Resp{Data: "success"}}, nil
+	_ = s.DBManager.RDB.Del(ctx, fmt.Sprintf("lesson:info:%d", req.Lessonid)).Err()
+
+	return &webrtc_live.DelLessonResp{Resp: &common.Resp{Msg: "success"}}, nil
 }
 
 // SelectLessonInfo implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) SelectLessonInfo(ctx context.Context, req *webrtc_live.SelectLessonInfoReq) (resp *webrtc_live.SelectLessonInfoResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
 	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.SelectLessonInfoResp{Resp: &common.Resp{Msg: "not exist"}}, nil
+		}
 		return nil, err
 	}
 
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	r, err := s.RDB.EvalSha(ctx, s.selectsha, []string{req.Lessonid + ":" + linfo.Teacher + ":count", req.Lessonid + ":" + linfo.Teacher + ":member"}).Result()
+	r, err := s.DBManager.RDB.EvalSha(ctx, s.selectsha, []string{dao.LiveMembersKey(req.Lessonid)}).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -449,240 +556,189 @@ func (s *WebrtcLiveImpl) SelectLessonInfo(ctx context.Context, req *webrtc_live.
 	}
 
 	return &webrtc_live.SelectLessonInfoResp{
-		Resp: &common.Resp{Data: "count:" + countStr + "///" + "live member:" + membersStr},
+		Resp: &common.Resp{Msg: "count:" + countStr + "///" + "live member:" + membersStr},
 	}, nil
 }
 
 // GetLessonInfo implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) GetLessonInfo(ctx context.Context, req *webrtc_live.GetLessonInfoReq) (resp *webrtc_live.GetLessonInfoResp, err error) {
-	linfo, err := dao.SelectLessonByNandT(s.DB, req.LessonName, req.Teacher)
+	linfo, err := s.DBManager.SelectLessonByNandT(req.LessonName, req.Teacher)
 	if err != nil {
 		return nil, err
 	}
-	var stuidStr string
-	for _, uid := range linfo.StudentID {
-		stuidStr += uid + "/"
+	stuid, err := s.DBManager.ListLessonStudentIDs(linfo.LessonId)
+	if err != nil {
+		return nil, err
 	}
 
-	info := strconv.Itoa(linfo.LessonId) + "$" + linfo.Name + "$" + linfo.Teacher + "$" + linfo.Description + "$" + stuidStr
-
 	return &webrtc_live.GetLessonInfoResp{Resp: &common.Resp{
-		Data: info,
+		Data: &common.Data{
+			LessonInfo: &common.Lesson{
+				LessonID:    linfo.LessonId,
+				Name:        linfo.Name,
+				TeacherName: linfo.TeacherName,
+				Description: linfo.Description,
+				StudentID:   stuid,
+			},
+		},
 	}}, nil
 }
 
 // IsStudentInLesson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) IsStudentInLesson(ctx context.Context, req *webrtc_live.IsStudentInLessonReq) (resp *webrtc_live.IsStudentInLessonResp, err error) {
-	r, err := dao.CheckStudentInLesson(s.DB, req.Studentid, req.Lessonid)
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.IsStudentInLessonResp{Resp: &common.Resp{Msg: "not exist"}}, nil
+		}
+		return nil, err
+	}
+
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Studentid)
 	if err != nil {
 		return nil, err
 	}
+	if !ok {
+		return &webrtc_live.IsStudentInLessonResp{
+			Resp: &common.Resp{
+				Msg: "not exist",
+			},
+		}, nil
+	}
 	return &webrtc_live.IsStudentInLessonResp{
 		Resp: &common.Resp{
-			Data: r,
+			Msg: "student exist",
 		},
 	}, nil
 }
 
 // CreateSignIn implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) CreateSignIn(ctx context.Context, req *webrtc_live.CreateSignInReq) (resp *webrtc_live.CreateSignInResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.CreateSignInResp{Resp: &common.Resp{Msg: "not exist"}}, nil
+		}
+		return nil, err
+	}
+
+	linfo, err := s.DBManager.SelectLesson(req.Lessonid)
 	if err != nil {
 		return nil, err
 	}
 
-	linfo, err := dao.SelectLesson(s.DB, lid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	stuid, err := s.DBManager.ListLessonStudentIDs(linfo.LessonId)
 	if err != nil {
 		return nil, err
 	}
 
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	err = dao.CreateSignIn(s.DB, req.Lessonid, linfo.StudentID, time.Now().Add(time.Duration(req.Duration)*time.Second))
+	err = s.DBManager.CreateSignIn(req.Lessonid, stuid, time.Now().Add(time.Duration(req.Duration)*time.Second))
 	if err != nil {
 		return nil, err
 	}
 	return &webrtc_live.CreateSignInResp{
 		Resp: &common.Resp{
-			Data: "success",
+			Msg: "success",
 		},
 	}, nil
 }
 
 // SignIn implements the WebrtcLiveImpl interface.
-func (s *WebrtcLiveImpl) SignIn(ctx context.Context, req *webrtc_live.SignInReq) (resp *webrtc_live.SignInResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+func (s *WebrtcLiveImpl) SignIn(ctx context.Context, req *webrtc_live.SignInReq) (*webrtc_live.SignInResp, error) {
+	_, err := s.ensureLessonExists(ctx, req.Lessonid)
 	if err != nil {
-		return nil, err
-	}
-
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, stuid := range linfo.StudentID {
-		if req.Userid == stuid {
-			_, err = dao.StuSignIn(s.DB, req.Lessonid, req.Userid, time.Now())
-			if err != nil {
-				if err.Error() == "close" {
-					return &webrtc_live.SignInResp{Resp: &common.Resp{Data: "签到关闭"}}, nil
-				}
-				return nil, err
-			}
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.SignInResp{Resp: &common.Resp{Msg: "not exist"}}, nil
 		}
-		return &webrtc_live.SignInResp{Resp: &common.Resp{Data: "success"}}, nil
+		return nil, err
 	}
-	return nil, errors.New("不是此课程学生")
+
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Userid)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("不是此课程学生")
+	}
+
+	_, err = s.DBManager.StuSignIn(req.Lessonid, req.Userid, time.Now())
+	if err != nil {
+		if err.Error() == "close" {
+			return &webrtc_live.SignInResp{Resp: &common.Resp{Msg: "签到关闭"}}, nil
+		}
+		return nil, err
+	}
+
+	return &webrtc_live.SignInResp{Resp: &common.Resp{Msg: "success"}}, nil
 }
 
 // SelectSignIn implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) SelectSignIn(ctx context.Context, req *webrtc_live.SelectSignInReq) (resp *webrtc_live.SelectSignInResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	sinfo, err := s.DBManager.SelectSignIn(req.Lessonid)
 	if err != nil {
 		return nil, err
 	}
 
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	sinfo, err := dao.SelectSignIn(s.DB, req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-
-	return &webrtc_live.SelectSignInResp{Resp: &common.Resp{Data: sinfo}}, nil
+	return &webrtc_live.SelectSignInResp{Resp: &common.Resp{Msg: sinfo}}, nil
 }
 
 // DelSign implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) DelSign(ctx context.Context, req *webrtc_live.DelSignInReq) (resp *webrtc_live.DelSignInResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-	linfo, err := dao.SelectLesson(s.DB, lid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	err = s.DBManager.RemoveSignIn(req.Lessonid)
 	if err != nil {
 		return nil, err
 	}
-
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	err = dao.RemoveSignIn(s.DB, req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-	return &webrtc_live.DelSignInResp{Resp: &common.Resp{Data: "success"}}, nil
+	return &webrtc_live.DelSignInResp{Resp: &common.Resp{Msg: "success"}}, nil
 }
 
 // RollCallInRandom implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) RollCallInRandom(ctx context.Context, req *webrtc_live.RollCallInRandomReq) (resp *webrtc_live.RollCallInRandomResp, err error) {
-	lid, err := strconv.Atoi(req.LessonId)
-	if err != nil {
-		return nil, err
-	}
-	linfo, err := dao.SelectLesson(s.DB, lid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.LessonId, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	stuid, err := s.DBManager.ListLessonStudentIDs(req.LessonId)
 	if err != nil {
 		return nil, err
-	}
-
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	var stuid []string
-	for i := 0; i < len(linfo.StudentID); i++ {
-		if linfo.StudentID[i] != req.Userid {
-			stuid = append(stuid, linfo.StudentID[i])
-		}
 	}
 
 	randomIndex := rand.Intn(len(stuid))
 
-	stuinfo, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: stuid[randomIndex]})
+	stuinfo, err := s.getUserInfo(ctx, stuid[randomIndex])
 	if err != nil {
 		return nil, err
 	}
 
-	stuname, _ := cut.SplitInfo(stuinfo.Resp.Data)
-
-	return &webrtc_live.RollCallInRandomResp{Resp: &common.Resp{Data: stuname}}, nil
+	return &webrtc_live.RollCallInRandomResp{Resp: &common.Resp{Msg: stuinfo.UserName}}, nil
 }
 
 // RecordLesson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.RecordLessonReq) (resp *webrtc_live.RecordLessonResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
-
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
-	if err != nil {
-		return nil, err
-	}
-
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
 	err = os.Mkdir(global.Config.TmpBaseDir, 0755)
 	if err != nil && !os.IsExist(err) {
 		return nil, err
 	}
 
-	filename := fmt.Sprintf("%s-record-%s.mp4", req.Lessonid, uuid.NewString())
+	filename := fmt.Sprintf("%d-record-%s.mp4", req.Lessonid, uuid.NewString())
 	localfile := filepath.Join(global.Config.TmpBaseDir, filename)
 
 	if len(req.Data) == 0 {
@@ -693,7 +749,7 @@ func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.Reco
 	}
 
 	go func() {
-		if err = my_cos.UploadToCos(ctx, s.cosClient, localfile, req.Lessonid, filename); err != nil {
+		if err = my_cos.UploadToCos(ctx, s.cosClient, localfile, strconv.FormatInt(req.Lessonid, 10), filename); err != nil {
 			log.Printf("上传到 COS 失败: %v", err)
 		} else {
 			log.Printf("上传到 COS 成功: lesson=%s file=%s", req.Lessonid, filename)
@@ -704,68 +760,34 @@ func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.Reco
 	}()
 
 	return &webrtc_live.RecordLessonResp{
-		Resp: &common.Resp{Data: filename},
+		Resp: &common.Resp{Msg: filename},
 	}, nil
 }
 
 // SaveWhiteBoardJson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) SaveWhiteBoardJson(ctx context.Context, req *webrtc_live.SaveWhiteBoardJsonReq) (resp *webrtc_live.SaveWhiteBoardJsonResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-	linfo, err := dao.SelectLesson(s.DB, lid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	err = s.DBManager.SaveWhiteBoard(req.Lessonid, req.File)
 	if err != nil {
 		return nil, err
 	}
-
-	//拿到信息
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	err = dao.SaveWhiteBoard(s.DB, req.Lessonid, req.File)
-	if err != nil {
-		return nil, err
-	}
-	return &webrtc_live.SaveWhiteBoardJsonResp{Resp: &common.Resp{Data: "success"}}, nil
+	return &webrtc_live.SaveWhiteBoardJsonResp{Resp: &common.Resp{Msg: "success"}}, nil
 }
 
 // GetWhiteBoardJson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) GetWhiteBoardJson(ctx context.Context, req *webrtc_live.GetWhiteBoardJsonReq) (resp *webrtc_live.GetWhiteBoardJsonResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
-	if err != nil {
-		return nil, err
-	}
-
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
-	}
-
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	docs, err := dao.GetWhiteBoardNew(s.DB, req.Lessonid)
+	docs, err := s.DBManager.GetWhiteBoardNew(req.Lessonid)
 	if docs == nil && err == nil {
-		return &webrtc_live.GetWhiteBoardJsonResp{Resp: &common.Resp{Data: "not_found"}}, nil
+		return &webrtc_live.GetWhiteBoardJsonResp{Resp: &common.Resp{Msg: "not_found"}}, nil
 	}
 	if err != nil {
 		return nil, err
@@ -775,282 +797,443 @@ func (s *WebrtcLiveImpl) GetWhiteBoardJson(ctx context.Context, req *webrtc_live
 	if err != nil {
 		return nil, err
 	}
-	return &webrtc_live.GetWhiteBoardJsonResp{Resp: &common.Resp{Data: string(docByte)}}, nil
+	return &webrtc_live.GetWhiteBoardJsonResp{Resp: &common.Resp{Data: &common.Data{Text: strptr(string(docByte))}}}, nil
 }
 
 // PublishMic implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) PublishMic(ctx context.Context, req *webrtc_live.PublishMicReq) (resp *webrtc_live.PublishMicResp, err error) {
-	lid, _ := strconv.Atoi(req.Lessonid)
-	linfo, _ := dao.SelectLesson(s.DB, lid)
-	for _, stuid := range linfo.StudentID {
-		if stuid == req.Userid {
-			offer, _ := my_webrtc.DecodeSDP(req.B64offer)
-
-			pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
-			if err != nil {
-				return nil, err
-			}
-
-			_, err = pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
-				Direction: webrtc.RTPTransceiverDirectionRecvonly,
-			})
-			if err != nil {
-				return nil, err
-			}
-
-			pc.OnICECandidate(func(c *webrtc.ICECandidate) {
-				if c != nil {
-					log.Println("[Server][PublishMic] ICE candidate:", c.ToJSON())
-				}
-			})
-			pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-				log.Println("[Server][PublishMic] ICE state:", s.String())
-			})
-
-			pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
-				Direction: webrtc.RTPTransceiverDirectionRecvonly,
-			})
-
-			pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
-				local, _ := webrtc.NewTrackLocalStaticRTP(
-					remote.Codec().RTPCodecCapability,
-					"mic-"+req.Lessonid+"-"+req.Userid,
-					"stream-"+req.Lessonid,
-				)
-
-				raw, _ := global.WebRTCEngine.MicTracks.LoadOrStore(req.Lessonid, []*webrtc.TrackLocalStaticRTP{})
-				arr := raw.([]*webrtc.TrackLocalStaticRTP)
-				arr = append(arr, local)
-				global.WebRTCEngine.MicTracks.Store(req.Lessonid, arr)
-
-				go func() {
-					for {
-						pkt, _, readErr := remote.ReadRTP()
-						if readErr != nil {
-							return
-						}
-						if writeErr := local.WriteRTP(pkt); writeErr != nil {
-							return
-						}
-					}
-
-				}()
-			})
-
-			err = pc.SetRemoteDescription(offer)
-			if err != nil {
-				return nil, err
-			}
-			ans, err := pc.CreateAnswer(nil)
-			if err != nil {
-				return nil, err
-			}
-			err = pc.SetLocalDescription(ans)
-			if err != nil {
-				return nil, err
-			}
-
-			<-webrtc.GatheringCompletePromise(pc)
-			b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
-			return &webrtc_live.PublishMicResp{Resp: &common.Resp{Data: b64ans}}, nil
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.PublishMicResp{Resp: &common.Resp{Msg: "not exist"}}, nil
 		}
+		return nil, err
 	}
-	return &webrtc_live.PublishMicResp{Resp: &common.Resp{Data: "success"}}, errors.New("你不是本课程学生")
+
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Userid)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("你不是本课程学生")
+	}
+
+	offer, err := my_webrtc.DecodeSDP(req.B64offer)
+	if err != nil {
+		return nil, err
+	}
+
+	pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
+	if err != nil {
+		return nil, err
+	}
+	ok = false
+	defer func() {
+		if !ok {
+			_ = pc.Close()
+		}
+	}()
+	_, err = pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
+		Direction: webrtc.RTPTransceiverDirectionRecvonly,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
+		if c != nil {
+			log.Println("[Server][PublishMic] ICE candidate:", c.ToJSON())
+		}
+	})
+	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
+		log.Println("[Server][PublishMic] ICE state:", s.String())
+	})
+
+	pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
+		local, _ := webrtc.NewTrackLocalStaticRTP(
+			remote.Codec().RTPCodecCapability,
+			"mic-"+strconv.FormatInt(req.Lessonid, 10)+"-"+strconv.FormatInt(req.Userid, 10),
+			"stream-"+strconv.FormatInt(req.Lessonid, 10),
+		)
+
+		raw, _ := global.WebRTCEngine.MicTracks.LoadOrStore(req.Lessonid, &model.MicBundle{
+			SessionID: "mic-" + uuid.NewString(),
+			Tracks:    make([]*webrtc.TrackLocalStaticRTP, 0, 8),
+		})
+		b := raw.(*model.MicBundle)
+		b.Mu.Lock()
+		b.Tracks = append(b.Tracks, local)
+		b.Mu.Unlock()
+
+		go func() {
+			for {
+				pkt, _, readErr := remote.ReadRTP()
+				if readErr != nil {
+					return
+				}
+				if writeErr := local.WriteRTP(pkt); writeErr != nil {
+					return
+				}
+			}
+
+		}()
+	})
+
+	err = pc.SetRemoteDescription(offer)
+	if err != nil {
+		return nil, err
+	}
+	ans, err := pc.CreateAnswer(nil)
+	if err != nil {
+		return nil, err
+	}
+	err = pc.SetLocalDescription(ans)
+	if err != nil {
+		return nil, err
+	}
+
+	<-webrtc.GatheringCompletePromise(pc)
+	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
+	if err != nil {
+		return nil, err
+	}
+	ok = true
+	return &webrtc_live.PublishMicResp{
+		Resp: &common.Resp{
+			Data: &common.Data{Sdp: strptr(b64ans)},
+		},
+	}, nil
 }
 
 // RaiseHand implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) RaiseHand(ctx context.Context, req *webrtc_live.RaiseHandReq) (resp *webrtc_live.RaiseHandResp, err error) {
-	lid, _ := strconv.Atoi(req.Lessonid)
-	linfo, _ := dao.SelectLesson(s.DB, lid)
-	for _, stuid := range linfo.StudentID {
-		if stuid == req.Userid {
-			err = dao.RaiseHand(s.DB, lid, req.Userid)
-			if err != nil {
-				return nil, err
-			}
-			return &webrtc_live.RaiseHandResp{Resp: &common.Resp{Data: "success"}}, nil
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.RaiseHandResp{Resp: &common.Resp{Msg: "not exist"}}, nil
 		}
+		return nil, err
 	}
 
-	return &webrtc_live.RaiseHandResp{Resp: &common.Resp{Data: "不是本课程学生"}}, nil
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Userid)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return &webrtc_live.RaiseHandResp{
+			Resp: &common.Resp{Msg: "不是本课程学生"},
+		}, nil
+	}
+
+	key := dao.HandsKey(req.Lessonid)
+	member := strconv.FormatInt(req.Userid, 10)
+	score := float64(time.Now().UnixMilli())
+
+	if err = s.DBManager.RDB.ZAdd(ctx, key, &redis.Z{
+		Score:  score,
+		Member: member,
+	}).Err(); err != nil {
+		return nil, err
+	}
+	_ = s.DBManager.RDB.Expire(ctx, key, 24*time.Hour).Err()
+
+	return &webrtc_live.RaiseHandResp{
+		Resp: &common.Resp{Msg: "success"},
+	}, nil
 }
 
 // GetRaiseHand implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) GetRaiseHand(ctx context.Context, req *webrtc_live.GetRaiseHandReq) (resp *webrtc_live.GetRaiseHandResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	key := dao.HandsKey(req.Lessonid)
+
+	ids, err := s.DBManager.RDB.ZRange(ctx, key, 0, 99).Result()
 	if err != nil {
 		return nil, err
 	}
 
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
+	if len(ids) == 0 {
+		return &webrtc_live.GetRaiseHandResp{
+			Resp: &common.Resp{Msg: "当前无举手学生"},
+		}, nil
 	}
 
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	var stuid string
-	if len(linfo.RaiseStuId) == 0 {
-		return &webrtc_live.GetRaiseHandResp{Resp: &common.Resp{Data: "当前无举手学生"}}, nil
-	}
-	for i := 0; i < len(linfo.RaiseStuId); i++ {
-		if i != len(linfo.RaiseStuId)-1 {
-			stuid += linfo.RaiseStuId[i] + "/"
-		}
-		stuid += linfo.RaiseStuId[i]
-	}
-
-	return &webrtc_live.GetRaiseHandResp{Resp: &common.Resp{Data: stuid}}, nil
+	return &webrtc_live.GetRaiseHandResp{
+		Resp: &common.Resp{Msg: strings.Join(ids, "/")},
+	}, nil
 }
 
 // ApproveHand implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) ApproveHand(ctx context.Context, req *webrtc_live.ApproveHandReq) (resp *webrtc_live.ApproveHandResp, err error) {
-	lid, err := strconv.Atoi(req.Lessonid)
+	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: req.Userid})
+	key := dao.HandsKey(req.Lessonid)
+	member := strconv.FormatInt(req.Stuid, 10)
+
+	removed, err := s.DBManager.RDB.ZRem(ctx, key, member).Result()
 	if err != nil {
 		return nil, err
 	}
-
-	linfo, err := dao.SelectLesson(s.DB, lid)
-	if err != nil {
-		return nil, err
+	if removed == 0 {
+		return &webrtc_live.ApproveHandResp{
+			Resp: &common.Resp{Msg: "该学生没有举手"},
+		}, nil
 	}
 
-	username, auth := cut.SplitInfo(info.Resp.Data)
-	if auth != "Teacher" {
-		return nil, errors.New("权限不够！！！你不是老师")
-	} else if username != linfo.Teacher {
-		return nil, errors.New("权限不够！！！你不是当前课程老师")
-	}
-
-	err = dao.ApproveHand(s.DB, *linfo, req.Stuid)
-	if err != nil {
-		return nil, err
-	}
-	return &webrtc_live.ApproveHandResp{Resp: &common.Resp{Data: "success"}}, nil
+	return &webrtc_live.ApproveHandResp{
+		Resp: &common.Resp{Msg: "success"},
+	}, nil
 }
 
 // ViewMic implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicReq) (resp *webrtc_live.ViewMicResp, err error) {
-	lid, _ := strconv.Atoi(req.Lessonid)
-	linfo, _ := dao.SelectLesson(s.DB, lid)
-	for _, stuid := range linfo.StudentID {
-		if stuid == req.Userid {
-
-			offer, err := my_webrtc.DecodeSDP(req.B64offer)
-			if err != nil {
-				return nil, err
-			}
-
-			pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
-			if err != nil {
-				return nil, err
-			}
-
-			if err := pc.SetRemoteDescription(offer); err != nil {
-				return nil, err
-			}
-
-			pc.OnICECandidate(func(c *webrtc.ICECandidate) {
-				if c != nil {
-					log.Println("[Server][ViewMic] ICE candidate:", c.ToJSON())
-				}
-			})
-			pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-				log.Println("[Server][ViewMic] ICE state:", s.String())
-			})
-
-			raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
-			if !ok {
-				return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: "目前无任何学生上麦"}}, nil
-			}
-
-			tracks := raw.([]*webrtc.TrackLocalStaticRTP)
-
-			for _, t := range tracks {
-				pc.AddTrack(t)
-			}
-
-			// Answer
-			answer, err := pc.CreateAnswer(nil)
-			if err != nil {
-				return nil, err
-			}
-			if err := pc.SetLocalDescription(answer); err != nil {
-				return nil, err
-			}
-			<-webrtc.GatheringCompletePromise(pc)
-
-			b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
-			return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: b64ans}}, nil
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.ViewMicResp{Resp: &common.Resp{Msg: "not exist"}}, nil
 		}
+		return nil, err
 	}
-	return &webrtc_live.ViewMicResp{Resp: &common.Resp{Data: "不是本课程学生"}}, nil
+
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Userid)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("你不是本课程学生")
+	}
+
+	offer, err := my_webrtc.DecodeSDP(req.B64offer)
+	if err != nil {
+		return nil, err
+	}
+
+	pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
+	if err != nil {
+		return nil, err
+	}
+	ok = false
+	defer func() {
+		if !ok {
+			_ = pc.Close()
+		}
+	}()
+
+	if err = pc.SetRemoteDescription(offer); err != nil {
+		return nil, err
+	}
+
+	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
+		if c != nil {
+			log.Println("[Server][ViewMic] ICE candidate:", c.ToJSON())
+		}
+	})
+	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
+		log.Println("[Server][ViewMic] ICE state:", s.String())
+	})
+
+	raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
+	if !ok {
+		return &webrtc_live.ViewMicResp{Resp: &common.Resp{Msg: "目前无任何学生上麦"}}, nil
+	}
+
+	b := raw.(*model.MicBundle)
+	b.Mu.Lock()
+	tracks := append([]*webrtc.TrackLocalStaticRTP(nil), b.Tracks...)
+	b.Mu.Unlock()
+
+	for _, t := range tracks {
+		sender, _ := pc.AddTrack(t)
+		go func(s *webrtc.RTPSender) {
+			buff := make([]byte, 1500)
+			_, _, readErr := s.Read(buff)
+			if readErr != nil {
+				return
+			}
+		}(sender)
+	}
+
+	// Answer
+	answer, err := pc.CreateAnswer(nil)
+	if err != nil {
+		return nil, err
+	}
+	if err := pc.SetLocalDescription(answer); err != nil {
+		return nil, err
+	}
+	<-webrtc.GatheringCompletePromise(pc)
+
+	b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
+	ok = true
+	return &webrtc_live.ViewMicResp{
+		Resp: &common.Resp{
+			Data: &common.Data{Sdp: strptr(b64ans)},
+		},
+	}, nil
 }
 
 // ListAllLessonRecord implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) ListAllLessonRecord(ctx context.Context, req *webrtc_live.ListAllLessonRecordReq) (resp *webrtc_live.ListAllLessonRecordResp, err error) {
-	lid, _ := strconv.Atoi(req.Lessonid)
-	linfo, _ := dao.SelectLesson(s.DB, lid)
-	for _, stuid := range linfo.StudentID {
-		if stuid == req.Userid {
-			prifix := "lesson_" + req.Lessonid
-
-			opt := &cos.BucketGetOptions{
-				MaxKeys: 100,
-				Prefix:  prifix,
-			}
-			result, _, err := s.cosClient.Bucket.Get(ctx, opt)
-			if err != nil {
-				return nil, err
-			}
-
-			var b strings.Builder
-			for i, v := range result.Contents {
-				sizeKB := float64(v.Size) / 1024
-				b.WriteString(fmt.Sprintf("[%d] %s (%.1f KB)\n", i, v.Key, sizeKB))
-			}
-			return &webrtc_live.ListAllLessonRecordResp{Resp: &common.Resp{Data: b.String()}}, nil
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.ListAllLessonRecordResp{Resp: &common.Resp{Msg: "not exist"}}, nil
 		}
+		return nil, err
 	}
-	return &webrtc_live.ListAllLessonRecordResp{Resp: &common.Resp{Data: "不是本课程学生/老师"}}, nil
+
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Userid)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("你不是本课程学生")
+	}
+	prifix := "lesson_" + strconv.FormatInt(req.Lessonid, 10)
+
+	opt := &cos.BucketGetOptions{
+		MaxKeys: 100,
+		Prefix:  prifix,
+	}
+	result, _, err := s.cosClient.Bucket.Get(ctx, opt)
+	if err != nil {
+		return nil, err
+	}
+
+	var b strings.Builder
+	for i, v := range result.Contents {
+		sizeKB := float64(v.Size) / 1024
+		b.WriteString(fmt.Sprintf("[%d] %s (%.1f KB)\n", i, v.Key, sizeKB))
+	}
+	return &webrtc_live.ListAllLessonRecordResp{Resp: &common.Resp{Msg: b.String()}}, nil
 }
 
 // GetLessonRecord implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) GetLessonRecord(ctx context.Context, req *webrtc_live.GetLessonRecordReq) (resp *webrtc_live.GetLessonRecordResp, err error) {
-	lid, _ := strconv.Atoi(req.Lessonid)
-	linfo, _ := dao.SelectLesson(s.DB, lid)
-	for _, stuid := range linfo.StudentID {
-		if stuid == req.Userid {
-			key := "lesson_" + req.Lessonid + "/" + req.Key
+	_, err = s.ensureLessonExists(ctx, req.Lessonid)
+	if err != nil {
+		if errors.Is(err, ErrLessonNotExist) {
+			return &webrtc_live.GetLessonRecordResp{Data: nil}, ErrLessonNotExist
+		}
+		return nil, err
+	}
 
-			filename := req.Key
-			localfile := filepath.Join(global.Config.TmpBaseDir, filename)
+	ok, err := s.DBManager.IsStudentInLesson(req.Lessonid, req.Userid)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("你不是本课程学生")
+	}
+	key := "lesson_" + strconv.FormatInt(req.Lessonid, 10) + "/" + req.Key
 
-			data, err := my_cos.DownloadFromCos(ctx, s.cosClient, localfile, key)
-			if err != nil {
-				return nil, err
+	filename := req.Key
+	localfile := filepath.Join(global.Config.TmpBaseDir, filename)
+
+	data, err := my_cos.DownloadFromCos(ctx, s.cosClient, localfile, key)
+	if err != nil {
+		return nil, err
+	}
+	if rmErr := os.Remove(localfile); rmErr != nil {
+		log.Printf("删除临时文件失败: %v", rmErr)
+	}
+
+	return &webrtc_live.GetLessonRecordResp{Data: data}, nil
+}
+
+func (s *WebrtcLiveImpl) getUserInfo(ctx context.Context, userID int64) (*common.User, error) {
+	info, err := s.userCli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: userID})
+	if err != nil {
+		return nil, err
+	}
+	if info == nil || info.Resp == nil || info.Resp.Data == nil {
+		return nil, errors.New("user service: empty userinfo")
+	}
+	return info.Resp.Data.UserInfo, nil
+}
+
+func (s *WebrtcLiveImpl) mustLesson(ctx context.Context, lessonID int64) (*model.WebrtcLesson, error) {
+	return s.ensureLessonExists(ctx, lessonID)
+}
+
+func (s *WebrtcLiveImpl) requireTeacherOfLesson(ctx context.Context, lessonID int64, userID int64) (*model.WebrtcLesson, *common.User, error) {
+	u, err := s.getUserInfo(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+	lesson, err := s.mustLesson(ctx, lessonID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	if lesson.TeacherUID != u.UserID {
+		return nil, nil, errors.New("权限不够：你不是该课程老师")
+	}
+	return lesson, u, nil
+}
+
+func (s *WebrtcLiveImpl) ensureLessonExists(ctx context.Context, lessonID int64) (*model.WebrtcLesson, error) {
+	maybe, err := s.DBManager.BloomMaybeLesson(ctx, lessonID)
+	if err == nil && !maybe {
+		return nil, ErrLessonNotExist
+	}
+
+	lesson, err := s.getLessonCached(ctx, lessonID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, ErrLessonNotExist
+		}
+		return nil, err
+	}
+	return lesson, nil
+}
+
+func (s *WebrtcLiveImpl) getLessonCached(ctx context.Context, lessonID int64) (*model.WebrtcLesson, error) {
+	cacheKey := fmt.Sprintf("lesson:info:%d", lessonID)
+
+	if s.DBManager.RDB != nil {
+		b, err := s.DBManager.RDB.Get(ctx, cacheKey).Bytes()
+		if err == nil && len(b) > 0 {
+			var l model.WebrtcLesson
+			if jsonErr := json.Unmarshal(b, &l); jsonErr == nil {
+				return &l, nil
 			}
-			if rmErr := os.Remove(localfile); rmErr != nil {
-				log.Printf("删除临时文件失败: %v", rmErr)
-			}
-
-			return &webrtc_live.GetLessonRecordResp{Data: data}, nil
+			_ = s.DBManager.RDB.Del(ctx, cacheKey).Err()
+		}
+		if err != nil && !errors.Is(err, redis.Nil) {
+			return nil, err
 		}
 	}
-	return &webrtc_live.GetLessonRecordResp{}, nil
+
+	v, err, _ := s.sfLesson.Do(cacheKey, func() (any, error) {
+		lesson, err := s.DBManager.SelectLesson(lessonID)
+		if err != nil {
+			return nil, err
+		}
+
+		if s.DBManager.RDB != nil {
+			if b, jerr := json.Marshal(lesson); jerr == nil {
+				ttl := 5*time.Minute + time.Duration(rand.Intn(30))*time.Second
+				_ = s.DBManager.RDB.Set(ctx, cacheKey, b, ttl).Err()
+			}
+		}
+		return lesson, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	lesson, ok := v.(*model.WebrtcLesson)
+	if !ok || lesson == nil {
+		return nil, errors.New("invalid lesson type")
+	}
+	return lesson, nil
 }
+
+func strptr(s string) *string { return &s }

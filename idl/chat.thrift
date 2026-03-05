@@ -3,8 +3,8 @@ namespace go chat
 include "common.thrift"
 
 struct LiveChatReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
     3: string message,
 }
 
@@ -13,7 +13,7 @@ struct LiveChatResp {
 }
 
 struct GetHistoryReq {
-    1: string lesson_id,
+    1: i64 lesson_id,
 }
 
 struct GetHistoryResp {
@@ -21,7 +21,7 @@ struct GetHistoryResp {
 }
 
 struct DelHistoryReq{
-    1: string lesson_id,
+    1: i64 lesson_id,
 }
 
 struct DelHistoryResp {

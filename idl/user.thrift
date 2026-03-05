@@ -23,7 +23,7 @@ struct LoginResp{
 }
 
 struct GetUserInfoReq{
-    1: string userid,
+    1: i64 userid,
 }
 
 struct GetUserInfoResp{

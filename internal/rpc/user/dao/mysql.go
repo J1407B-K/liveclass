@@ -1,36 +1,47 @@
 package dao
 
 import (
-	"gorm.io/gorm"
-	"liveclass/idl/kitex_gen/user"
+	"errors"
 	"liveclass/internal/rpc/user/model"
+
+	"gorm.io/gorm"
 )
 
-func SaveUser(db *gorm.DB, req *user.RegisterReq) error {
-	// 创建用户
+func (m *DBManager) SaveUser(p model.RegisterParam) (int64, error) {
+	sid := m.Node.Generate().Int64()
 	u := model.User{
-		Username: req.Username,
-		Password: req.Password,
-		Auth:     req.Auth,
+		UserID:       sid,
+		Username:     p.Username,
+		PasswordHash: p.PasswordHash,
+		Auth:         p.Auth,
+		Status:       p.Status,
 	}
 
-	return db.Create(&u).Error
+	err := m.DB.Create(&u).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return 0, errors.New("user already exists")
+		}
+		return 0, err
+	}
+	return sid, nil
 }
 
-func SelectUser(db *gorm.DB, k string) (*model.User, error) {
+func (m *DBManager) SelectUser(k int64) (*model.User, error) {
 	var u model.User
 
-	err := db.Where("userid = ?", k).First(&u).Error
+	err := m.DB.First(&u, k).Error
 	if err != nil {
 		return nil, err
 	}
 	return &u, nil
 }
 
-func SelectUserByUsername(db *gorm.DB, username string) (*model.User, error) {
+func (m *DBManager) SelectUserByUsername(username string) (*model.User, error) {
 	var u model.User
 
-	err := db.Where("username = ?", username).First(&u).Error
+	err := m.DB.Select("user_id", "username", "password_hash", "auth", "status").
+		Where("username = ?", username).First(&u).Error
 	if err != nil {
 		return nil, err
 	}

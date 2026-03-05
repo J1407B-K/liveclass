@@ -4,241 +4,228 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
 	"liveclass/internal/rpc/webrtc_live/model"
+	"strconv"
 	"strings"
 	"time"
+
+	"gorm.io/gorm"
 )
 
-func CreateLesson(db *gorm.DB, name, desc, teacher, userid string) error {
-	var lesson = model.WebrtcLesson{
-		Name:        name,
-		Description: desc,
-		Teacher:     teacher,
-		StudentID:   []string{userid},
-	}
-	return db.Create(&lesson).Error
-}
-
-func DelLesson(db *gorm.DB, lessonid int) error {
-	return db.Where("lesson_id = ?", lessonid).Unscoped().Delete(&model.WebrtcLesson{}).Error
-}
-
-func SelectLesson(db *gorm.DB, lessonid int) (*model.WebrtcLesson, error) {
-	var lesson model.WebrtcLesson
-	if err := db.Where("lesson_id = ?", lessonid).First(&lesson).Error; err != nil {
-		return nil, err
-	}
-	return &lesson, nil
-}
-
-func SelectLessonByNandT(db *gorm.DB, name, teacher string) (*model.WebrtcLesson, error) {
-	var lesson model.WebrtcLesson
-	if err := db.Where("name = ? and teacher = ?", name, teacher).First(&lesson).Error; err != nil {
-		return nil, err
-	}
-	return &lesson, nil
-}
-
-func ChangeUserToLesson(db *gorm.DB, lessonid int, stuid, options string) error {
-	tx := db.Begin()
-	var lesson model.WebrtcLesson
-
-	if err := tx.Where("lesson_id = ?", lessonid).First(&lesson).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	if options == "add" {
-		lesson.StudentID = append(lesson.StudentID, stuid)
-		err := tx.Save(&lesson).Error
-		if err != nil {
-			tx.Rollback()
+func (m *DBManager) CreateLesson(name, desc, teacherName, role string, teacherUID int64) (int64, error) {
+	lessonID := m.Node.Generate().Int64()
+	err := m.DB.Transaction(func(tx *gorm.DB) error {
+		lesson := model.WebrtcLesson{
+			LessonId:    lessonID,
+			Name:        name,
+			Description: desc,
+			TeacherName: teacherName,
+			TeacherUID:  teacherUID,
+		}
+		if err := tx.Create(&lesson).Error; err != nil {
 			return err
 		}
-	} else {
-		var newStudentId []string
-		for _, id := range lesson.StudentID {
-			if id == stuid {
-				continue
+
+		ls := model.LessonStudent{
+			LessonID: lesson.LessonId,
+			UserID:   teacherUID,
+			Role:     role,
+			Status:   1,
+		}
+
+		if err := tx.Create(&ls).Error; err != nil {
+			return err
+		}
+
+		payload := map[string]any{
+			"lessonId": lessonID,
+		}
+
+		b, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+
+		outbox := model.OutboxEvent{
+			AggregateType: "Lesson",
+			AggregateID:   strconv.FormatInt(lessonID, 10),
+			Type:          "ADD_BLOOM",
+			Payload:       string(b),
+		}
+
+		return tx.Create(&outbox).Error
+	})
+	if err != nil {
+		return 0, err
+	}
+	return lessonID, nil
+}
+
+func (m *DBManager) DelLesson(lessonid int64) error {
+	return m.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("lesson_id = ?", lessonid).
+			Unscoped().
+			Delete(&model.WebrtcLesson{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("lesson_id = ?", lessonid).
+			Unscoped().
+			Delete(&model.LessonStudent{}).Error; err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (m *DBManager) SelectLesson(lessonid int64) (*model.WebrtcLesson, error) {
+	var lesson model.WebrtcLesson
+	if err := m.DB.Where("lesson_id = ?", lessonid).First(&lesson).Error; err != nil {
+		return nil, err
+	}
+	return &lesson, nil
+}
+
+func (m *DBManager) SelectLessonByNandT(name, teacherName string) (*model.WebrtcLesson, error) {
+	var lesson model.WebrtcLesson
+	if err := m.DB.Where("name = ? AND teacher_name = ?", name, teacherName).First(&lesson).Error; err != nil {
+		return nil, err
+	}
+	return &lesson, nil
+}
+
+func (m *DBManager) ChangeUserToLesson(lessonid int64, stuid int64, options string) error {
+	if options != "add" && options != "del" {
+		return errors.New("invalid options")
+	}
+
+	return m.DB.Transaction(func(tx *gorm.DB) error {
+		var lesson model.WebrtcLesson
+		if err := tx.Where("lesson_id = ?", lessonid).First(&lesson).Error; err != nil {
+			return err
+		}
+
+		var ls model.LessonStudent
+		err := tx.Where("lesson_id = ? AND user_id = ?", lessonid, stuid).First(&ls).Error
+
+		if options == "add" {
+			if err == nil {
+				return tx.Model(&model.LessonStudent{}).
+					Where("lesson_id = ? AND user_id = ?", lessonid, stuid).
+					Update("status", 1).Error
 			}
-			newStudentId = append(newStudentId, id)
+			if !errors.Is(err, gorm.ErrRecordNotFound) {
+				return err
+			}
+			return tx.Create(&model.LessonStudent{
+				LessonID: lessonid,
+				UserID:   stuid,
+				Status:   1,
+			}).Error
 		}
-		lesson.StudentID = newStudentId
 
-		err := tx.Save(&lesson).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil
+		}
 		if err != nil {
-			tx.Rollback()
+			return err
+		}
+		return tx.Model(&model.LessonStudent{}).
+			Where("lesson_id = ? AND user_id = ?", lessonid, stuid).
+			Update("status", 0).Error
+	})
+}
+
+func (m *DBManager) CreateSignIn(lessonId int64, alluserid []int64, closeTime time.Time) error {
+	return m.DB.Transaction(func(tx *gorm.DB) error {
+		var exist model.SignIn
+		err := tx.Where("lesson_id = ?", lessonId).First(&exist).Error
+		if err == nil {
+			return errors.New("你已创建过签到")
+		}
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 
-		err = tx.Commit().Error
-		if err != nil {
-			tx.Rollback()
+		s := model.SignIn{
+			LessonId:      lessonId,
+			AllUserId:     alluserid,
+			AlreadyUserId: []int64{},
+			CloseTime:     closeTime,
+		}
+		return tx.Create(&s).Error
+	})
+}
+
+func (m *DBManager) StuSignIn(lessonId, userId int64, timeNow time.Time) (string, error) {
+	err := m.DB.Transaction(func(tx *gorm.DB) error {
+		var signIn model.SignIn
+		if err := tx.Where("lesson_id = ?", lessonId).First(&signIn).Error; err != nil {
 			return err
 		}
-	}
-	return nil
-}
 
-func CheckStudentInLesson(db *gorm.DB, studentId, lessonid string) (string, error) {
-	tx := db.Begin()
-	if tx.Error != nil {
-		return "", tx.Error
-	}
-
-	// 确保结束时提交或回滚
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			panic(r)
+		if !signIn.CloseTime.IsZero() && !timeNow.Before(signIn.CloseTime) {
+			if err := tx.Unscoped().Delete(&model.SignIn{}, "lesson_id = ?", lessonId).Error; err != nil {
+				return err
+			}
+			return errors.New("close")
 		}
-	}()
 
-	var lesson model.WebrtcLesson
-
-	if err := tx.
-		Where("lesson_id = ?", lessonid).
-		First(&lesson).Error; err != nil {
-		tx.Rollback()
-		return "", err
-	}
-
-	for _, id := range lesson.StudentID {
-		if id == studentId {
-			tx.Commit()
-			return "in", nil
+		for _, id := range signIn.AlreadyUserId {
+			if id == userId {
+				return errors.New("你已经签过到了")
+			}
 		}
-	}
 
-	return "not_in", nil
-}
-
-func CreateSignIn(db *gorm.DB, lessonId string, alluserid []string, closeTime time.Time) error {
-	tx := db.Begin()
-	if tx.Error != nil {
-		tx.Rollback()
-		return tx.Error
-	}
-
-	var search model.SignIn
-	err := tx.Where("lesson_id = ?", lessonId).First(&search).Error
-	if err == nil {
-		tx.Rollback()
-		return errors.New("你已创建过签到")
-	} else if !errors.Is(err, gorm.ErrRecordNotFound) {
-		tx.Rollback()
-		return err
-	}
-
-	s := model.SignIn{LessonId: lessonId, AllUserId: alluserid, AlreadyUserId: []string{}, CloseTime: closeTime}
-
-	if err := tx.Create(&s).Error; err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	err = tx.Commit().Error
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return nil
-}
-
-func StuSignIn(db *gorm.DB, lessonId, userId string, timeNow time.Time) (string, error) {
-	tx := db.Begin()
-	if tx.Error != nil {
-		return "", tx.Error
-	}
-
-	// 确保结束时提交或回滚
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			panic(r)
-		}
-	}()
-
-	var SignIn model.SignIn
-	err := tx.Where("lesson_id = ?", lessonId).First(&SignIn).Error
-	if SignIn.LessonId != lessonId {
-		tx.Rollback()
-		return "", errors.New("课程不匹配")
-	}
-
-	delta := timeNow.Sub(SignIn.CloseTime)
-	if delta >= 0 {
-		tx.Delete(&SignIn)
-
-		err = tx.Commit().Error
-		if err != nil {
-			tx.Rollback()
-			return "", err
-		}
-		return "", errors.New("close")
-	}
+		signIn.AlreadyUserId = append(signIn.AlreadyUserId, userId)
+		return tx.Save(&signIn).Error
+	})
 
 	if err != nil {
-		tx.Rollback()
 		return "", err
 	}
-
-	for _, id := range SignIn.AlreadyUserId {
-		if id == userId {
-			tx.Rollback()
-			return "<UNK>", errors.New("你已经签过到了")
-		}
-	}
-
-	SignIn.AlreadyUserId = append(SignIn.AlreadyUserId, userId)
-	err = tx.Where("lesson_id = ?", lessonId).Save(&SignIn).Error
-	if err != nil {
-		tx.Rollback()
-		return "", err
-	}
-	err = tx.Commit().Error
-	if err != nil {
-		tx.Rollback()
-		return "", err
-	}
-
 	return "success", nil
 }
 
-func SelectSignIn(db *gorm.DB, lessonid string) (string, error) {
+func (m *DBManager) SelectSignIn(lessonid int64) (string, error) {
 	var s model.SignIn
-	if err := db.Where("lesson_id = ?", lessonid).First(&s).Error; err != nil {
+	if err := m.DB.Where("lesson_id = ?", lessonid).First(&s).Error; err != nil {
 		return "", err
 	}
 
-	alreadyUsers := s.AlreadyUserId
-
-	//好查一点点hhh
-	signedMap := make(map[string]struct{}, len(alreadyUsers))
-	for _, uid := range alreadyUsers {
-		signedMap[uid] = struct{}{}
+	signed := make(map[int64]struct{}, len(s.AlreadyUserId))
+	for _, uid := range s.AlreadyUserId {
+		signed[uid] = struct{}{}
 	}
 
-	var notAlreadyUsers []string
+	var notSigned []int64
 	for _, uid := range s.AllUserId {
-		if _, ok := signedMap[uid]; !ok {
-			notAlreadyUsers = append(notAlreadyUsers, uid)
+		if _, ok := signed[uid]; !ok {
+			notSigned = append(notSigned, uid)
 		}
 	}
 
-	alreadyStr := strings.Join(alreadyUsers, "/")
-	notAlreadyStr := strings.Join(notAlreadyUsers, "/")
+	var a, b strings.Builder
+	for i, uid := range s.AlreadyUserId {
+		if i > 0 {
+			a.WriteByte('/')
+		}
+		a.WriteString(fmt.Sprintf("%d", uid))
+	}
+	for i, uid := range notSigned {
+		if i > 0 {
+			b.WriteByte('/')
+		}
+		b.WriteString(fmt.Sprintf("%d", uid))
+	}
 
-	return fmt.Sprintf("已签到为%v, 未签到为%v", alreadyStr, notAlreadyStr), nil
+	return fmt.Sprintf("已签到为%v, 未签到为%v", a.String(), b.String()), nil
+}
+func (m *DBManager) RemoveSignIn(lessonId int64) error {
+	return m.DB.Where("lesson_id = ?", lessonId).Unscoped().Delete(&model.SignIn{}).Error
 }
 
-func RemoveSignIn(db *gorm.DB, lessonId string) error {
-	return db.Where("lesson_id = ?", lessonId).Unscoped().Delete(&model.SignIn{}).Error
-}
-
-func SaveWhiteBoard(db *gorm.DB, lessonid, file string) error {
+func (m *DBManager) SaveWhiteBoard(lessonid int64, file string) error {
 	var doc model.ExcalidrawDoc
 
 	err := json.Unmarshal([]byte(file), &doc)
@@ -248,17 +235,17 @@ func SaveWhiteBoard(db *gorm.DB, lessonid, file string) error {
 
 	doc.LessonId = lessonid
 
-	err = db.Create(&doc).Error
+	err = m.DB.Create(&doc).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetWhiteBoardNew(db *gorm.DB, lessonid string) (*model.ExcalidrawDoc, error) {
+func (m *DBManager) GetWhiteBoardNew(lessonid int64) (*model.ExcalidrawDoc, error) {
 	var docs model.ExcalidrawDoc
 
-	err := db.Where("lesson_id = ?", lessonid).First(&docs).Error
+	err := m.DB.Where("lesson_id = ?", lessonid).First(&docs).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -268,62 +255,138 @@ func GetWhiteBoardNew(db *gorm.DB, lessonid string) (*model.ExcalidrawDoc, error
 	return &docs, nil
 }
 
-func RaiseHand(db *gorm.DB, lessonid int, stuid string) error {
-	tx := db.Begin()
-
-	var l model.WebrtcLesson
-	err := tx.Where("lesson_id = ?", lessonid).First(&l).Error
+func (m *DBManager) IsStudentInLesson(lessonID, userID int64) (bool, error) {
+	var cnt int64
+	err := m.DB.Model(&model.LessonStudent{}).
+		Where("lesson_id = ? AND user_id = ? AND status = 1", lessonID, userID).
+		Count(&cnt).Error
 	if err != nil {
-		tx.Rollback()
-		return err
+		return false, err
 	}
-
-	l.RaiseStuId = append(l.RaiseStuId, stuid)
-
-	err = tx.Save(&l).Error
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	err = tx.Commit().Error
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	return nil
+	return cnt > 0, nil
 }
 
-func ApproveHand(db *gorm.DB, l model.WebrtcLesson, stuid string) error {
-	tx := db.Begin()
+func (m *DBManager) ListLessonStudentIDs(lessonID int64) ([]int64, error) {
+	const batchSize = 300
 
-	for i := 0; i < len(l.RaiseStuId); i++ {
-		if l.RaiseStuId[i] == stuid {
-			l.RaiseStuId = append(l.RaiseStuId[:i], l.RaiseStuId[i+1:]...)
+	type row struct {
+		ID     int64 `gorm:"column:id"`
+		UserID int64 `gorm:"column:user_id"`
+	}
 
-			err := tx.Save(&l).Error
-			if err != nil {
-				tx.Rollback()
-				return err
-			}
+	var (
+		cursorID int64
+		all      = make([]int64, 0, 64)
+	)
 
-			err = tx.Commit().Error
-			if err != nil {
-				tx.Rollback()
-				return err
-			}
+	for {
+		var rows []row
+		err := m.DB.Model(&model.LessonStudent{}).
+			Select("id, user_id").
+			Where("lesson_id = ? AND status = 1 AND id > ?", lessonID, cursorID).
+			Order("id ASC").
+			Limit(batchSize).
+			Scan(&rows).Error
+		if err != nil {
+			return nil, err
+		}
 
-			return nil
+		if len(rows) == 0 {
+			break
+		}
+
+		for _, r := range rows {
+			all = append(all, r.UserID)
+			cursorID = r.ID
+		}
+
+		if len(rows) < batchSize {
+			break
 		}
 	}
-	tx.Rollback()
-	return errors.New("该学生没有举手！")
+
+	return all, nil
 }
 
-func removeValueInArray(array []string, value string) []string {
-	for i, v := range array {
-		if v == value {
-			return append(array[:i], array[i+1:]...)
+func (m *DBManager) LessonStudentCursorPage(lessonID int64, cursorID int64, limit int) (userIDs []int64, nextCursor int64, hasMore bool, err error) {
+	if limit <= 0 {
+		limit = 50
+	}
+	if limit > 200 {
+		limit = 200
+	}
+
+	type row struct {
+		ID     int64 `gorm:"column:id"`
+		UserID int64 `gorm:"column:user_id"`
+	}
+
+	rows := make([]row, 0, limit+1)
+	err = m.DB.Model(&model.LessonStudent{}).
+		Select("id, user_id").
+		Where("lesson_id = ? AND status = 1 AND id > ?", lessonID, cursorID).
+		Order("id ASC").
+		Limit(limit + 1).
+		Scan(&rows).Error
+	if err != nil {
+		return nil, 0, false, err
+	}
+
+	if len(rows) == 0 {
+		return []int64{}, 0, false, nil
+	}
+
+	if len(rows) > limit {
+		hasMore = true
+		rows = rows[:limit]
+	}
+
+	userIDs = make([]int64, 0, len(rows))
+	for _, r := range rows {
+		userIDs = append(userIDs, r.UserID)
+		nextCursor = r.ID
+	}
+
+	return userIDs, nextCursor, hasMore, nil
+}
+
+func GetAllLessonIDs(db *gorm.DB) ([]int64, error) {
+	const batchSize = 300
+
+	type row struct {
+		LessonID int64 `gorm:"column:lesson_id"`
+	}
+
+	var (
+		cursor int64
+		all    = make([]int64, 0, 128)
+	)
+
+	for {
+		var rows []row
+		err := db.Model(&model.WebrtcLesson{}).
+			Select("lesson_id").
+			Where("lesson_id > ?", cursor).
+			Order("lesson_id ASC").
+			Limit(batchSize).
+			Scan(&rows).Error
+		if err != nil {
+			return nil, err
+		}
+
+		if len(rows) == 0 {
+			break
+		}
+
+		for _, r := range rows {
+			all = append(all, r.LessonID)
+			cursor = r.LessonID
+		}
+
+		if len(rows) < batchSize {
+			break
 		}
 	}
-	return nil
+
+	return all, nil
 }

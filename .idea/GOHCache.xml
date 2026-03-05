@@ -17,6 +17,13 @@
             </set>
           </value>
         </entry>
+        <entry key="AgentServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="AgentServiceDelAllUserConvArgs">
           <value>
             <set>
@@ -52,10 +59,17 @@
             </set>
           </value>
         </entry>
+        <entry key="AgentServiceProcessor">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="Answer">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/model/quiz.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/model/quiz.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/model/answer.go" />
             </set>
           </value>
@@ -78,6 +92,13 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="BroadcastBundle">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/broadcastbundle.go" />
             </set>
           </value>
         </entry>
@@ -124,6 +145,13 @@
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="ChatServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
             </set>
           </value>
         </entry>
@@ -176,6 +204,13 @@
             </set>
           </value>
         </entry>
+        <entry key="ChatServiceProcessor">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="ChatWithAgentReq">
           <value>
             <set>
@@ -193,14 +228,14 @@
         <entry key="Claims">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/service/ws_global.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/service/ws_global.go" />
             </set>
           </value>
         </entry>
         <entry key="Clients">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/model/clients.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/model/clients.go" />
             </set>
           </value>
         </entry>
@@ -221,6 +256,7 @@
         <entry key="Config">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/api/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/agent/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/chat/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
@@ -300,6 +336,23 @@
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="DBManager">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/api/model/database.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/user/dao/manager.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/user/dao/mysql.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/manager.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="Data">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go" />
             </set>
           </value>
         </entry>
@@ -552,7 +605,22 @@
         <entry key="Lesson">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/live/model/lesson.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LessonEvent">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/cdc/worker.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LessonStudent">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/lessonstudent.go" />
             </set>
           </value>
         </entry>
@@ -620,6 +688,13 @@
           </value>
         </entry>
         <entry key="LiveServiceChangeUserToLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="LiveServiceClient">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
@@ -731,6 +806,13 @@
             </set>
           </value>
         </entry>
+        <entry key="LiveServiceProcessor">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="LiveServiceRecordLessonArgs">
           <value>
             <set>
@@ -825,8 +907,15 @@
         <entry key="Message">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/model/message.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/model/message.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/chat/model/msg.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="MicBundle">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/micbundle.go" />
             </set>
           </value>
         </entry>
@@ -857,6 +946,13 @@
             </set>
           </value>
         </entry>
+        <entry key="OutboxEvent">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/outbox.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="PublishMicReq">
           <value>
             <set>
@@ -874,8 +970,15 @@
         <entry key="Question">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/model/quiz.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/model/quiz.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/quiz/model/question.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="QuizServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
             </set>
           </value>
         </entry>
@@ -928,6 +1031,13 @@
             </set>
           </value>
         </entry>
+        <entry key="QuizServiceProcessor">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="QuizServiceTorFAnswerArgs">
           <value>
             <set>
@@ -975,8 +1085,17 @@
         <entry key="RedisConfig">
           <value>
             <set>
+              <option value="file://$PROJECT_DIR$/internal/api/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/live/config/config.go" />
+              <option value="file://$PROJECT_DIR$/internal/rpc/user/config/config.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="RegisterParam">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/user/model/register.go" />
             </set>
           </value>
         </entry>
@@ -1004,7 +1123,7 @@
         <entry key="Response">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/model/resp.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/model/resp.go" />
             </set>
           </value>
         </entry>
@@ -1132,7 +1251,8 @@
         <entry key="User">
           <value>
             <set>
-              <option value="file://$PROJECT_DIR$/internal/model/user.go" />
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go" />
+              <option value="file://$PROJECT_DIR$/internal/api/model/user.go" />
               <option value="file://$PROJECT_DIR$/internal/rpc/user/model/user.go" />
             </set>
           </value>
@@ -1141,6 +1261,13 @@
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/agent/eino_gen/agent/type/user_messages.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserServiceClient">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
             </set>
           </value>
         </entry>
@@ -1187,6 +1314,13 @@
           </value>
         </entry>
         <entry key="UserServiceLoginResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="UserServiceProcessor">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
@@ -1292,6 +1426,13 @@
           </value>
         </entry>
         <entry key="WebrtcLiveChangeUserToLessonResult">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="WebrtcLiveClient">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
@@ -1459,6 +1600,13 @@
             </set>
           </value>
         </entry>
+        <entry key="WebrtcLiveProcessor">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="WebrtcLivePublishMicArgs">
           <value>
             <set>
@@ -1599,6 +1747,48 @@
             </set>
           </value>
         </entry>
+        <entry key="agentServiceProcessorChatWithAgent">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="agentServiceProcessorDelAllUserConv">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="agentServiceProcessorListAllUserConv">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="chatServiceProcessorDelHistory">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="chatServiceProcessorGetHistory">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="chatServiceProcessorLiveChat">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="kAgentServiceClient">
           <value>
             <set>
@@ -1653,10 +1843,346 @@
             </set>
           </value>
         </entry>
+        <entry key="liveServiceProcessorChangeUserInLive">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorChangeUserToLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorCloseLive">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorCreateLive">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorCreateSignIn">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorDelSign">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorGetLessonInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorGetLessonInfoById">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorIsStudentInLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorRecordLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorRollCallInRandom">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorSelectLessonInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorSelectSignIn">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="liveServiceProcessorSignIn">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go" />
+            </set>
+          </value>
+        </entry>
         <entry key="myProgressListener">
           <value>
             <set>
               <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/cos/cos.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="quizServiceProcessorCreateQuestion">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="quizServiceProcessorDelQuestion">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="quizServiceProcessorGetAllLessonQuiz">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="quizServiceProcessorTorFAnswer">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="row">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="userServiceProcessorGetUserInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="userServiceProcessorGetUserInfoByname">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="userServiceProcessorLogin">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="userServiceProcessorRegister">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorApproveHand">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorBroadcast">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorChangeUserInLive">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorChangeUserToLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorCreateLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorCreateSignIn">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorDelLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorDelSign">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorGetLessonInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorGetLessonInfoById">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorGetLessonRecord">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorGetRaiseHand">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorGetWhiteBoardJson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorIsStudentInLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorListAllLessonRecord">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorPublishMic">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorRaiseHand">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorRecordLesson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorRollCallInRandom">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorSaveWhiteBoardJson">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorSelectLessonInfo">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorSelectSignIn">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorSignIn">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorView">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
+            </set>
+          </value>
+        </entry>
+        <entry key="webrtcLiveProcessorViewMic">
+          <value>
+            <set>
+              <option value="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go" />
             </set>
           </value>
         </entry>
@@ -1667,7 +2193,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agent.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772526408270" />
               <option name="schema">
                 <list>
                   <option value="ChatWithAgentReq" />
@@ -1676,6 +2202,11 @@
                   <option value="ListAllUserConvResp" />
                   <option value="DelAllUserConvReq" />
                   <option value="DelAllUserConvResp" />
+                  <option value="AgentServiceClient" />
+                  <option value="AgentServiceProcessor" />
+                  <option value="agentServiceProcessorChatWithAgent" />
+                  <option value="agentServiceProcessorListAllUserConv" />
+                  <option value="agentServiceProcessorDelAllUserConv" />
                   <option value="AgentServiceChatWithAgentArgs" />
                   <option value="AgentServiceChatWithAgentResult" />
                   <option value="AgentServiceListAllUserConvArgs" />
@@ -1690,7 +2221,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/agentservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772526408269" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1702,7 +2233,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772526408268" />
               <option name="schema">
                 <list>
                   <option value="kAgentServiceClient" />
@@ -1711,31 +2242,38 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/invoker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772526408268" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/agentservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772526408268" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/k-agent.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772526408270" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/agent/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772526408268" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chat.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772529301441" />
               <option name="schema">
                 <list>
                   <option value="LiveChatReq" />
@@ -1744,6 +2282,11 @@
                   <option value="GetHistoryResp" />
                   <option value="DelHistoryReq" />
                   <option value="DelHistoryResp" />
+                  <option value="ChatServiceClient" />
+                  <option value="ChatServiceProcessor" />
+                  <option value="chatServiceProcessorLiveChat" />
+                  <option value="chatServiceProcessorGetHistory" />
+                  <option value="chatServiceProcessorDelHistory" />
                   <option value="ChatServiceLiveChatArgs" />
                   <option value="ChatServiceLiveChatResult" />
                   <option value="ChatServiceGetHistoryArgs" />
@@ -1758,7 +2301,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/chatservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409191" />
+              <option name="lastModified" value="1772529301439" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1770,7 +2313,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1772529301439" />
               <option name="schema">
                 <list>
                   <option value="kChatServiceClient" />
@@ -1779,34 +2322,44 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/invoker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772529301439" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/chatservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1772529301439" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/k-chat.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1772529301441" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/chat/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409192" />
+              <option name="lastModified" value="1772529301438" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636084" />
+              <option name="lastModified" value="1772543955221" />
               <option name="schema">
                 <list>
                   <option value="Resp" />
+                  <option value="User" />
+                  <option value="Lesson" />
+                  <option value="Data" />
                 </list>
               </option>
             </ScannedPath>
@@ -1815,35 +2368,35 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-common.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636089" />
+              <option name="lastModified" value="1772543955221" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/common/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636089" />
+              <option name="lastModified" value="1772543955219" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126106926" />
+              <option name="lastModified" value="1772527804139" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/k-live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126106932" />
+              <option name="lastModified" value="1772527804149" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126106924" />
+              <option name="lastModified" value="1772527804152" />
               <option name="schema">
                 <list>
                   <option value="CreateLiveReq" />
@@ -1874,6 +2427,22 @@
                   <option value="DelSignInResp" />
                   <option value="RollCallInRandomReq" />
                   <option value="RollCallInRandomResp" />
+                  <option value="LiveServiceClient" />
+                  <option value="LiveServiceProcessor" />
+                  <option value="liveServiceProcessorCreateLive" />
+                  <option value="liveServiceProcessorCloseLive" />
+                  <option value="liveServiceProcessorChangeUserInLive" />
+                  <option value="liveServiceProcessorSelectLessonInfo" />
+                  <option value="liveServiceProcessorGetLessonInfo" />
+                  <option value="liveServiceProcessorGetLessonInfoById" />
+                  <option value="liveServiceProcessorChangeUserToLesson" />
+                  <option value="liveServiceProcessorIsStudentInLesson" />
+                  <option value="liveServiceProcessorRecordLesson" />
+                  <option value="liveServiceProcessorCreateSignIn" />
+                  <option value="liveServiceProcessorSignIn" />
+                  <option value="liveServiceProcessorSelectSignIn" />
+                  <option value="liveServiceProcessorDelSign" />
+                  <option value="liveServiceProcessorRollCallInRandom" />
                   <option value="LiveServiceCreateLiveArgs" />
                   <option value="LiveServiceCreateLiveResult" />
                   <option value="LiveServiceCloseLiveArgs" />
@@ -1910,7 +2479,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126106924" />
+              <option name="lastModified" value="1772527804140" />
               <option name="schema">
                 <list>
                   <option value="kLiveServiceClient" />
@@ -1919,10 +2488,17 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/invoker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772527804139" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/liveservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126106925" />
+              <option name="lastModified" value="1772527804140" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -1934,28 +2510,28 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/live/liveservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126106925" />
+              <option name="lastModified" value="1772527804139" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636090" />
+              <option name="lastModified" value="1772526895716" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/k-quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636092" />
+              <option name="lastModified" value="1772526895719" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636088" />
+              <option name="lastModified" value="1772526895720" />
               <option name="schema">
                 <list>
                   <option value="CreateQuestionReq" />
@@ -1966,6 +2542,12 @@
                   <option value="DelQuestionResp" />
                   <option value="GetAllLessonQuizReq" />
                   <option value="GetAllLessonQuizResp" />
+                  <option value="QuizServiceClient" />
+                  <option value="QuizServiceProcessor" />
+                  <option value="quizServiceProcessorCreateQuestion" />
+                  <option value="quizServiceProcessorTorFAnswer" />
+                  <option value="quizServiceProcessorDelQuestion" />
+                  <option value="quizServiceProcessorGetAllLessonQuiz" />
                   <option value="QuizServiceCreateQuestionArgs" />
                   <option value="QuizServiceCreateQuestionResult" />
                   <option value="QuizServiceTorFAnswerArgs" />
@@ -1982,7 +2564,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636089" />
+              <option name="lastModified" value="1772526895716" />
               <option name="schema">
                 <list>
                   <option value="kQuizServiceClient" />
@@ -1991,10 +2573,17 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/invoker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772526895716" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/quizservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636089" />
+              <option name="lastModified" value="1772526895716" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -2006,28 +2595,28 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/quiz/quizservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749465636089" />
+              <option name="lastModified" value="1772526895715" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1772540420009" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/k-user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1772540420013" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1772540420013" />
               <option name="schema">
                 <list>
                   <option value="RegisterReq" />
@@ -2038,6 +2627,12 @@
                   <option value="GetUserInfoResp" />
                   <option value="GetUserInfoByNameReq" />
                   <option value="GetUserInfoByNameResp" />
+                  <option value="UserServiceClient" />
+                  <option value="UserServiceProcessor" />
+                  <option value="userServiceProcessorRegister" />
+                  <option value="userServiceProcessorLogin" />
+                  <option value="userServiceProcessorGetUserInfo" />
+                  <option value="userServiceProcessorGetUserInfoByname" />
                   <option value="UserServiceRegisterArgs" />
                   <option value="UserServiceRegisterResult" />
                   <option value="UserServiceLoginArgs" />
@@ -2054,7 +2649,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1772540420009" />
               <option name="schema">
                 <list>
                   <option value="kUserServiceClient" />
@@ -2063,17 +2658,24 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/invoker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772540420009" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1772540420009" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/user/userservice/userservice.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409195" />
+              <option name="lastModified" value="1772540420010" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -2085,21 +2687,21 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/k-consts.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223500" />
+              <option name="lastModified" value="1772543955219" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/k-webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223511" />
+              <option name="lastModified" value="1772543955235" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtc_live.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223498" />
+              <option name="lastModified" value="1772543955239" />
               <option name="schema">
                 <list>
                   <option value="BroadcastReq" />
@@ -2152,6 +2754,33 @@
                   <option value="ListAllLessonRecordResp" />
                   <option value="GetLessonRecordReq" />
                   <option value="GetLessonRecordResp" />
+                  <option value="WebrtcLiveClient" />
+                  <option value="WebrtcLiveProcessor" />
+                  <option value="webrtcLiveProcessorBroadcast" />
+                  <option value="webrtcLiveProcessorView" />
+                  <option value="webrtcLiveProcessorCreateLesson" />
+                  <option value="webrtcLiveProcessorDelLesson" />
+                  <option value="webrtcLiveProcessorChangeUserInLive" />
+                  <option value="webrtcLiveProcessorChangeUserToLesson" />
+                  <option value="webrtcLiveProcessorGetLessonInfoById" />
+                  <option value="webrtcLiveProcessorSelectLessonInfo" />
+                  <option value="webrtcLiveProcessorGetLessonInfo" />
+                  <option value="webrtcLiveProcessorIsStudentInLesson" />
+                  <option value="webrtcLiveProcessorCreateSignIn" />
+                  <option value="webrtcLiveProcessorSignIn" />
+                  <option value="webrtcLiveProcessorSelectSignIn" />
+                  <option value="webrtcLiveProcessorDelSign" />
+                  <option value="webrtcLiveProcessorRollCallInRandom" />
+                  <option value="webrtcLiveProcessorRecordLesson" />
+                  <option value="webrtcLiveProcessorSaveWhiteBoardJson" />
+                  <option value="webrtcLiveProcessorGetWhiteBoardJson" />
+                  <option value="webrtcLiveProcessorPublishMic" />
+                  <option value="webrtcLiveProcessorRaiseHand" />
+                  <option value="webrtcLiveProcessorGetRaiseHand" />
+                  <option value="webrtcLiveProcessorApproveHand" />
+                  <option value="webrtcLiveProcessorViewMic" />
+                  <option value="webrtcLiveProcessorListAllLessonRecord" />
+                  <option value="webrtcLiveProcessorGetLessonRecord" />
                   <option value="WebrtcLiveBroadcastArgs" />
                   <option value="WebrtcLiveBroadcastResult" />
                   <option value="WebrtcLiveViewArgs" />
@@ -2210,7 +2839,7 @@
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/client.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223499" />
+              <option name="lastModified" value="1772543955219" />
               <option name="schema">
                 <list>
                   <option value="kWebrtcLiveClient" />
@@ -2219,17 +2848,24 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/invoker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772543955219" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/server.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223499" />
+              <option name="lastModified" value="1772543955219" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/idl/kitex_gen/webrtc_live/webrtclive/webrtclive.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749450223500" />
+              <option name="lastModified" value="1772543955221" />
               <option name="schema">
                 <list>
                   <option value="kClient" />
@@ -2238,56 +2874,90 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/api/api.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/code/code.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749460545891" />
+              <option name="lastModified" value="1772525424810" />
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/cmd/main.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749282869899" />
+              <option name="lastModified" value="1772526004809" />
+              <option name="schema">
+                <list>
+                  <option value="Config" />
+                  <option value="RedisConfig" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/code/code.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/global/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409198" />
+              <option name="lastModified" value="1772526004559" />
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/global/rpc.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/global/database.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409198" />
+              <option name="lastModified" value="1772526245184" />
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/global/ws.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/global/rpc.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749457566647" />
+              <option name="lastModified" value="1772526004584" />
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/initialize/consumer.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/global/ws.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749009635924" />
+              <option name="lastModified" value="1772527355945" />
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/initialize/rpc.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/initialize/consumer.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749122985825" />
+              <option name="lastModified" value="1772526004598" />
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/model/clients.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/initialize/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772529223264" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/initialize/rpc.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772526004599" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/initialize/viper.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772529367274" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/main.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772526245186" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/model/clients.go">
           <value>
             <ScannedPath>
               <option name="lastModified" value="1748569409199" />
@@ -2299,10 +2969,22 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/model/message.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/model/database.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409199" />
+              <option name="lastModified" value="1772526245170" />
+              <option name="schema">
+                <list>
+                  <option value="DBManager" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/model/message.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772529179890" />
               <option name="schema">
                 <list>
                   <option value="Message" />
@@ -2311,10 +2993,10 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/model/quiz.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/model/quiz.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749466460854" />
+              <option name="lastModified" value="1772528494982" />
               <option name="schema">
                 <list>
                   <option value="Question" />
@@ -2324,10 +3006,10 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/model/resp.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/model/resp.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409199" />
+              <option name="lastModified" value="1772518851564" />
               <option name="schema">
                 <list>
                   <option value="Response" />
@@ -2336,15 +3018,125 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/model/user.go">
+        <entry key="file://$PROJECT_DIR$/internal/api/model/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409199" />
+              <option name="lastModified" value="1772509389850" />
               <option name="schema">
                 <list>
                   <option value="User" />
                 </list>
               </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/router/router.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772602896719" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/agent.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772526004609" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/chat.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772527795968" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/chat_ws.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772527795953" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/live.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772528494973" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/quiz.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772528494943" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/quiz_ws.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772528494929" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/user.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772530445792" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/webrtc_live.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772606151041" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/service/ws_global.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772528494862" />
+              <option name="schema">
+                <list>
+                  <option value="Claims" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/utils/bcrypt/password.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772506551764" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/utils/cors/cors.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748569409211" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/utils/cut/cut.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748569409211" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/utils/filter/filter.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1748569409211" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/api/utils/jwt/jwt.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772603399957" />
             </ScannedPath>
           </value>
         </entry>
@@ -2506,7 +3298,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749171579330" />
+              <option name="lastModified" value="1749783119503" />
               <option name="schema">
                 <list>
                   <option value="AgentServiceImpl" />
@@ -2546,7 +3338,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/agent/mcp/startMCPserver.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749114134095" />
+              <option name="lastModified" value="1772514409480" />
             </ScannedPath>
           </value>
         </entry>
@@ -2620,7 +3412,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/chat/kafka/kafka.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409203" />
+              <option name="lastModified" value="1772526004595" />
             </ScannedPath>
           </value>
         </entry>
@@ -2701,7 +3493,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749480438570" />
+              <option name="lastModified" value="1772526004591" />
               <option name="schema">
                 <list>
                   <option value="LiveServiceImpl" />
@@ -2851,7 +3643,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/quiz/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749467864045" />
+              <option name="lastModified" value="1772526004605" />
               <option name="schema">
                 <list>
                   <option value="QuizServiceImpl" />
@@ -2912,14 +3704,34 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/user/code/code.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772510510970" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409207" />
+              <option name="lastModified" value="1772531172558" />
               <option name="schema">
                 <list>
                   <option value="Config" />
                   <option value="MysqlConfig" />
+                  <option value="RedisConfig" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/user/dao/manager.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772701028116" />
+              <option name="schema">
+                <list>
+                  <option value="DBManager" />
                 </list>
               </option>
             </ScannedPath>
@@ -2928,7 +3740,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409207" />
+              <option name="lastModified" value="1772701028114" />
             </ScannedPath>
           </value>
         </entry>
@@ -2961,7 +3773,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409207" />
+              <option name="lastModified" value="1772604244681" />
               <option name="schema">
                 <list>
                   <option value="UserServiceImpl" />
@@ -2977,6 +3789,20 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/user/initialize/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772530805071" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/user/initialize/snowflake.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772531172567" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/initialize/viper.go">
           <value>
             <ScannedPath>
@@ -2987,14 +3813,26 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749176731339" />
+              <option name="lastModified" value="1772604244702" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/user/model/register.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772510112817" />
+              <option name="schema">
+                <list>
+                  <option value="RegisterParam" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/user/model/user.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409207" />
+              <option name="lastModified" value="1772507439183" />
               <option name="schema">
                 <list>
                   <option value="User" />
@@ -3003,10 +3841,22 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/cdc/worker.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772708640987" />
+              <option name="schema">
+                <list>
+                  <option value="LessonEvent" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/config/config.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1772707747348" />
               <option name="schema">
                 <list>
                   <option value="Config" />
@@ -3030,17 +3880,43 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/manager.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772701028120" />
+              <option name="schema">
+                <list>
+                  <option value="DBManager" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/mysql.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749468410843" />
+              <option name="lastModified" value="1772710984150" />
+              <option name="schema">
+                <list>
+                  <option value="row" />
+                  <option value="row" />
+                  <option value="row" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/dao/redis.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772709233673" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/flag/automigrate.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1772704605448" />
             </ScannedPath>
           </value>
         </entry>
@@ -3066,7 +3942,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/handler.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749480438529" />
+              <option name="lastModified" value="1772712553161" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLiveImpl" />
@@ -3082,10 +3958,17 @@
             </ScannedPath>
           </value>
         </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/kafka.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772708524233" />
+            </ScannedPath>
+          </value>
+        </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/lua.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1772545597563" />
             </ScannedPath>
           </value>
         </entry>
@@ -3099,7 +3982,14 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/redis.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409208" />
+              <option name="lastModified" value="1772711346023" />
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/snowflake.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772701028115" />
             </ScannedPath>
           </value>
         </entry>
@@ -3113,14 +4003,14 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/initialize/webrtc.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409209" />
+              <option name="lastModified" value="1772195880485" />
             </ScannedPath>
           </value>
         </entry>
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/main.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749176715883" />
+              <option name="lastModified" value="1772708793663" />
             </ScannedPath>
           </value>
         </entry>
@@ -3131,6 +4021,18 @@
               <option name="schema">
                 <list>
                   <option value="AppState" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/broadcastbundle.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772177408503" />
+              <option name="schema">
+                <list>
+                  <option value="BroadcastBundle" />
                 </list>
               </option>
             </ScannedPath>
@@ -3151,7 +4053,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/excalidrawdoc.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409209" />
+              <option name="lastModified" value="1772701332705" />
               <option name="schema">
                 <list>
                   <option value="ExcalidrawDoc" />
@@ -3172,22 +4074,51 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/signin.go">
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/lessonstudent.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1749126571539" />
+              <option name="lastModified" value="1772701450217" />
               <option name="schema">
                 <list>
-                  <option value="SignIn" />
+                  <option value="LessonStudent" />
                 </list>
               </option>
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/types.go">
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/micbundle.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748569409209" />
+              <option name="lastModified" value="1772191727739" />
+              <option name="schema">
+                <list>
+                  <option value="MicBundle" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/outbox.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772706984440" />
+              <option name="schema">
+                <list>
+                  <option value="OutboxEvent" />
+                </list>
+              </option>
+            </ScannedPath>
+          </value>
+        </entry>
+        <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/signin.go">
+          <value>
+            <ScannedPath>
+              <option name="lastModified" value="1772541470481" />
+              <option name="schema">
+                <list>
+                  <option value="SignIn" />
+                </list>
+              </option>
             </ScannedPath>
           </value>
         </entry>
@@ -3206,7 +4137,7 @@
         <entry key="file://$PROJECT_DIR$/internal/rpc/webrtc_live/model/webrtcLesson.go">
           <value>
             <ScannedPath>
-              <option name="lastModified" value="1748577537373" />
+              <option name="lastModified" value="1772701199939" />
               <option name="schema">
                 <list>
                   <option value="WebrtcLesson" />
@@ -3222,130 +4153,34 @@
             </ScannedPath>
           </value>
         </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/agent.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/chat.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748572050781" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/chat_ws.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409210" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/live.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1749051368922" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/quiz.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1749466460861" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/quiz_ws.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1749467779349" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/user.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1749010609049" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/webrtc_live.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1749468174683" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/service/ws_global.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1749457566662" />
-              <option name="schema">
-                <list>
-                  <option value="Claims" />
-                </list>
-              </option>
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/cors/cors.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409211" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/cut/cut.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409211" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/filter/filter.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409211" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/hash/hash.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409211" />
-            </ScannedPath>
-          </value>
-        </entry>
-        <entry key="file://$PROJECT_DIR$/internal/utils/jwt/jwt.go">
-          <value>
-            <ScannedPath>
-              <option name="lastModified" value="1748569409211" />
-            </ScannedPath>
-          </value>
-        </entry>
       </map>
     </option>
     <option name="tableStructMapping">
       <map>
         <entry key="agent_service_chat_with_agent_args" value="AgentServiceChatWithAgentArgs" />
         <entry key="agent_service_chat_with_agent_result" value="AgentServiceChatWithAgentResult" />
+        <entry key="agent_service_client" value="AgentServiceClient" />
         <entry key="agent_service_del_all_user_conv_args" value="AgentServiceDelAllUserConvArgs" />
         <entry key="agent_service_del_all_user_conv_result" value="AgentServiceDelAllUserConvResult" />
         <entry key="agent_service_impl" value="AgentServiceImpl" />
         <entry key="agent_service_list_all_user_conv_args" value="AgentServiceListAllUserConvArgs" />
         <entry key="agent_service_list_all_user_conv_result" value="AgentServiceListAllUserConvResult" />
+        <entry key="agent_service_processor" value="AgentServiceProcessor" />
+        <entry key="agent_service_processor_chat_with_agent" value="agentServiceProcessorChatWithAgent" />
+        <entry key="agent_service_processor_del_all_user_conv" value="agentServiceProcessorDelAllUserConv" />
+        <entry key="agent_service_processor_list_all_user_conv" value="agentServiceProcessorListAllUserConv" />
         <entry key="answer" value="Answer" />
         <entry key="app_state" value="AppState" />
         <entry key="approve_hand_req" value="ApproveHandReq" />
         <entry key="approve_hand_resp" value="ApproveHandResp" />
+        <entry key="broadcast_bundle" value="BroadcastBundle" />
         <entry key="broadcast_req" value="BroadcastReq" />
         <entry key="broadcast_resp" value="BroadcastResp" />
         <entry key="change_user_in_live_req" value="ChangeUserInLiveReq" />
         <entry key="change_user_in_live_resp" value="ChangeUserInLiveResp" />
         <entry key="change_user_to_lesson_req" value="ChangeUserToLessonReq" />
         <entry key="change_user_to_lesson_resp" value="ChangeUserToLessonResp" />
+        <entry key="chat_service_client" value="ChatServiceClient" />
         <entry key="chat_service_del_history_args" value="ChatServiceDelHistoryArgs" />
         <entry key="chat_service_del_history_result" value="ChatServiceDelHistoryResult" />
         <entry key="chat_service_get_history_args" value="ChatServiceGetHistoryArgs" />
@@ -3353,6 +4188,10 @@
         <entry key="chat_service_impl" value="ChatServiceImpl" />
         <entry key="chat_service_live_chat_args" value="ChatServiceLiveChatArgs" />
         <entry key="chat_service_live_chat_result" value="ChatServiceLiveChatResult" />
+        <entry key="chat_service_processor" value="ChatServiceProcessor" />
+        <entry key="chat_service_processor_del_history" value="chatServiceProcessorDelHistory" />
+        <entry key="chat_service_processor_get_history" value="chatServiceProcessorGetHistory" />
+        <entry key="chat_service_processor_live_chat" value="chatServiceProcessorLiveChat" />
         <entry key="chat_with_agent_req" value="ChatWithAgentReq" />
         <entry key="chat_with_agent_resp" value="ChatWithAgentResp" />
         <entry key="claims" value="Claims" />
@@ -3370,6 +4209,8 @@
         <entry key="create_question_resp" value="CreateQuestionResp" />
         <entry key="create_sign_in_req" value="CreateSignInReq" />
         <entry key="create_sign_in_resp" value="CreateSignInResp" />
+        <entry key="data" value="Data" />
+        <entry key="db_manager" value="DBManager" />
         <entry key="del_all_user_conv_req" value="DelAllUserConvReq" />
         <entry key="del_all_user_conv_resp" value="DelAllUserConvResp" />
         <entry key="del_history_req" value="DelHistoryReq" />
@@ -3412,6 +4253,8 @@
         <entry key="k_user_service_client" value="kUserServiceClient" />
         <entry key="k_webrtc_live_client" value="kWebrtcLiveClient" />
         <entry key="lesson" value="Lesson" />
+        <entry key="lesson_event" value="LessonEvent" />
+        <entry key="lesson_student" value="LessonStudent" />
         <entry key="list_all_lesson_record_req" value="ListAllLessonRecordReq" />
         <entry key="list_all_lesson_record_resp" value="ListAllLessonRecordResp" />
         <entry key="list_all_user_conv_req" value="ListAllUserConvReq" />
@@ -3422,6 +4265,7 @@
         <entry key="live_service_change_user_in_live_result" value="LiveServiceChangeUserInLiveResult" />
         <entry key="live_service_change_user_to_lesson_args" value="LiveServiceChangeUserToLessonArgs" />
         <entry key="live_service_change_user_to_lesson_result" value="LiveServiceChangeUserToLessonResult" />
+        <entry key="live_service_client" value="LiveServiceClient" />
         <entry key="live_service_close_live_args" value="LiveServiceCloseLiveArgs" />
         <entry key="live_service_close_live_result" value="LiveServiceCloseLiveResult" />
         <entry key="live_service_create_live_args" value="LiveServiceCreateLiveArgs" />
@@ -3437,6 +4281,21 @@
         <entry key="live_service_impl" value="LiveServiceImpl" />
         <entry key="live_service_is_student_in_lesson_args" value="LiveServiceIsStudentInLessonArgs" />
         <entry key="live_service_is_student_in_lesson_result" value="LiveServiceIsStudentInLessonResult" />
+        <entry key="live_service_processor" value="LiveServiceProcessor" />
+        <entry key="live_service_processor_change_user_in_live" value="liveServiceProcessorChangeUserInLive" />
+        <entry key="live_service_processor_change_user_to_lesson" value="liveServiceProcessorChangeUserToLesson" />
+        <entry key="live_service_processor_close_live" value="liveServiceProcessorCloseLive" />
+        <entry key="live_service_processor_create_live" value="liveServiceProcessorCreateLive" />
+        <entry key="live_service_processor_create_sign_in" value="liveServiceProcessorCreateSignIn" />
+        <entry key="live_service_processor_del_sign" value="liveServiceProcessorDelSign" />
+        <entry key="live_service_processor_get_lesson_info" value="liveServiceProcessorGetLessonInfo" />
+        <entry key="live_service_processor_get_lesson_info_by_id" value="liveServiceProcessorGetLessonInfoById" />
+        <entry key="live_service_processor_is_student_in_lesson" value="liveServiceProcessorIsStudentInLesson" />
+        <entry key="live_service_processor_record_lesson" value="liveServiceProcessorRecordLesson" />
+        <entry key="live_service_processor_roll_call_in_random" value="liveServiceProcessorRollCallInRandom" />
+        <entry key="live_service_processor_select_lesson_info" value="liveServiceProcessorSelectLessonInfo" />
+        <entry key="live_service_processor_select_sign_in" value="liveServiceProcessorSelectSignIn" />
+        <entry key="live_service_processor_sign_in" value="liveServiceProcessorSignIn" />
         <entry key="live_service_record_lesson_args" value="LiveServiceRecordLessonArgs" />
         <entry key="live_service_record_lesson_result" value="LiveServiceRecordLessonResult" />
         <entry key="live_service_roll_call_in_random_args" value="LiveServiceRollCallInRandomArgs" />
@@ -3451,13 +4310,16 @@
         <entry key="login_req" value="LoginReq" />
         <entry key="login_resp" value="LoginResp" />
         <entry key="message" value="Message" />
+        <entry key="mic_bundle" value="MicBundle" />
         <entry key="mongo_config" value="MongoConfig" />
         <entry key="my_progress_listener" value="myProgressListener" />
         <entry key="mysql_config" value="MysqlConfig" />
         <entry key="option" value="Option" />
+        <entry key="outbox_event" value="OutboxEvent" />
         <entry key="publish_mic_req" value="PublishMicReq" />
         <entry key="publish_mic_resp" value="PublishMicResp" />
         <entry key="question" value="Question" />
+        <entry key="quiz_service_client" value="QuizServiceClient" />
         <entry key="quiz_service_create_question_args" value="QuizServiceCreateQuestionArgs" />
         <entry key="quiz_service_create_question_result" value="QuizServiceCreateQuestionResult" />
         <entry key="quiz_service_del_question_args" value="QuizServiceDelQuestionArgs" />
@@ -3465,6 +4327,11 @@
         <entry key="quiz_service_get_all_lesson_quiz_args" value="QuizServiceGetAllLessonQuizArgs" />
         <entry key="quiz_service_get_all_lesson_quiz_result" value="QuizServiceGetAllLessonQuizResult" />
         <entry key="quiz_service_impl" value="QuizServiceImpl" />
+        <entry key="quiz_service_processor" value="QuizServiceProcessor" />
+        <entry key="quiz_service_processor_create_question" value="quizServiceProcessorCreateQuestion" />
+        <entry key="quiz_service_processor_del_question" value="quizServiceProcessorDelQuestion" />
+        <entry key="quiz_service_processor_get_all_lesson_quiz" value="quizServiceProcessorGetAllLessonQuiz" />
+        <entry key="quiz_service_processor_tor_f_answer" value="quizServiceProcessorTorFAnswer" />
         <entry key="quiz_service_tor_f_answer_args" value="QuizServiceTorFAnswerArgs" />
         <entry key="quiz_service_tor_f_answer_result" value="QuizServiceTorFAnswerResult" />
         <entry key="raise_hand_req" value="RaiseHandReq" />
@@ -3472,12 +4339,14 @@
         <entry key="record_lesson_req" value="RecordLessonReq" />
         <entry key="record_lesson_resp" value="RecordLessonResp" />
         <entry key="redis_config" value="RedisConfig" />
+        <entry key="register_param" value="RegisterParam" />
         <entry key="register_req" value="RegisterReq" />
         <entry key="register_resp" value="RegisterResp" />
         <entry key="resp" value="Resp" />
         <entry key="response" value="Response" />
         <entry key="roll_call_in_random_req" value="RollCallInRandomReq" />
         <entry key="roll_call_in_random_resp" value="RollCallInRandomResp" />
+        <entry key="row" value="row" />
         <entry key="save_white_board_json_req" value="SaveWhiteBoardJsonReq" />
         <entry key="save_white_board_json_resp" value="SaveWhiteBoardJsonResp" />
         <entry key="select_lesson_info_req" value="SelectLessonInfoReq" />
@@ -3494,6 +4363,7 @@
         <entry key="tor_f_answer_resp" value="TorFAnswerResp" />
         <entry key="user" value="User" />
         <entry key="user_message" value="UserMessage" />
+        <entry key="user_service_client" value="UserServiceClient" />
         <entry key="user_service_get_user_info_args" value="UserServiceGetUserInfoArgs" />
         <entry key="user_service_get_user_info_byname_args" value="UserServiceGetUserInfoBynameArgs" />
         <entry key="user_service_get_user_info_byname_result" value="UserServiceGetUserInfoBynameResult" />
@@ -3501,6 +4371,11 @@
         <entry key="user_service_impl" value="UserServiceImpl" />
         <entry key="user_service_login_args" value="UserServiceLoginArgs" />
         <entry key="user_service_login_result" value="UserServiceLoginResult" />
+        <entry key="user_service_processor" value="UserServiceProcessor" />
+        <entry key="user_service_processor_get_user_info" value="userServiceProcessorGetUserInfo" />
+        <entry key="user_service_processor_get_user_info_byname" value="userServiceProcessorGetUserInfoByname" />
+        <entry key="user_service_processor_login" value="userServiceProcessorLogin" />
+        <entry key="user_service_processor_register" value="userServiceProcessorRegister" />
         <entry key="user_service_register_args" value="UserServiceRegisterArgs" />
         <entry key="user_service_register_result" value="UserServiceRegisterResult" />
         <entry key="view_mic_req" value="ViewMicReq" />
@@ -3516,6 +4391,7 @@
         <entry key="webrtc_live_change_user_in_live_result" value="WebrtcLiveChangeUserInLiveResult" />
         <entry key="webrtc_live_change_user_to_lesson_args" value="WebrtcLiveChangeUserToLessonArgs" />
         <entry key="webrtc_live_change_user_to_lesson_result" value="WebrtcLiveChangeUserToLessonResult" />
+        <entry key="webrtc_live_client" value="WebrtcLiveClient" />
         <entry key="webrtc_live_create_lesson_args" value="WebrtcLiveCreateLessonArgs" />
         <entry key="webrtc_live_create_lesson_result" value="WebrtcLiveCreateLessonResult" />
         <entry key="webrtc_live_create_sign_in_args" value="WebrtcLiveCreateSignInArgs" />
@@ -3539,6 +4415,32 @@
         <entry key="webrtc_live_is_student_in_lesson_result" value="WebrtcLiveIsStudentInLessonResult" />
         <entry key="webrtc_live_list_all_lesson_record_args" value="WebrtcLiveListAllLessonRecordArgs" />
         <entry key="webrtc_live_list_all_lesson_record_result" value="WebrtcLiveListAllLessonRecordResult" />
+        <entry key="webrtc_live_processor" value="WebrtcLiveProcessor" />
+        <entry key="webrtc_live_processor_approve_hand" value="webrtcLiveProcessorApproveHand" />
+        <entry key="webrtc_live_processor_broadcast" value="webrtcLiveProcessorBroadcast" />
+        <entry key="webrtc_live_processor_change_user_in_live" value="webrtcLiveProcessorChangeUserInLive" />
+        <entry key="webrtc_live_processor_change_user_to_lesson" value="webrtcLiveProcessorChangeUserToLesson" />
+        <entry key="webrtc_live_processor_create_lesson" value="webrtcLiveProcessorCreateLesson" />
+        <entry key="webrtc_live_processor_create_sign_in" value="webrtcLiveProcessorCreateSignIn" />
+        <entry key="webrtc_live_processor_del_lesson" value="webrtcLiveProcessorDelLesson" />
+        <entry key="webrtc_live_processor_del_sign" value="webrtcLiveProcessorDelSign" />
+        <entry key="webrtc_live_processor_get_lesson_info" value="webrtcLiveProcessorGetLessonInfo" />
+        <entry key="webrtc_live_processor_get_lesson_info_by_id" value="webrtcLiveProcessorGetLessonInfoById" />
+        <entry key="webrtc_live_processor_get_lesson_record" value="webrtcLiveProcessorGetLessonRecord" />
+        <entry key="webrtc_live_processor_get_raise_hand" value="webrtcLiveProcessorGetRaiseHand" />
+        <entry key="webrtc_live_processor_get_white_board_json" value="webrtcLiveProcessorGetWhiteBoardJson" />
+        <entry key="webrtc_live_processor_is_student_in_lesson" value="webrtcLiveProcessorIsStudentInLesson" />
+        <entry key="webrtc_live_processor_list_all_lesson_record" value="webrtcLiveProcessorListAllLessonRecord" />
+        <entry key="webrtc_live_processor_publish_mic" value="webrtcLiveProcessorPublishMic" />
+        <entry key="webrtc_live_processor_raise_hand" value="webrtcLiveProcessorRaiseHand" />
+        <entry key="webrtc_live_processor_record_lesson" value="webrtcLiveProcessorRecordLesson" />
+        <entry key="webrtc_live_processor_roll_call_in_random" value="webrtcLiveProcessorRollCallInRandom" />
+        <entry key="webrtc_live_processor_save_white_board_json" value="webrtcLiveProcessorSaveWhiteBoardJson" />
+        <entry key="webrtc_live_processor_select_lesson_info" value="webrtcLiveProcessorSelectLessonInfo" />
+        <entry key="webrtc_live_processor_select_sign_in" value="webrtcLiveProcessorSelectSignIn" />
+        <entry key="webrtc_live_processor_sign_in" value="webrtcLiveProcessorSignIn" />
+        <entry key="webrtc_live_processor_view" value="webrtcLiveProcessorView" />
+        <entry key="webrtc_live_processor_view_mic" value="webrtcLiveProcessorViewMic" />
         <entry key="webrtc_live_publish_mic_args" value="WebrtcLivePublishMicArgs" />
         <entry key="webrtc_live_publish_mic_result" value="WebrtcLivePublishMicResult" />
         <entry key="webrtc_live_raise_hand_args" value="WebrtcLiveRaiseHandArgs" />
@@ -3561,6 +4463,6 @@
         <entry key="webrtc_live_view_result" value="WebrtcLiveViewResult" />
       </map>
     </option>
-    <option name="lastTimeChecked" value="1749702850776" />
+    <option name="lastTimeChecked" value="1772699527242" />
   </component>
 </project>

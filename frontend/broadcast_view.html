@@ -16,18 +16,13 @@
             --muted-text: #777777;
             --shadow: rgba(0, 0, 0, 0.1);
 
-            /* 大尺寸布局 */
-            --video-width: 48%;           /* 本地和远端视频各占48% */
-            --video-height: 500px;        /* 视频高度增大 */
-            --whiteboard-height: 600px;   /* 白板高度增大 */
-            --media-gap: 1rem;            /* 媒体间距 */
+            --video-width: 48%;
+            --video-height: 500px;
+            --whiteboard-height: 600px;
+            --media-gap: 1rem;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             background-color: var(--background-color);
@@ -37,10 +32,7 @@
             padding: 2rem;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
+        .container { max-width: 1400px; margin: 0 auto; }
 
         h2 {
             text-align: center;
@@ -49,7 +41,6 @@
             margin-bottom: 1.5rem;
         }
 
-        /* 卡片式分区 */
         .section {
             background-color: var(--card-background);
             border-radius: var(--border-radius);
@@ -58,13 +49,8 @@
             margin-bottom: 1.5rem;
         }
 
-        .section h3,
-        .section h4 {
-            margin-bottom: 1rem;
-            color: var(--heading-color);
-        }
+        .section h3, .section h4 { margin-bottom: 1rem; color: var(--heading-color); }
 
-        /* 基本参数 */
         .form-row {
             display: flex;
             flex-wrap: wrap;
@@ -80,8 +66,7 @@
             flex: 1 1 250px;
         }
 
-        .form-row input,
-        .form-row select {
+        .form-row input, .form-row select {
             margin-top: 0.3rem;
             padding: 0.6rem 0.8rem;
             font-size: 1rem;
@@ -91,12 +76,8 @@
             transition: border-color 0.2s;
         }
 
-        .form-row input:focus,
-        .form-row select:focus {
-            border-color: var(--primary-color);
-        }
+        .form-row input:focus, .form-row select:focus { border-color: var(--primary-color); }
 
-        /* 按钮组 */
         .button-group {
             display: flex;
             flex-wrap: wrap;
@@ -116,17 +97,13 @@
             transition: background-color 0.2s, transform 0.1s;
         }
 
-        .button-group button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
+        .button-group button:disabled { background-color: #cccccc; cursor: not-allowed; }
 
         .button-group button:hover:not(:disabled) {
             background-color: var(--primary-hover);
             transform: translateY(-1px);
         }
 
-        /* 视频和音频区域 */
         .media-row {
             display: flex;
             flex-wrap: wrap;
@@ -135,24 +112,16 @@
             margin-bottom: 1.5rem;
         }
 
-        .media-row video,
-        .media-row audio {
+        .media-row video, .media-row audio {
             flex: 1 1 var(--video-width);
             background-color: #000;
             border-radius: var(--border-radius);
             box-shadow: 0 1px 6px var(--shadow);
         }
 
-        .media-row video {
-            height: var(--video-height);
-            object-fit: cover;
-        }
+        .media-row video { height: var(--video-height); object-fit: cover; }
+        .media-row audio { height: 3rem; }
 
-        .media-row audio {
-            height: 3rem; /* 音频播放器保持合适高度 */
-        }
-
-        /* Excalidraw 白板 */
         #whiteboard {
             width: 100%;
             height: var(--whiteboard-height);
@@ -162,18 +131,9 @@
             margin-top: 0.5rem;
         }
 
-        #whiteboard iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
+        #whiteboard iframe { width: 100%; height: 100%; border: none; }
 
-        /* 学生 & 教师 控制区 */
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
+        .controls { display: flex; flex-wrap: wrap; gap: 1rem; }
 
         .controls button {
             flex: 1 1 180px;
@@ -187,20 +147,11 @@
             cursor: pointer;
         }
 
-        .controls button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
+        .controls button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .controls button:hover:not(:disabled) { background-color: #2980b9; }
 
-        .controls button:hover:not(:disabled) {
-            background-color: #2980b9;
-        }
+        .hidden { display: none !important; }
 
-        .hidden {
-            display: none !important;
-        }
-
-        /* 待审批举手列表 */
         #raiseList div {
             display: flex;
             align-items: center;
@@ -212,10 +163,7 @@
             margin-bottom: 0.7rem;
         }
 
-        #raiseList span {
-            font-size: 1rem;
-            color: var(--text-color);
-        }
+        #raiseList span { font-size: 1rem; color: var(--text-color); }
 
         #raiseList .appr {
             background-color: #e67e22;
@@ -228,287 +176,475 @@
             transition: background-color 0.2s;
         }
 
-        #raiseList .appr:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+        #raiseList .appr:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #raiseList .appr:hover:not(:disabled) { background-color: #d35400; }
+
+        .debug {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+            color: #222;
+            background: #f7f7f7;
+            border: 1px solid #e6e6e6;
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 260px;
+            overflow: auto;
         }
 
-        #raiseList .appr:hover:not(:disabled) {
-            background-color: #d35400;
-        }
-
-        /* 响应式 */
         @media (max-width: 1024px) {
-            .media-row video,
-            .media-row audio {
-                flex: 1 1 100%;
-                height: auto;
-            }
-            .button-group button,
-            .controls button {
-                flex: 1 1 100%;
-            }
+            .media-row video, .media-row audio { flex: 1 1 100%; height: auto; }
+            .button-group button, .controls button { flex: 1 1 100%; }
         }
 
         @media (max-width: 768px) {
-            :root {
-                --video-height: 300px;
-                --whiteboard-height: 400px;
-            }
+            :root { --video-height: 300px; --whiteboard-height: 400px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>LiveClass</h2>
+<div class="container">
+    <h2>LiveClass</h2>
 
-        <!-- 基本参数区 -->
-        <div class="section">
-            <div class="form-row">
-                <label>
-                    Lesson ID:
-                    <input id="lessonID" type="text" value="123" placeholder="请输入课程ID" />
-                </label>
-                <label>
-                    JWT Token:
-                    <input id="token" type="text" placeholder="your.jwt.token" />
-                </label>
-                <label>
-                    类型:
-                    <select id="broadcastType">
-                        <option value="camera">摄像头</option>
-                        <option value="screen">屏幕共享</option>
-                    </select>
-                </label>
-            </div>
-            <div class="button-group">
-                <button id="startBroadcast">老师开播</button>
-                <button id="stopBroadcast" disabled>停止并上传录像</button>
-                <button id="startView">学生观看</button>
-            </div>
+    <div class="section">
+        <div class="form-row">
+            <label>
+                Lesson ID:
+                <input id="lessonID" type="text" value="123" placeholder="请输入课程ID" />
+            </label>
+            <label>
+                JWT Token:
+                <input id="token" type="text" placeholder="your.jwt.token" />
+            </label>
+            <label>
+                类型:
+                <select id="broadcastType">
+                    <option value="camera">摄像头</option>
+                    <option value="screen">屏幕共享</option>
+                </select>
+            </label>
         </div>
-
-        <!-- 媒体展示区 -->
-        <div class="section">
-            <div class="media-row">
-                <video id="localVideo" autoplay muted playsinline></video>
-                <video id="remoteVideo" autoplay playsinline controls></video>
-                <audio id="teacherAudio" controls autoplay playsinline class="hidden"></audio>
-            </div>
-        </div>
-
-        <!-- Excalidraw 白板区 -->
-        <div class="section">
-            <h3>Excalidraw 白板</h3>
-            <div id="whiteboard"><iframe allow="clipboard-read; clipboard-write"></iframe></div>
-        </div>
-
-        <!-- 学生控件区 -->
-        <div id="studentControls" class="section controls">
-            <button id="btnRaiseHand">举手</button>
-            <button id="btnPublishMic" disabled>上麦（推音频）</button>
-        </div>
-
-        <!-- 教师审批区 -->
-        <div id="teacherControls" class="section hidden">
-            <h4>待审批举手（自动更新）</h4>
-            <div id="raiseList"></div>
-        </div>
-
-        <!-- 拉取连麦并合流区 -->
-        <div id="pullMicControls" class="section hidden">
-            <button id="btnPullMicAll">拉取连麦并合流</button>
+        <div class="button-group">
+            <button id="startBroadcast">老师开播</button>
+            <button id="stopBroadcast" disabled>停止并上传录像</button>
+            <button id="startView">学生观看</button>
         </div>
     </div>
 
-    <script>
-        (async () => {
-            function encodeSDP(desc) {
-                const s = JSON.stringify(desc);
-                const l = unescape(encodeURIComponent(s));
-                return btoa(l);
-            }
-            function decodeSDP(b64) {
-                const l = atob(b64);
-                const s = decodeURIComponent(escape(l));
-                return JSON.parse(s);
-            }
+    <div class="section">
+        <div class="media-row">
+            <video id="localVideo" autoplay muted playsinline></video>
+            <video id="remoteVideo" autoplay playsinline controls></video>
+            <audio id="teacherAudio" controls autoplay playsinline class="hidden"></audio>
+        </div>
+    </div>
 
-            const lessonID   = document.getElementById('lessonID');
-            const tokenInput = document.getElementById('token');
-            const bcType     = document.getElementById('broadcastType');
-            const startB     = document.getElementById('startBroadcast');
-            const stopB      = document.getElementById('stopBroadcast');
-            const startV     = document.getElementById('startView');
-            const localVid   = document.getElementById('localVideo');
-            const remoteVid  = document.getElementById('remoteVideo');
-            const teacherAud = document.getElementById('teacherAudio');
-            const wbDiv      = document.getElementById('whiteboard');
-            const wbIframe   = wbDiv.querySelector('iframe');
-            const btnRaise   = document.getElementById('btnRaiseHand');
-            const btnPubMic  = document.getElementById('btnPublishMic');
-            const raiseList  = document.getElementById('raiseList');
-            const stuCtrls   = document.getElementById('studentControls');
-            const teaCtrls   = document.getElementById('teacherControls');
-            const pullCtrls  = document.getElementById('pullMicControls');
-            const pullBtn    = document.getElementById('btnPullMicAll');
+    <div class="section">
+        <h3>Excalidraw 白板</h3>
+        <div id="whiteboard"><iframe allow="clipboard-read; clipboard-write"></iframe></div>
+    </div>
 
-            let pc, localStream, recorder, doRecord;
-            let pcMic, pcTeacherPull, pollInterval, recordChunks = [];
+    <div id="studentControls" class="section controls">
+        <button id="btnRaiseHand">举手</button>
+        <button id="btnPublishMic" disabled>上麦（推音频）</button>
+    </div>
 
-            async function api(url, opts = {}) {
-                opts.headers = Object.assign({ 'Authorization': 'Bearer ' + tokenInput.value }, opts.headers || {});
-                const res = await fetch(url, opts);
-                const js = await res.json();
-                if (js.resp.code !== 0) throw new Error(js.resp.msg);
-                return js.resp.data;
+    <div id="teacherControls" class="section hidden">
+        <h4>待审批举手（自动更新）</h4>
+        <div id="raiseList"></div>
+    </div>
+
+    <div id="pullMicControls" class="section hidden">
+        <button id="btnPullMicAll">拉取连麦并合流</button>
+    </div>
+
+    <div class="section">
+        <h3>Debug</h3>
+        <div id="debug" class="debug"></div>
+    </div>
+</div>
+
+<script>
+    (async () => {
+        // ===== SDP 编解码 =====
+        function encodeSDP(desc) {
+            const s = JSON.stringify(desc);
+            const l = unescape(encodeURIComponent(s));
+            return btoa(l);
+        }
+        function decodeSDP(b64) {
+            const l = atob(b64);
+            const s = decodeURIComponent(escape(l));
+            return JSON.parse(s);
+        }
+
+        // ===== DOM =====
+        const lessonID   = document.getElementById('lessonID');
+        const tokenInput = document.getElementById('token');
+        const bcType     = document.getElementById('broadcastType');
+        const startB     = document.getElementById('startBroadcast');
+        const stopB      = document.getElementById('stopBroadcast');
+        const startV     = document.getElementById('startView');
+        const localVid   = document.getElementById('localVideo');
+        const remoteVid  = document.getElementById('remoteVideo');
+        const teacherAud = document.getElementById('teacherAudio');
+        const wbDiv      = document.getElementById('whiteboard');
+        const wbIframe   = wbDiv.querySelector('iframe');
+        const btnRaise   = document.getElementById('btnRaiseHand');
+        const btnPubMic  = document.getElementById('btnPublishMic');
+        const raiseList  = document.getElementById('raiseList');
+        const stuCtrls   = document.getElementById('studentControls');
+        const teaCtrls   = document.getElementById('teacherControls');
+        const pullCtrls  = document.getElementById('pullMicControls');
+        const pullBtn    = document.getElementById('btnPullMicAll');
+        const dbg        = document.getElementById('debug');
+
+        function logd(...args) {
+            const line = args.map(a => {
+                try { return typeof a === 'string' ? a : JSON.stringify(a); }
+                catch { return String(a); }
+            }).join(' ');
+            console.log(line);
+            dbg.textContent += line + '\n';
+            dbg.scrollTop = dbg.scrollHeight;
+        }
+
+        // ===== 状态 =====
+        let pc = null;
+        let localStream = null;
+        let recorder = null;
+        let doRecord = false;
+        let recordChunks = [];
+        let pcMic = null;
+        let pcTeacherPull = null;
+        let pollInterval = null;
+        let statsTimer = null;
+
+        // viewer 用固定 stream，绝不重复 replace
+        let remoteMediaStream = null;
+        let remoteVideoTrackId = null;
+        let remoteAudioTrackId = null;
+
+        // ===== 通用响应解析 =====
+        function unwrapResp(json) {
+            const r = json && (json.resp || json.Resp || json.response);
+            if (!r) throw new Error('后端响应格式错误：缺少 resp');
+            const code = Number(r.code ?? r.Code ?? 0);
+            const msg  = String(r.msg ?? r.Msg ?? '');
+            if (code !== 0) throw new Error(msg || ('请求失败 code=' + code));
+            return r.data ?? r.Data ?? null;
+        }
+
+        async function api(url, opts = {}) {
+            const headers = Object.assign({}, opts.headers || {});
+            headers['Authorization'] = 'Bearer ' + (tokenInput.value || '');
+            opts.headers = headers;
+
+            const res = await fetch(url, opts);
+            const text = await res.text();
+
+            let js;
+            try { js = JSON.parse(text); }
+            catch { throw new Error('后端返回非 JSON：' + text.slice(0, 200)); }
+
+            return unwrapResp(js);
+        }
+
+        function showWB() {
+            wbIframe.src = `https://excalidraw.com/#room=${encodeURIComponent(lessonID.value)}`;
+            wbDiv.style.display = 'block';
+        }
+
+        function hideWB() {
+            wbDiv.style.display = 'none';
+            wbIframe.src = '';
+        }
+
+        async function getStream() {
+            if (bcType.value === 'camera') {
+                return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            } else {
+                const screen = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const ms = new MediaStream();
+                screen.getVideoTracks().forEach(t => ms.addTrack(t));
+                mic.getAudioTracks().forEach(t => ms.addTrack(t));
+                return ms;
             }
+        }
 
-            function showWB() {
-                // 直接使用输入框里的 lessonID 作为 roomId
-                wbIframe.src = `https://excalidraw.com/#room=${encodeURIComponent(lessonID.value)}`;
-                wbDiv.style.display = 'block';
+        function stopStats() {
+            if (statsTimer) {
+                clearInterval(statsTimer);
+                statsTimer = null;
             }
-            function hideWB() {
-                wbDiv.style.display = 'none';
-                wbIframe.src = '';
-            }
+        }
 
-            async function getStream() {
-                if (bcType.value === 'camera') {
-                    return navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                } else {
-                    const screen = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                    const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    const ms = new MediaStream();
-                    screen.getVideoTracks().forEach(t => ms.addTrack(t));
-                    mic.getAudioTracks().forEach(t => ms.addTrack(t));
-                    return ms;
-                }
-            }
-
-            function makePC(recvOnly = false) {
-                if (pc) pc.close();
-                pc = new RTCPeerConnection({ iceServers: [] });
-                pc.onicecandidate = e => { if (!e.candidate) console.log('ICE done'); };
-                pc.oniceconnectionstatechange = () => console.log('ICE→', pc.iceConnectionState);
-                if (recvOnly) {
-                    const ms = new MediaStream();
-                    remoteVid.srcObject = ms;
-                    remoteVid.muted = false;
-                    pc.addTransceiver('video', { direction: 'recvonly' });
-                    pc.addTransceiver('audio', { direction: 'recvonly' });
-                    pc.ontrack = ev => ms.addTrack(ev.track);
-                }
-                return pc;
-            }
-
-            async function doOffer(send) {
-                if (send) {
-                    localStream = await getStream();
-                    localVid.srcObject = localStream;
-                    makePC(false);
-                    localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
-                } else {
-                    makePC(true);
-                }
-                const of = await pc.createOffer();
-                await pc.setLocalDescription(of);
-                await new Promise(r => pc.onicecandidate = e => !e.candidate && r());
-                return encodeSDP(pc.localDescription);
-            }
-
-            async function recvAnswer(b64) {
-                let raw = b64.trim();
-                if (raw.startsWith('"')) raw = JSON.parse(raw);
-                const desc = decodeSDP(raw);
-                await pc.setRemoteDescription(desc);
-            }
-
-            async function pollRaise() {
+        function startInboundStats(label) {
+            stopStats();
+            statsTimer = setInterval(async () => {
                 try {
-                    const data = await api(
-                        `http://127.0.0.1:80/get_raise_hand?lesson_id=${encodeURIComponent(lessonID.value)}`,
-                        { method: 'GET' }
+                    if (!pc) return;
+                    const stats = await pc.getStats();
+
+                    let v = null;
+                    let a = null;
+
+                    stats.forEach(r => {
+                        if (r.type === 'inbound-rtp' && (r.kind === 'video' || r.mediaType === 'video')) {
+                            v = {
+                                bytes: r.bytesReceived,
+                                packets: r.packetsReceived,
+                                framesDecoded: r.framesDecoded,
+                                framesReceived: r.framesReceived,
+                                pli: r.pliCount,
+                                nack: r.nackCount
+                            };
+                        }
+                        if (r.type === 'inbound-rtp' && (r.kind === 'audio' || r.mediaType === 'audio')) {
+                            a = {
+                                bytes: r.bytesReceived,
+                                packets: r.packetsReceived
+                            };
+                        }
+                    });
+
+                    if (v) logd(`[${label}] VIDEO`, v);
+                    if (a) logd(`[${label}] AUDIO`, a);
+                } catch {}
+            }, 1000);
+        }
+
+        function resetRemoteStream() {
+            remoteMediaStream = new MediaStream();
+            remoteVideoTrackId = null;
+            remoteAudioTrackId = null;
+
+            remoteVid.srcObject = remoteMediaStream;
+            remoteVid.autoplay = true;
+            remoteVid.playsInline = true;
+            remoteVid.muted = true; // 先静音，保证 autoplay 稳定
+        }
+
+        function makePC(recvOnly = false, tag = '') {
+            if (pc) {
+                try { pc.close(); } catch {}
+            }
+
+            pc = new RTCPeerConnection({ iceServers: [] });
+
+            pc.onicecandidate = e => {
+                if (!e.candidate) logd(`[${tag}] ICE done`);
+            };
+            pc.oniceconnectionstatechange = () => logd(`[${tag}] ICE→`, pc.iceConnectionState);
+            pc.onconnectionstatechange = () => logd(`[${tag}] PC→`, pc.connectionState);
+            pc.onsignalingstatechange = () => logd(`[${tag}] Signal→`, pc.signalingState);
+
+            if (recvOnly) {
+                resetRemoteStream();
+
+                pc.addTransceiver('video', { direction: 'recvonly' });
+                pc.addTransceiver('audio', { direction: 'recvonly' });
+
+                pc.ontrack = (ev) => {
+                    logd(`[${tag}] ontrack`, ev.track.kind, ev.track.id, `streams=${ev.streams?.length || 0}`);
+
+                    // 关键：不再重绑 srcObject，只往固定的 MediaStream 里加 track
+                    if (ev.track.kind === 'video') {
+                        if (remoteVideoTrackId !== ev.track.id) {
+                            // 移除旧视频轨
+                            remoteMediaStream.getVideoTracks().forEach(t => remoteMediaStream.removeTrack(t));
+                            remoteMediaStream.addTrack(ev.track);
+                            remoteVideoTrackId = ev.track.id;
+                            logd(`[${tag}] add video track -> fixed remoteMediaStream`);
+                        }
+                    }
+
+                    if (ev.track.kind === 'audio') {
+                        if (remoteAudioTrackId !== ev.track.id) {
+                            remoteMediaStream.getAudioTracks().forEach(t => remoteMediaStream.removeTrack(t));
+                            remoteMediaStream.addTrack(ev.track);
+                            remoteAudioTrackId = ev.track.id;
+                            logd(`[${tag}] add audio track -> fixed remoteMediaStream`);
+                        }
+                    }
+
+                    remoteVid.play().then(() => {
+                        logd(`[${tag}] remoteVid.play() ok`);
+                    }).catch(err => {
+                        logd(`[${tag}] remoteVid.play blocked`, err?.message || err);
+                    });
+                };
+
+                remoteVid.onloadedmetadata = () => {
+                    logd(
+                        `[${tag}] loadedmetadata`,
+                        `w=${remoteVid.videoWidth}`,
+                        `h=${remoteVid.videoHeight}`,
+                        `readyState=${remoteVid.readyState}`
                     );
-                    const list = data ? data.split('/') : [];
-                    raiseList.innerHTML = list.map(id => `
-                        <div>
-                            <span>${id}</span>
-                            <button class="appr" data-id="${id}">同意</button>
-                        </div>
-                    `).join('');
-                    document.querySelectorAll('.appr').forEach(b => {
-                        b.onclick = async () => {
+                };
+
+                remoteVid.oncanplay = () => {
+                    logd(`[${tag}] canplay readyState=${remoteVid.readyState}`);
+                };
+
+                remoteVid.onplaying = () => {
+                    logd(`[${tag}] playing w=${remoteVid.videoWidth} h=${remoteVid.videoHeight}`);
+                };
+            }
+
+            return pc;
+        }
+
+        async function doOffer(send, tag) {
+            if (send) {
+                localStream = await getStream();
+                localVid.srcObject = localStream;
+                makePC(false, tag);
+                localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+            } else {
+                makePC(true, tag);
+            }
+
+            const of = await pc.createOffer();
+            await pc.setLocalDescription(of);
+
+            await new Promise(resolve => {
+                const prev = pc.onicecandidate;
+                pc.onicecandidate = e => {
+                    if (prev) prev(e);
+                    if (!e.candidate) resolve();
+                };
+            });
+
+            return encodeSDP(pc.localDescription);
+        }
+
+        async function recvAnswer(any) {
+            let raw = any;
+            if (raw && typeof raw === 'object') {
+                raw = raw.sdp ?? raw.Sdp ?? raw.text ?? raw.Text;
+            }
+            if (typeof raw !== 'string') throw new Error('Answer SDP 为空或格式错误');
+
+            raw = raw.trim();
+            if (raw.startsWith('"')) raw = JSON.parse(raw);
+
+            const desc = decodeSDP(raw);
+            await pc.setRemoteDescription(desc);
+
+            setTimeout(() => {
+                remoteVid.play().catch(() => {});
+            }, 50);
+        }
+
+        async function pollRaise() {
+            try {
+                const data = await api(
+                    `http://127.0.0.1:80/get_raise_hand?lesson_id=${encodeURIComponent(lessonID.value)}`,
+                    { method: 'GET' }
+                );
+
+                const text = (data && (data.text ?? data.Text)) || '';
+                const list = text ? text.split('/').filter(Boolean) : [];
+
+                raiseList.innerHTML = list.map(id => `
+        <div>
+          <span>${id}</span>
+          <button class="appr" data-id="${id}">同意</button>
+        </div>
+      `).join('');
+
+                document.querySelectorAll('.appr').forEach(b => {
+                    b.onclick = async () => {
+                        try {
                             const f = new FormData();
                             f.append('lesson_id', lessonID.value);
                             f.append('stuid', b.dataset.id);
                             await api('http://127.0.0.1:80/approve_hand', { method: 'PUT', body: f });
                             b.disabled = true;
-                        };
-                    });
-                } catch (e) { console.warn(e); }
-            }
-
-            async function doPublishMic() {
-                const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
-                if (pcMic) pcMic.close();
-                pcMic = new RTCPeerConnection({ iceServers: [] });
-                ms.getAudioTracks().forEach(t => pcMic.addTrack(t, ms));
-
-                const of = await pcMic.createOffer();
-                await pcMic.setLocalDescription(of);
-                await new Promise(r => pcMic.onicecandidate = e => !e.candidate && r());
-                const b64 = encodeSDP(pcMic.localDescription);
-                const f = new FormData();
-                f.append('lesson_id', lessonID.value);
-                f.append('b64offer', b64);
-                const ans = await api('http://127.0.0.1:80/publish_mic', { method: 'POST', body: f });
-
-                let raw = ans.trim();
-                if (raw.startsWith('"')) raw = JSON.parse(raw);
-                await pcMic.setRemoteDescription(decodeSDP(raw));
-                await new Promise(r => setTimeout(r, 500));
-            }
-
-            async function teacherPullMic() {
-                try {
-                    if (pcTeacherPull) { pcTeacherPull.close(); pcTeacherPull = null; }
-                    pcTeacherPull = new RTCPeerConnection({ iceServers: [] });
-                    pcTeacherPull.addTransceiver('audio', { direction: 'recvonly' });
-
-                    const ms = new MediaStream();
-                    teacherAud.srcObject = ms;
-                    teacherAud.classList.remove('hidden');
-                    teacherAud.muted = false;
-                    teacherAud.volume = 1.0;
-
-                    pcTeacherPull.ontrack = ev => {
-                        ms.addTrack(ev.track);
-                        teacherAud.play().catch(err => {
-                            console.warn('Audio play 被阻塞:', err);
-                        });
+                        } catch (e) {
+                            alert(e.message);
+                        }
                     };
+                });
+            } catch (e) {
+                logd('[pollRaise] warn', e?.message || e);
+            }
+        }
 
-                    const of = await pcTeacherPull.createOffer();
-                    await pcTeacherPull.setLocalDescription(of);
-                    await new Promise(r => pcTeacherPull.onicecandidate = e => !e.candidate && r());
-                    const b64 = encodeSDP(pcTeacherPull.localDescription);
+        async function doPublishMic() {
+            const ms = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                    const f = new FormData();
-                    f.append('lesson_id', lessonID.value);
-                    f.append('b64offer', b64);
-                    let raw = (await api('http://127.0.0.1:80/view_mic', { method: 'POST', body: f })).trim();
-                    if (raw.startsWith('"')) raw = JSON.parse(raw);
-                    await pcTeacherPull.setRemoteDescription(decodeSDP(raw));
-                } catch (err) {
-                    console.error('teacherPullMic 错误:', err);
-                }
+            if (pcMic) pcMic.close();
+            pcMic = new RTCPeerConnection({ iceServers: [] });
+            ms.getAudioTracks().forEach(t => pcMic.addTrack(t, ms));
+
+            const of = await pcMic.createOffer();
+            await pcMic.setLocalDescription(of);
+            await new Promise(r => pcMic.onicecandidate = e => !e.candidate && r());
+
+            const b64 = encodeSDP(pcMic.localDescription);
+            const f = new FormData();
+            f.append('lesson_id', lessonID.value);
+            f.append('b64offer', b64);
+
+            const data = await api('http://127.0.0.1:80/publish_mic', { method: 'POST', body: f });
+            const sdp = data && (data.sdp ?? data.Sdp);
+            if (!sdp) throw new Error('publish_mic: 后端未返回 data.sdp');
+
+            await pcMic.setRemoteDescription(
+                decodeSDP(sdp.trim().startsWith('"') ? JSON.parse(sdp) : sdp)
+            );
+        }
+
+        async function pullMicAll() {
+            if (pcTeacherPull) {
+                pcTeacherPull.close();
+                pcTeacherPull = null;
             }
 
-            // —— 1. 老师开播
-            startB.onclick = async () => {
-                if (!lessonID.value || !tokenInput.value) return alert('请填写 Lesson ID 与 Token');
+            pcTeacherPull = new RTCPeerConnection({ iceServers: [] });
+            pcTeacherPull.addTransceiver('audio', { direction: 'recvonly' });
+
+            const ms = new MediaStream();
+            teacherAud.srcObject = ms;
+            teacherAud.classList.remove('hidden');
+            teacherAud.muted = false;
+            teacherAud.volume = 1.0;
+
+            pcTeacherPull.ontrack = ev => {
+                ms.addTrack(ev.track);
+                teacherAud.play().catch(err => logd('[mic pull] play blocked', err?.message || err));
+            };
+
+            const of = await pcTeacherPull.createOffer();
+            await pcTeacherPull.setLocalDescription(of);
+            await new Promise(r => pcTeacherPull.onicecandidate = e => !e.candidate && r());
+
+            const b64 = encodeSDP(pcTeacherPull.localDescription);
+            const f = new FormData();
+            f.append('lesson_id', lessonID.value);
+            f.append('b64offer', b64);
+
+            const data = await api('http://127.0.0.1:80/view_mic', { method: 'POST', body: f });
+            const sdp = data && (data.sdp ?? data.Sdp);
+            if (!sdp) throw new Error('view_mic: 后端未返回 data.sdp');
+
+            await pcTeacherPull.setRemoteDescription(
+                decodeSDP(sdp.trim().startsWith('"') ? JSON.parse(sdp) : sdp)
+            );
+        }
+
+        // ===== 老师开播 =====
+        startB.onclick = async () => {
+            try {
+                dbg.textContent = '';
+                if (!lessonID.value || !tokenInput.value) {
+                    return alert('请填写 Lesson ID 与 Token');
+                }
+
                 doRecord = confirm('是否录制？');
                 stopB.disabled = false;
                 stuCtrls.classList.add('hidden');
@@ -516,12 +652,16 @@
                 pullCtrls.classList.remove('hidden');
                 showWB();
 
-                const of = await doOffer(true);
+                const of = await doOffer(true, 'BROADCAST');
+
                 const form = new FormData();
                 form.append('lesson_id', lessonID.value);
                 form.append('b64offer', of);
-                const ans = await api('http://127.0.0.1:80/broadcast', { method: 'POST', body: form });
-                await recvAnswer(ans);
+
+                const data = await api('http://127.0.0.1:80/broadcast', { method: 'POST', body: form });
+                const sdp = data && (data.sdp ?? data.Sdp);
+                if (!sdp) throw new Error('broadcast: 后端未返回 data.sdp');
+                await recvAnswer(sdp);
 
                 pollRaise();
                 pollInterval = setInterval(pollRaise, 5000);
@@ -534,91 +674,126 @@
                 }
 
                 stopB.onclick = async () => {
-                    clearInterval(pollInterval);
-                    if (doRecord && recorder) {
-                        recorder.stop();
-                        recorder.onstop = async () => {
-                            const blob = new Blob(recordChunks, { type: 'video/webm' });
-                            const up = new FormData();
-                            up.append('lesson_id', lessonID.value);
-                            up.append('file', blob, 'rec.webm');
-                            if (confirm('上传录制？')) {
-                                await api('http://127.0.0.1:80/record_lesson_webrtc', { method: 'POST', body: up });
-                                alert('上传完成');
-                            }
-                        };
-                    }
-                    pc.close(); pc = null;
-                    localVid.srcObject = null;
-                    hideWB();
-                    stopB.disabled = true;
-                };
-            };
+                    try {
+                        clearInterval(pollInterval);
+                        stopStats();
 
-            // —— 2. 学生观看
-            startV.onclick = async () => {
-                if (!lessonID.value || !tokenInput.value) return alert('请填写 Lesson ID 与 Token');
+                        if (doRecord && recorder) {
+                            recorder.stop();
+                            recorder.onstop = async () => {
+                                try {
+                                    const blob = new Blob(recordChunks, { type: 'video/webm' });
+                                    const up = new FormData();
+                                    up.append('lesson_id', lessonID.value);
+                                    up.append('file', blob, 'rec.webm');
+
+                                    if (confirm('上传录制？')) {
+                                        const data2 = await api('http://127.0.0.1:80/record_lesson_webrtc', {
+                                            method: 'POST',
+                                            body: up
+                                        });
+                                        const filename = data2 && (data2.filename ?? data2.Filename ?? data2.text ?? data2.Text);
+                                        alert('上传完成' + (filename ? `：${filename}` : ''));
+                                    }
+                                } catch (e) {
+                                    alert('上传失败：' + e.message);
+                                }
+                            };
+                        }
+
+                        if (pc) { pc.close(); pc = null; }
+                        localVid.srcObject = null;
+                        hideWB();
+                        stopB.disabled = true;
+                    } catch (e) {
+                        alert(e.message);
+                    }
+                };
+            } catch (e) {
+                alert(e.message);
+            }
+        };
+
+        // ===== 学生观看 =====
+        startV.onclick = async () => {
+            try {
+                dbg.textContent = '';
+                if (!lessonID.value || !tokenInput.value) {
+                    return alert('请填写 Lesson ID 与 Token');
+                }
+
                 showWB();
                 pullCtrls.classList.remove('hidden');
-                const of = await doOffer(false);
+
+                const of = await doOffer(false, 'VIEW');
+
                 const form = new FormData();
                 form.append('lesson_id', lessonID.value);
                 form.append('b64offer', of);
-                const ans = await api('http://127.0.0.1:80/view', { method: 'POST', body: form });
-                await recvAnswer(ans);
-            };
 
-            // —— 3. 学生举手
-            btnRaise.onclick = async () => {
-                try {
-                    const f = new FormData();
-                    f.append('lesson_id', lessonID.value);
-                    await api('http://127.0.0.1:80/raise_hand', { method: 'PUT', body: f });
-                    alert('已举手');
-                    btnRaise.disabled = true;
-                    btnPubMic.disabled = false;
-                } catch (e) {
-                    alert(e.message);
-                }
-            };
+                const data = await api('http://127.0.0.1:80/view', { method: 'POST', body: form });
+                const sdp = data && (data.sdp ?? data.Sdp);
+                if (!sdp) throw new Error('view: 后端未返回 data.sdp');
+                await recvAnswer(sdp);
 
-            // —— 4. 学生上麦
-            btnPubMic.onclick = async () => {
-                try {
-                    await doPublishMic();
-                    alert('已上麦');
-                    btnPubMic.disabled = true;
-                } catch (e) {
-                    alert(e.message);
-                }
-            };
+                startInboundStats('VIEW');
+            } catch (e) {
+                alert(e.message);
+            }
+        };
 
-            // —— 5. 其他观众 / 教师 点击拉取连麦并合流
-            pullBtn.onclick = async () => {
-                try {
-                    await teacherPullMic();
-                } catch (e) {
-                    alert('拉取连麦出错：' + e.message);
-                }
-            };
+        // ===== 学生举手 =====
+        btnRaise.onclick = async () => {
+            try {
+                const f = new FormData();
+                f.append('lesson_id', lessonID.value);
+                await api('http://127.0.0.1:80/raise_hand', { method: 'PUT', body: f });
+                alert('已举手');
+                btnRaise.disabled = true;
+                btnPubMic.disabled = false;
+            } catch (e) {
+                alert(e.message);
+            }
+        };
 
-            // Ctrl+Enter 切教师界面
-            lessonID.addEventListener('keyup', e => {
-                if (e.ctrlKey && e.key === 'Enter') {
-                    stuCtrls.classList.add('hidden');
-                    teaCtrls.classList.remove('hidden');
-                }
-            });
+        // ===== 学生上麦 =====
+        btnPubMic.onclick = async () => {
+            try {
+                await doPublishMic();
+                alert('已上麦');
+                btnPubMic.disabled = true;
+            } catch (e) {
+                alert(e.message);
+            }
+        };
 
-            // 清理
-            window.addEventListener('beforeunload', () => {
-                if (pc) pc.close();
-                if (pcMic) pcMic.close();
-                if (pcTeacherPull) pcTeacherPull.close();
-                clearInterval(pollInterval);
-                hideWB();
-            });
-        })();
-    </script>
+        // ===== 拉取连麦 =====
+        pullBtn.onclick = async () => {
+            try {
+                await pullMicAll();
+            } catch (e) {
+                alert('拉取连麦出错：' + e.message);
+            }
+        };
+
+        // ===== 测试快捷键 =====
+        lessonID.addEventListener('keyup', e => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                stuCtrls.classList.add('hidden');
+                teaCtrls.classList.remove('hidden');
+            }
+        });
+
+        // ===== 清理 =====
+        window.addEventListener('beforeunload', () => {
+            try { if (pc) pc.close(); } catch {}
+            try { if (pcMic) pcMic.close(); } catch {}
+            try { if (pcTeacherPull) pcTeacherPull.close(); } catch {}
+            clearInterval(pollInterval);
+            stopStats();
+            hideWB();
+        });
+    })();
+</script>
 </body>
 </html>

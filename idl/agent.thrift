@@ -3,7 +3,7 @@ namespace go agent
 include "common.thrift"
 
 struct ChatWithAgentReq{
-    1:string userid,
+    1:i64 userid,
     2:string message,
 }
 
@@ -12,7 +12,7 @@ struct ChatWithAgentResp {
 }
 
 struct ListAllUserConvReq {
-    1: string userid,
+    1: i64 userid,
 }
 
 struct ListAllUserConvResp{
@@ -20,7 +20,7 @@ struct ListAllUserConvResp{
 }
 
 struct DelAllUserConvReq {
-    1: string userid,
+    1: i64 userid,
 }
 
 struct DelAllUserConvResp {
@@ -28,7 +28,7 @@ struct DelAllUserConvResp {
 }
 
 service AgentService{
-     ChatWithAgentResp ChatWithAgent(1: ChatWithAgentReq req),
+    ChatWithAgentResp ChatWithAgent(1: ChatWithAgentReq req),
     ListAllUserConvResp ListAllUserConv(1: ListAllUserConvReq req),
     DelAllUserConvResp DelAllUserConv(1: DelAllUserConvReq req),
 }

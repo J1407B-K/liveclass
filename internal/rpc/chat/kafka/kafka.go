@@ -3,11 +3,12 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"github.com/segmentio/kafka-go"
+	"liveclass/internal/api/utils/filter"
 	"liveclass/internal/rpc/chat/global"
 	"liveclass/internal/rpc/chat/model"
-	"liveclass/internal/utils/filter"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 )
 
 func initKafkaWriter() *kafka.Writer {

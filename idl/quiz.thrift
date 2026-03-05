@@ -3,8 +3,8 @@ namespace go quiz
 include "common.thrift"
 
 struct CreateQuestionReq {
-    1: string LessonId,
-    2: string Userid,
+    1: i64 LessonId,
+    2: i64 Userid,
     3: string Content,
     4: i32 OptionsNum,
     5: list<string> Options,
@@ -17,8 +17,8 @@ struct CreateQuestionResp {
 }
 
 struct TorFAnswerReq {
-    1: string Question_id,
-    2: string Userid,
+    1: i64 Question_id,
+    2: i64 Userid,
     3: string UserAnswer,
 }
 
@@ -27,8 +27,8 @@ struct TorFAnswerResp {
 }
 
 struct DelQuestionReq {
-    1:string Userid,
-    2:string Question_id,
+    1:i64 Userid,
+    2:i64 Question_id,
 }
 
 struct DelQuestionResp {
@@ -36,8 +36,8 @@ struct DelQuestionResp {
 }
 
 struct GetAllLessonQuizReq {
-    1:string userid,
-    2:string lesson_id,
+    1:i64 userid,
+    2:i64 lesson_id,
 }
 
 struct GetAllLessonQuizResp{

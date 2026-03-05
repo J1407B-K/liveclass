@@ -2,6 +2,13 @@ package main
 
 import (
 	"context"
+	user "liveclass/idl/kitex_gen/user/userservice"
+	"liveclass/internal/rpc/user/dao"
+	"liveclass/internal/rpc/user/flag"
+	"liveclass/internal/rpc/user/initialize"
+	"log"
+	"net"
+
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	kServer "github.com/cloudwego/kitex/server"
@@ -9,16 +16,16 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
-	user "liveclass/idl/kitex_gen/user/userservice"
-	"liveclass/internal/rpc/user/flag"
-	"liveclass/internal/rpc/user/initialize"
-	"log"
-	"net"
 )
 
 func main() {
 	initialize.SetupViper()
+	snowflakeNode, err := initialize.InitSnowflake()
+	if err != nil {
+		panic(err)
+	}
 	db := initialize.InitGormDB()
+	rdb := initialize.InitRedisDB()
 
 	option := flag.Parse()
 	ok := flag.DBOption(db, option)
@@ -41,7 +48,7 @@ func main() {
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9001")
 
-	svr := user.NewServer(&UserServiceImpl{DB: db},
+	svr := user.NewServer(&UserServiceImpl{Manager: &dao.DBManager{DB: db, RDB: rdb, Node: snowflakeNode}},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "userservice"}),
 		server.WithServiceAddr(addr),

@@ -37,7 +37,7 @@ services:
     image: redis/redis-stack:latest
     container_name: redis-stack
     ports:
-      - "6380:6379"  # Redis port
+      - "6379:6379"  # Redis port
       - "8001:8001"  # RedisInsight port
     volumes:
       - ./data/redis:/data
@@ -84,6 +84,27 @@ services:
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
     depends_on:
       - zoo1
+
+  connect:
+    image: debezium/connect:2.6
+    container_name: connect
+    hostname: connect
+    ports:
+      - "8091:8083"
+    environment:
+      BOOTSTRAP_SERVERS: "kafka1:19092"
+      GROUP_ID: "debezium-connect"
+      CONFIG_STORAGE_TOPIC: "connect-configs"
+      OFFSET_STORAGE_TOPIC: "connect-offsets"
+      STATUS_STORAGE_TOPIC: "connect-status"
+      # 单机就都 1
+      CONFIG_STORAGE_REPLICATION_FACTOR: "1"
+      OFFSET_STORAGE_REPLICATION_FACTOR: "1"
+      STATUS_STORAGE_REPLICATION_FACTOR: "1"
+      # 可选：让日志更清楚
+      LOG_LEVEL: "INFO"
+    depends_on:
+      - kafka1
 
   kafka-ui:
     container_name: kafka-ui
@@ -142,18 +163,14 @@ services:
     container_name: mysql
     restart: unless-stopped
     environment:
-      # 设置 root 用户密码
       MYSQL_ROOT_PASSWORD: "123456"
-      # 启动时自动创建 liveclass 数据库
       MYSQL_DATABASE: "liveclass"
     ports:
       - "3306:3306"
-
-  redis:
-    image: redis:6.2
-    container_name: redis
-    restart: unless-stopped
-    # 关闭保护模式以允许外部连接，无密码，DB 序号默认为 0
-    command: ["redis-server", "--protected-mode", "no"]
-    ports:
-      - "6379:6379"
+    command:
+      [
+        "--server-id=1",
+        "--log-bin=mysql-bin",
+        "--binlog_format=ROW",
+        "--binlog_row_image=FULL"
+      ]

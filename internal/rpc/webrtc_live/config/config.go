@@ -4,7 +4,9 @@ type Config struct {
 	MysqlConfig
 	RedisConfig
 	CosConfig
-	TmpBaseDir string
+	TmpBaseDir  string
+	KafkaBroker string
+	KafkaTopic  string
 }
 
 type MysqlConfig struct {

@@ -3,18 +3,18 @@ package main
 import (
 	"context"
 	"errors"
-	"gorm.io/gorm"
 	"liveclass/idl/kitex_gen/common"
 	user "liveclass/idl/kitex_gen/user"
+	"liveclass/internal/api/utils/bcrypt"
+	"liveclass/internal/rpc/user/code"
 	"liveclass/internal/rpc/user/dao"
-	"liveclass/internal/utils/hash"
+	"liveclass/internal/rpc/user/model"
 	"log"
-	"strconv"
 )
 
 // UserServiceImpl implements the last service interface defined in the IDL.
 type UserServiceImpl struct {
-	DB *gorm.DB
+	Manager *dao.DBManager
 }
 
 // Register implements the UserServiceImpl interface.
@@ -23,13 +23,18 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReq) (
 		return nil, errors.New("unknown auth")
 	}
 
-	req.Password, err = hash.HashedLock(req.Password)
+	passwordHash, err := password.HashPassword(req.Password)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	err = dao.SaveUser(s.DB, req)
+	sid, err := s.Manager.SaveUser(model.RegisterParam{
+		Username:     req.Username,
+		PasswordHash: passwordHash,
+		Auth:         req.Auth,
+		Status:       code.UserNormal,
+	})
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -37,28 +42,45 @@ func (s *UserServiceImpl) Register(ctx context.Context, req *user.RegisterReq) (
 
 	return &user.RegisterResp{
 		Resp: &common.Resp{
-			Data: req.Username,
+			Code: code.Success,
+			Msg:  "success",
+			Data: &common.Data{UserInfo: &common.User{
+				UserID:   sid,
+				UserName: req.Username,
+				Auth:     req.Auth,
+				Status:   code.UserNormal,
+			},
+			},
 		},
 	}, nil
 }
 
 // Login implements the UserServiceImpl interface.
 func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginReq) (resp *user.LoginResp, err error) {
-	//获得userinfo
-	userinfo, err := dao.SelectUserByUsername(s.DB, req.Username)
+	userinfo, err := s.Manager.SelectUserByUsername(req.Username)
 	if err != nil {
 		return nil, err
 	}
 
-	//比较是否一致
-	err = hash.CompareHashAndPassword(userinfo.Password, req.Password)
+	ok, err := password.VerifyPassword(req.Password, userinfo.PasswordHash)
 	if err != nil {
 		return nil, err
+	}
+	if !ok {
+		return nil, errors.New("wrong password")
 	}
 
 	resp = &user.LoginResp{
 		Resp: &common.Resp{
-			Data: strconv.Itoa(userinfo.Userid),
+			Code: code.Success,
+			Msg:  "success",
+			Data: &common.Data{UserInfo: &common.User{
+				UserID:   userinfo.UserID,
+				UserName: userinfo.Username,
+				Auth:     userinfo.Auth,
+				Status:   userinfo.Status,
+			},
+			},
 		},
 	}
 	return resp, nil
@@ -67,27 +89,46 @@ func (s *UserServiceImpl) Login(ctx context.Context, req *user.LoginReq) (resp *
 // GetUserInfo implements the UserServiceImpl interface.
 // 主要是鉴权之后rpc使用(id搜索)
 func (s *UserServiceImpl) GetUserInfo(ctx context.Context, req *user.GetUserInfoReq) (resp *user.GetUserInfoResp, err error) {
-	userinfo, err := dao.SelectUser(s.DB, req.Userid)
+	userinfo, err := s.Manager.SelectUser(req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
-	return &user.GetUserInfoResp{
+	resp = &user.GetUserInfoResp{
 		Resp: &common.Resp{
-			Data: userinfo.Username + "/" + userinfo.Auth},
-	}, nil
+			Code: code.Success,
+			Msg:  "success",
+			Data: &common.Data{UserInfo: &common.User{
+				UserID:   userinfo.UserID,
+				UserName: userinfo.Username,
+				Auth:     userinfo.Auth,
+				Status:   userinfo.Status,
+			},
+			},
+		},
+	}
+	return resp, nil
 }
 
 // GetUserInfoByname implements the UserServiceImpl interface.
-// 主要是对外提供api
 func (s *UserServiceImpl) GetUserInfoByname(ctx context.Context, req *user.GetUserInfoByNameReq) (resp *user.GetUserInfoByNameResp, err error) {
-	userinfo, err := dao.SelectUserByUsername(s.DB, req.Username)
+	userinfo, err := s.Manager.SelectUserByUsername(req.Username)
 	if err != nil {
 		return nil, err
 	}
 
-	return &user.GetUserInfoByNameResp{
+	resp = &user.GetUserInfoByNameResp{
 		Resp: &common.Resp{
-			Data: strconv.Itoa(userinfo.Userid) + "/" + userinfo.Username + "/" + userinfo.Auth},
-	}, nil
+			Code: code.Success,
+			Msg:  "success",
+			Data: &common.Data{UserInfo: &common.User{
+				UserID:   userinfo.UserID,
+				UserName: userinfo.Username,
+				Auth:     userinfo.Auth,
+				Status:   userinfo.Status,
+			},
+			},
+		},
+	}
+	return resp, nil
 }

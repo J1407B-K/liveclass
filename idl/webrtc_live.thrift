@@ -3,8 +3,8 @@ namespace go webrtc_live
 include "common.thrift"
 
 struct BroadcastReq{
-    1:string userid,
-    2:string lesson_id,
+    1:i64 userid,
+    2:i64 lesson_id,
     3:string b64offer,
 }
 
@@ -13,8 +13,8 @@ struct BroadcastResp{
 }
 
 struct ViewReq{
-    1: string userid,
-    2: string lesson_id,
+    1: i64 userid,
+    2: i64 lesson_id,
     3: string b64offer,
 }
 
@@ -23,7 +23,7 @@ struct ViewResp{
 }
 
 struct CreateLessonReq {
-    1: string userid,
+    1: i64 userid,
     2: string lesson_name,
     3: string description,
 }
@@ -33,8 +33,8 @@ struct CreateLessonResp {
 }
 
 struct DelLessonReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
 }
 
 struct DelLessonResp {
@@ -42,8 +42,8 @@ struct DelLessonResp {
 }
 
 struct ChangeUserInLiveReq {
-    1: string lessonid,
-    2: string userid,
+    1: i64 lessonid,
+    2: i64 userid,
     3: string options,
 }
 
@@ -52,9 +52,10 @@ struct ChangeUserInLiveResp {
 }
 
 struct ChangeUserToLessonReq{
-    1: string userid,
-    2: string lessonid,
-    3: string options,
+    1: i64 userid,
+    2: i64 lessonid,
+    3: i64 stuid,
+    4: string options,
 }
 
 struct ChangeUserToLessonResp {
@@ -62,7 +63,7 @@ struct ChangeUserToLessonResp {
 }
 
 struct GetLessonInfoByIdReq {
-    1: string lessonid
+    1: i64 lessonid
 }
 
 struct GetLessonInfoByIdResp{
@@ -70,7 +71,7 @@ struct GetLessonInfoByIdResp{
 }
 
 struct SelectLessonInfoReq{
-    1: string lessonid,
+    1: i64 lessonid,
 }
 
 struct SelectLessonInfoResp{
@@ -87,8 +88,8 @@ struct GetLessonInfoResp{
 }
 
 struct IsStudentInLessonReq {
-    1: string studentid,
-    2: string lessonid,
+    1: i64 studentid,
+    2: i64 lessonid,
 }
 
 struct IsStudentInLessonResp {
@@ -96,8 +97,8 @@ struct IsStudentInLessonResp {
 }
 
 struct CreateSignInReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
     3: i64  duration,
 }
 
@@ -106,8 +107,8 @@ struct CreateSignInResp {
 }
 
 struct SignInReq{
-    1:string userid,
-    2:string lessonid,
+    1:i64 userid,
+    2:i64 lessonid,
 }
 
 struct SignInResp {
@@ -115,8 +116,8 @@ struct SignInResp {
 }
 
 struct SelectSignInReq{
-    1:string userid,
-    2:string lessonid,
+    1:i64 userid,
+    2:i64 lessonid,
 }
 
 struct SelectSignInResp{
@@ -124,8 +125,8 @@ struct SelectSignInResp{
 }
 
 struct DelSignInReq{
-    1:string userid,
-    2:string lessonid,
+    1:i64 userid,
+    2:i64 lessonid,
 }
 
 struct DelSignInResp{
@@ -133,8 +134,8 @@ struct DelSignInResp{
 }
 
 struct RollCallInRandomReq{
-    1:string userid,
-    2:string lesson_id
+    1:i64 userid,
+    2:i64 lesson_id
 }
 
 struct RollCallInRandomResp{
@@ -142,8 +143,8 @@ struct RollCallInRandomResp{
 }
 
 struct RecordLessonReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
     3: binary data,
 }
 
@@ -152,8 +153,8 @@ struct RecordLessonResp {
 }
 
 struct SaveWhiteBoardJsonReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
     3: string file,
 }
 
@@ -162,8 +163,8 @@ struct SaveWhiteBoardJsonResp {
 }
 
 struct GetWhiteBoardJsonReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
 }
 
 struct GetWhiteBoardJsonResp{
@@ -171,8 +172,8 @@ struct GetWhiteBoardJsonResp{
 }
 
 struct PublishMicReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
     3: string b64offer,
 }
 
@@ -181,8 +182,8 @@ struct PublishMicResp {
 }
 
 struct RaiseHandReq {
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
 }
 
 struct RaiseHandResp {
@@ -190,8 +191,8 @@ struct RaiseHandResp {
 }
 
 struct GetRaiseHandReq{
-    1: string userid,
-    2: string lessonid,
+    1: i64 userid,
+    2: i64 lessonid,
 }
 
 struct GetRaiseHandResp {
@@ -199,9 +200,9 @@ struct GetRaiseHandResp {
 }
 
 struct ApproveHandReq{
-    1:string userid,
-    2:string lessonid,
-    3:string stuid,
+    1:i64 userid,
+    2:i64 lessonid,
+    3:i64 stuid,
 }
 
 struct ApproveHandResp{
@@ -209,8 +210,8 @@ struct ApproveHandResp{
 }
 
 struct ViewMicReq{
-    1:string userid,
-    2:string lessonid,
+    1:i64 userid,
+    2:i64 lessonid,
     3:string b64offer,
 }
 
@@ -219,8 +220,8 @@ struct ViewMicResp{
 }
 
 struct ListAllLessonRecordReq{
-    1:string userid,
-    2:string lessonid,
+    1:i64 userid,
+    2:i64 lessonid,
 }
 
 struct ListAllLessonRecordResp{
@@ -228,8 +229,8 @@ struct ListAllLessonRecordResp{
 }
 
 struct GetLessonRecordReq{
-    1:string userid,
-    2:string lessonid,
+    1:i64 userid,
+    2:i64 lessonid,
     3:string key,
 }
 

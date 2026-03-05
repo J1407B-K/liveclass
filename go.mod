@@ -1,12 +1,11 @@
 module liveclass
 
-go 1.23.0
-
-toolchain go1.23.9
+go 1.24.0
 
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
 require (
+	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cloudwego/eino v0.3.36
 	github.com/cloudwego/eino-ext/components/document/loader/file v0.0.0-20250520101807-b2008771903a
 	github.com/cloudwego/eino-ext/components/document/transformer/splitter/markdown v0.0.0-20250520101807-b2008771903a
@@ -43,7 +42,7 @@ require (
 	github.com/subosito/gotenv v1.6.0
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.65
 	go.mongodb.org/mongo-driver v1.17.3
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.45.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.26.1
 )
@@ -178,10 +177,10 @@ require (
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/arch v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611 // indirect
-	golang.org/x/net v0.35.0 // indirect
-	golang.org/x/sync v0.11.0 // indirect
-	golang.org/x/sys v0.33.0 // indirect
-	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
+	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/text v0.31.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20241209162323-e6fa225c2576 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241223144023-3abc09e42ca8 // indirect

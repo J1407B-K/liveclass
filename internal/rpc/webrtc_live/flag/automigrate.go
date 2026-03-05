@@ -1,9 +1,10 @@
 package flag
 
 import (
-	"gorm.io/gorm"
 	"liveclass/internal/rpc/webrtc_live/model"
 	"log"
+
+	"gorm.io/gorm"
 )
 
 func MysqlAutoMigrate(db *gorm.DB) {
@@ -12,6 +13,8 @@ func MysqlAutoMigrate(db *gorm.DB) {
 			&model.WebrtcLesson{},
 			&model.SignIn{},
 			&model.ExcalidrawDoc{},
+			&model.LessonStudent{},
+			&model.OutboxEvent{},
 		)
 	if err != nil {
 		log.Println("建表失败")

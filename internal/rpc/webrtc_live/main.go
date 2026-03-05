@@ -2,6 +2,14 @@ package main
 
 import (
 	"context"
+	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
+	"liveclass/internal/rpc/webrtc_live/cdc"
+	"liveclass/internal/rpc/webrtc_live/dao"
+	"liveclass/internal/rpc/webrtc_live/flag"
+	"liveclass/internal/rpc/webrtc_live/initialize"
+	"log"
+	"net"
+
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	kServer "github.com/cloudwego/kitex/server"
@@ -9,26 +17,46 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
-	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
-	"liveclass/internal/rpc/webrtc_live/flag"
-	"liveclass/internal/rpc/webrtc_live/initialize"
-	"log"
-	"net"
 )
 
 func main() {
 	initialize.SetupViper()
 	db := initialize.InitGormDB()
-	rdb := initialize.InitRedisDB()
-	countsha, membersha, delsha, selectsha := initialize.InitScript(rdb)
-	initialize.InitWebRTCEngine()
-	cosClient := initialize.SetUpCos()
-
 	option := flag.Parse()
 	ok := flag.DBOption(db, option)
 	if !ok {
 		log.Println("未自动建表")
 	}
+
+	rdb := initialize.InitRedisDB()
+	err := initialize.InitBloom(db, rdb)
+	if err != nil {
+		log.Fatal(err)
+	}
+	node, err := initialize.InitSnowflake()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reader := initialize.InitKafkaReader()
+
+	changesha, delsha, selectsha := initialize.InitScript(rdb)
+	initialize.InitWebRTCEngine()
+	cosClient := initialize.SetUpCos()
+
+	ctxBloom, cancelBloom := context.WithCancel(context.Background())
+	go initialize.InitRuntimeAddMBloom(ctxBloom, db, rdb)
+	defer cancelBloom()
+
+	ctxCDC, cancelCDC := context.WithCancel(context.Background())
+	go func() {
+		err = cdc.RunBloomWorker(ctxCDC, reader, rdb)
+		if err != nil {
+			log.Println("CDC worker error:", err)
+			return
+		}
+	}()
+	defer cancelCDC()
 
 	userCli, err := NewUserClient()
 	if err != nil {
@@ -49,7 +77,7 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9005")
-	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DB: db, userCli: userCli, RDB: rdb, countsha: countsha, membersha: membersha, selectsha: selectsha, delsha: delsha, cosClient: cosClient},
+	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DBManager: &dao.DBManager{DB: db, RDB: rdb, Node: node}, userCli: userCli, changesha: changesha, selectsha: selectsha, delsha: delsha, cosClient: cosClient},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "webrtc_liveservice"}),
 		server.WithServiceAddr(addr),

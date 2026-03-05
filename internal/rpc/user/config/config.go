@@ -2,6 +2,7 @@ package config
 
 type Config struct {
 	MysqlConfig
+	RedisConfig
 }
 
 type MysqlConfig struct {
@@ -9,4 +10,10 @@ type MysqlConfig struct {
 	Password string
 	Addr     string
 	DB       string
+}
+
+type RedisConfig struct {
+	Addr     string
+	Password string
+	DB       int
 }
