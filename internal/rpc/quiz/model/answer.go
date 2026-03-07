@@ -2,12 +2,16 @@ package model
 
 import "time"
 
+type AnswerStat struct {
+	Answer string `json:"answer"`
+	Count  int64  `json:"count"`
+}
+
 type Answer struct {
-	ID              int         `json:"answer_id" gorm:"primary_key;auto_increment"`
-	Right           string      `json:"right" gorm:"not null"`
-	QuestionId      int         `json:"question_id" gorm:"unique;not null"`
-	OptionNums      int         `json:"option_nums" gorm:"not null"`
-	SelectedOptions StringArray `json:"selected_options" gorm:"type:json"`
-	AnsweredId      StringArray `json:"answered_id" gorm:"type:json"`
-	CloseTime       time.Time   `gorm:"size:255"`
+	ID         int64     `gorm:"primaryKey;autoIncrement"`
+	QuestionID int64     `gorm:"not null;index:idx_question_user,unique"`
+	UserID     int64     `gorm:"not null;index:idx_question_user,unique"`
+	Answer     string    `gorm:"not null"`
+	IsCorrect  bool      `gorm:"not null"`
+	CreatedAt  time.Time `gorm:"autoCreateTime"`
 }

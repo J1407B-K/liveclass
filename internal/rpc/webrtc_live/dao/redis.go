@@ -35,9 +35,9 @@ func (m *DBManager) BloomMaybeLesson(ctx context.Context, lessonID int64) (maybe
 		return false, fmt.Errorf("unexpected BF.EXISTS resp=%T", v)
 	}
 }
-func MAddBloom(ctx context.Context, rdb *redis.Client, lessonIDs []int64) error {
+func MAddBloom(ctx context.Context, rdb *redis.Client, key string, lessonIDs []int64) error {
 	args := make([]interface{}, 0, 2+len(lessonIDs))
-	args = append(args, "BF.MADD", BloomKey)
+	args = append(args, "BF.MADD", key)
 	for _, id := range lessonIDs {
 		args = append(args, id)
 	}

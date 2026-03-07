@@ -1200,3 +1200,41 @@ func GetLessonRecord(c context.Context, ctx *app.RequestContext) {
 		"file": file,
 	})
 }
+
+func IsStuInLesson(c context.Context, ctx *app.RequestContext) {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"resp": model2.Response{
+				Code: code.AuthError,
+			},
+		})
+		return
+	}
+	lid := ctx.PostForm("lesson_id")
+	ilid, err := strconv.ParseInt(lid, 10, 64)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, utils.H{
+			"resp": model2.Response{
+				Code: code.BadRequest,
+				Msg:  err.Error(),
+				Data: "nil",
+			},
+		})
+		return
+	}
+	resp, err := global.Clients.Webrtc_liveClient.IsStudentInLesson(c, &webrtc_live.IsStudentInLessonReq{
+		Studentid: uid,
+		Lessonid:  ilid,
+	})
+	if err != nil {
+		return
+	}
+	ctx.JSON(http.StatusOK, utils.H{
+		"resp": model2.Response{
+			Code: 0,
+			Msg:  "ok",
+			Data: resp.Resp.Data,
+		},
+	})
+}

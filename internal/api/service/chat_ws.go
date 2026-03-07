@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"liveclass/idl/kitex_gen/chat"
-	"liveclass/idl/kitex_gen/live"
+	"liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/internal/api/code"
 	global2 "liveclass/internal/api/global"
 	model2 "liveclass/internal/api/model"
@@ -67,7 +67,7 @@ func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandl
 		global2.Mux.Unlock()
 
 		for {
-			resp, err := global2.Clients.LiveClient.IsStudentInLesson(c, &live.IsStudentInLessonReq{Lessonid: lessonId, Studentid: userId})
+			resp, err := global2.Clients.Webrtc_liveClient.IsStudentInLesson(c, &webrtc_live.IsStudentInLessonReq{Lessonid: lessonId, Studentid: userId})
 			if err != nil {
 				global2.Mux.Lock()
 				delete(global2.WsConnsChat, conn)
@@ -75,7 +75,7 @@ func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandl
 				break
 			}
 
-			if resp.Resp.Msg == "not_in" {
+			if resp.Resp.Msg == "not_exist" {
 				conn.WriteMessage(websocket.TextMessage, []byte("不是该课程学生！"))
 				global2.Mux.Lock()
 				delete(global2.WsConnsChat, conn)

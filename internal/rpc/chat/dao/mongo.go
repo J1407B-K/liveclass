@@ -3,13 +3,16 @@ package dao
 import (
 	"context"
 	"encoding/json"
+	"liveclass/internal/rpc/chat/global"
+	"strconv"
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"liveclass/internal/rpc/chat/global"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ChooseCollection(suffix string, client *mongo.Client) *mongo.Collection {
-	return client.Database(global.Config.Database).Collection(global.Config.CollectionPrefix + suffix)
+func ChooseCollection(LessonID int64, client *mongo.Client) *mongo.Collection {
+	return client.Database(global.Config.Database).Collection(global.Config.CollectionPrefix + strconv.Itoa(int(LessonID)))
 }
 
 func InsertMongo(ctx context.Context, coll *mongo.Collection, msg interface{}) error {
@@ -18,7 +21,11 @@ func InsertMongo(ctx context.Context, coll *mongo.Collection, msg interface{}) e
 }
 
 func SelectMongo(ctx context.Context, coll *mongo.Collection) (string, error) {
-	cursor, err := coll.Find(ctx, bson.M{})
+	opts := options.Find().
+		SetSort(bson.D{{Key: "timestamp", Value: 1}}).
+		SetLimit(100)
+
+	cursor, err := coll.Find(ctx, bson.M{}, opts)
 	if err != nil {
 		return "", err
 	}
@@ -36,7 +43,6 @@ func SelectMongo(ctx context.Context, coll *mongo.Collection) (string, error) {
 		return "", err
 	}
 
-	// []bson.M -> []byte
 	b, err := json.Marshal(results)
 	if err != nil {
 		return "", err

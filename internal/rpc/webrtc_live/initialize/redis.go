@@ -46,7 +46,7 @@ func InitBloom(db *gorm.DB, rdb *redis.Client) error {
 		return nil
 	}
 
-	return dao.MAddBloom(ctx, rdb, ids)
+	return dao.MAddBloom(ctx, rdb, dao.BloomKey, ids)
 }
 
 func InitRuntimeAddMBloom(ctx context.Context, db *gorm.DB, rdb *redis.Client) {
@@ -87,7 +87,7 @@ func refreshBloom(ctx context.Context, db *gorm.DB, rdb *redis.Client) {
 			end = len(ids)
 		}
 
-		if err := dao.MAddBloom(ctx, rdb, ids[i:end]); err != nil {
+		if err = dao.MAddBloom(ctx, rdb, tmpKey, ids[i:end]); err != nil {
 			log.Println("MAddBloom failed:", err)
 			return
 		}

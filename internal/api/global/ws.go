@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	//websocket升级器
 	Upgrader = websocket.HertzUpgrader{
 		CheckOrigin: func(c *app.RequestContext) bool {
 			return true

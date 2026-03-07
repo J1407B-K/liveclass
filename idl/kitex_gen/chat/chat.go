@@ -458,6 +458,7 @@ func (p *LiveChatResp) Field1DeepEqual(src *common.Resp) bool {
 
 type GetHistoryReq struct {
 	LessonId int64 `thrift:"lesson_id,1" frugal:"1,default,i64" json:"lesson_id"`
+	Userid   int64 `thrift:"userid,2" frugal:"2,default,i64" json:"userid"`
 }
 
 func NewGetHistoryReq() *GetHistoryReq {
@@ -470,12 +471,20 @@ func (p *GetHistoryReq) InitDefault() {
 func (p *GetHistoryReq) GetLessonId() (v int64) {
 	return p.LessonId
 }
+
+func (p *GetHistoryReq) GetUserid() (v int64) {
+	return p.Userid
+}
 func (p *GetHistoryReq) SetLessonId(val int64) {
 	p.LessonId = val
+}
+func (p *GetHistoryReq) SetUserid(val int64) {
+	p.Userid = val
 }
 
 var fieldIDToName_GetHistoryReq = map[int16]string{
 	1: "lesson_id",
+	2: "userid",
 }
 
 func (p *GetHistoryReq) Read(iprot thrift.TProtocol) (err error) {
@@ -499,6 +508,14 @@ func (p *GetHistoryReq) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -544,6 +561,17 @@ func (p *GetHistoryReq) ReadField1(iprot thrift.TProtocol) error {
 	p.LessonId = _field
 	return nil
 }
+func (p *GetHistoryReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Userid = _field
+	return nil
+}
 
 func (p *GetHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -553,6 +581,10 @@ func (p *GetHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -589,6 +621,22 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *GetHistoryReq) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("userid", thrift.I64, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Userid); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
 
 func (p *GetHistoryReq) String() string {
 	if p == nil {
@@ -607,12 +655,22 @@ func (p *GetHistoryReq) DeepEqual(ano *GetHistoryReq) bool {
 	if !p.Field1DeepEqual(ano.LessonId) {
 		return false
 	}
+	if !p.Field2DeepEqual(ano.Userid) {
+		return false
+	}
 	return true
 }
 
 func (p *GetHistoryReq) Field1DeepEqual(src int64) bool {
 
 	if p.LessonId != src {
+		return false
+	}
+	return true
+}
+func (p *GetHistoryReq) Field2DeepEqual(src int64) bool {
+
+	if p.Userid != src {
 		return false
 	}
 	return true
@@ -788,6 +846,7 @@ func (p *GetHistoryResp) Field1DeepEqual(src *common.Resp) bool {
 
 type DelHistoryReq struct {
 	LessonId int64 `thrift:"lesson_id,1" frugal:"1,default,i64" json:"lesson_id"`
+	Userid   int64 `thrift:"userid,2" frugal:"2,default,i64" json:"userid"`
 }
 
 func NewDelHistoryReq() *DelHistoryReq {
@@ -800,12 +859,20 @@ func (p *DelHistoryReq) InitDefault() {
 func (p *DelHistoryReq) GetLessonId() (v int64) {
 	return p.LessonId
 }
+
+func (p *DelHistoryReq) GetUserid() (v int64) {
+	return p.Userid
+}
 func (p *DelHistoryReq) SetLessonId(val int64) {
 	p.LessonId = val
+}
+func (p *DelHistoryReq) SetUserid(val int64) {
+	p.Userid = val
 }
 
 var fieldIDToName_DelHistoryReq = map[int16]string{
 	1: "lesson_id",
+	2: "userid",
 }
 
 func (p *DelHistoryReq) Read(iprot thrift.TProtocol) (err error) {
@@ -829,6 +896,14 @@ func (p *DelHistoryReq) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -874,6 +949,17 @@ func (p *DelHistoryReq) ReadField1(iprot thrift.TProtocol) error {
 	p.LessonId = _field
 	return nil
 }
+func (p *DelHistoryReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Userid = _field
+	return nil
+}
 
 func (p *DelHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -883,6 +969,10 @@ func (p *DelHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -919,6 +1009,22 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *DelHistoryReq) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("userid", thrift.I64, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Userid); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
 
 func (p *DelHistoryReq) String() string {
 	if p == nil {
@@ -937,12 +1043,22 @@ func (p *DelHistoryReq) DeepEqual(ano *DelHistoryReq) bool {
 	if !p.Field1DeepEqual(ano.LessonId) {
 		return false
 	}
+	if !p.Field2DeepEqual(ano.Userid) {
+		return false
+	}
 	return true
 }
 
 func (p *DelHistoryReq) Field1DeepEqual(src int64) bool {
 
 	if p.LessonId != src {
+		return false
+	}
+	return true
+}
+func (p *DelHistoryReq) Field2DeepEqual(src int64) bool {
+
+	if p.Userid != src {
 		return false
 	}
 	return true

@@ -66,14 +66,14 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	if err != nil {
 		return nil, err
 	}
-	//先解码
+
 	offer, err := my_webrtc.DecodeSDP(req.B64offer)
 	if err != nil {
 		return nil, err
 	}
+
 	ok := false
 
-	//全局配置创建pc
 	pc, err := global.WebRTCEngine.API.NewPeerConnection(global.WebRTCEngine.SfuConfig)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,6 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		}
 	}()
 
-	//transceivers
 	if _, err = pc.AddTransceiverFromKind(
 		webrtc.RTPCodecTypeAudio,
 		webrtc.RTPTransceiverInit{Direction: webrtc.RTPTransceiverDirectionRecvonly},
@@ -108,51 +107,68 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	}
 
 	sessionID := uuid.NewString()
-	bundle := &model.BroadcastBundle{
-		SessionID: sessionID,
-		Tracks:    make([]*webrtc.TrackLocalStaticRTP, 0, 2),
+
+	// 如果已有旧直播，先尝试关闭旧 publisher
+	if oldRaw, ok := global.WebRTCEngine.BroadcastRooms.Load(req.LessonId); ok {
+		if oldBundle, ok2 := oldRaw.(*model.BroadcastBundle); ok2 && oldBundle.PublisherPC != nil {
+			_ = oldBundle.PublisherPC.Close()
+		}
 	}
-	global.WebRTCEngine.BroadcastTracks.Store(req.LessonId, bundle)
+
+	bundle := &model.BroadcastBundle{
+		SessionID:       sessionID,
+		PublisherPC:     pc,
+		PublisherStatus: model.ConnectionConnecting,
+	}
+	global.WebRTCEngine.BroadcastRooms.Store(req.LessonId, bundle)
 
 	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
 		if c != nil {
 			log.Println("[Server][Broadcast] ICE candidate:", c.ToJSON())
 		}
 	})
-	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-		log.Println("[Server][Broadcast] ICE state:", s.String())
+
+	pc.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+		log.Println("[Server][Broadcast] ICE state:", state.String())
 	})
 
-	//收到流时的逻辑
 	pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
 		log.Println("[Server][Broadcast] OnTrack kind=", remote.Kind())
+
 		trackID := fmt.Sprintf("%s-%d-%d", remote.Kind().String(), req.LessonId, remote.SSRC())
 		streamID := fmt.Sprintf("stream-%d", req.LessonId)
+
 		local, err := webrtc.NewTrackLocalStaticRTP(
 			remote.Codec().RTPCodecCapability,
 			trackID,
 			streamID,
 		)
 		if err != nil {
-			log.Println("track create error:", err)
+			log.Println("[Server][Broadcast] track create error:", err)
 			return
 		}
 
-		//存储
-		v, ok := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
+		raw, ok := global.WebRTCEngine.BroadcastRooms.Load(req.LessonId)
 		if !ok {
 			return
 		}
-		b := v.(*model.BroadcastBundle)
+		b, ok := raw.(*model.BroadcastBundle)
+		if !ok {
+			return
+		}
 		if b.SessionID != sessionID {
 			return
 		}
 
 		b.Mu.Lock()
-		b.Tracks = append(b.Tracks, local)
+		switch remote.Kind() {
+		case webrtc.RTPCodecTypeVideo:
+			b.VideoTrack = local
+		case webrtc.RTPCodecTypeAudio:
+			b.AudioTrack = local
+		}
 		b.Mu.Unlock()
 
-		//请求关键帧
 		if remote.Kind() == webrtc.RTPCodecTypeVideo {
 			go func(ssrc uint32) {
 				ticker := time.NewTicker(2 * time.Second)
@@ -176,9 +192,11 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 			for {
 				pkt, _, readErr := remote.ReadRTP()
 				if readErr != nil {
+					log.Println("[Server][Broadcast] remote.ReadRTP error:", readErr)
 					return
 				}
 				if writeErr := local.WriteRTP(pkt); writeErr != nil {
+					log.Println("[Server][Broadcast] local.WriteRTP error:", writeErr)
 					return
 				}
 			}
@@ -189,19 +207,36 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		return nil, err
 	}
 
-	//连接断开或出错时，从缓存中删除
 	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
 		log.Println("[Server][Broadcast] PeerConnection state:", state.String())
-		if state == webrtc.PeerConnectionStateFailed ||
-			state == webrtc.PeerConnectionStateClosed ||
-			state == webrtc.PeerConnectionStateDisconnected {
 
-			v, ok := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
-			if ok {
-				b := v.(*model.BroadcastBundle)
-				if b.SessionID == sessionID {
+		raw, ok := global.WebRTCEngine.BroadcastRooms.Load(req.LessonId)
+		if ok {
+			if b, ok2 := raw.(*model.BroadcastBundle); ok2 && b.SessionID == sessionID {
+				b.Mu.Lock()
+				switch state {
+				case webrtc.PeerConnectionStateConnecting:
+					b.PublisherStatus = model.ConnectionConnecting
+				case webrtc.PeerConnectionStateConnected:
+					b.PublisherStatus = model.ConnectionConnected
+				case webrtc.PeerConnectionStateDisconnected:
+					b.PublisherStatus = model.ConnectionDisconnected
+				case webrtc.PeerConnectionStateFailed:
+					b.PublisherStatus = model.ConnectionFailed
+				case webrtc.PeerConnectionStateClosed:
+					b.PublisherStatus = model.ConnectionClosed
+				}
+				b.Mu.Unlock()
+			}
+		}
+
+		// 注意：disconnected 不立刻删
+		if state == webrtc.PeerConnectionStateFailed ||
+			state == webrtc.PeerConnectionStateClosed {
+			if raw, ok := global.WebRTCEngine.BroadcastRooms.Load(req.LessonId); ok {
+				if b, ok2 := raw.(*model.BroadcastBundle); ok2 && b.SessionID == sessionID {
 					log.Println("[Server][Broadcast] Cleaning up maps for lesson", req.LessonId, "session", sessionID)
-					global.WebRTCEngine.BroadcastTracks.Delete(req.LessonId)
+					global.WebRTCEngine.BroadcastRooms.Delete(req.LessonId)
 				}
 			}
 			_ = pc.Close()
@@ -215,16 +250,19 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	if err = pc.SetLocalDescription(answer); err != nil {
 		return nil, err
 	}
+
 	<-webrtc.GatheringCompletePromise(pc)
 
-	//编码
 	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
 	if err != nil {
 		return nil, err
 	}
+
 	ok = true
 	return &webrtc_live.BroadcastResp{
-		Resp: &common.Resp{Data: &common.Data{Sdp: strptr(b64ans)}},
+		Resp: &common.Resp{
+			Data: &common.Data{Sdp: strptr(b64ans)},
+		},
 	}, nil
 }
 
@@ -268,59 +306,49 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 			log.Println("[Server][View] ICE candidate:", c.ToJSON())
 		}
 	})
-	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-		log.Println("[Server][View] ICE state:", s.String())
+	pc.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+		log.Println("[Server][View] ICE state:", state.String())
 	})
-	pc.OnConnectionStateChange(func(st webrtc.PeerConnectionState) {
-		log.Println("[Server][View] PeerConnection state:", st.String())
-		if st == webrtc.PeerConnectionStateFailed ||
-			st == webrtc.PeerConnectionStateDisconnected ||
-			st == webrtc.PeerConnectionStateClosed {
+	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+		log.Println("[Server][View] PeerConnection state:", state.String())
+		if state == webrtc.PeerConnectionStateFailed ||
+			state == webrtc.PeerConnectionStateClosed {
 			_ = pc.Close()
 		}
 	})
 
-	raw, ok2 := global.WebRTCEngine.BroadcastTracks.Load(req.LessonId)
+	raw, ok2 := global.WebRTCEngine.BroadcastRooms.Load(req.LessonId)
 	if !ok2 {
 		return nil, errors.New("未开播: " + strconv.FormatInt(req.LessonId, 10))
 	}
-	b := raw.(*model.BroadcastBundle)
+	b, ok2 := raw.(*model.BroadcastBundle)
+	if !ok2 {
+		return nil, errors.New("broadcast bundle type error")
+	}
 
-	var picked []*webrtc.TrackLocalStaticRTP
+	var videoTrack *webrtc.TrackLocalStaticRTP
+	var audioTrack *webrtc.TrackLocalStaticRTP
+
 	deadline := time.NewTimer(3 * time.Second)
 	ticker := time.NewTicker(100 * time.Millisecond)
 	defer deadline.Stop()
 	defer ticker.Stop()
 
 	for {
-		b.Mu.Lock()
+		b.Mu.RLock()
+		status := b.PublisherStatus
+		videoTrack = b.VideoTrack
+		audioTrack = b.AudioTrack
+		b.Mu.RUnlock()
 
-		var videoTrack *webrtc.TrackLocalStaticRTP
-		var audioTrack *webrtc.TrackLocalStaticRTP
-
-		for _, t := range b.Tracks {
-			if t == nil {
-				continue
-			}
-			if strings.HasPrefix(t.ID(), "video-") && videoTrack == nil {
-				videoTrack = t
-			}
-			if strings.HasPrefix(t.ID(), "audio-") && audioTrack == nil {
-				audioTrack = t
-			}
+		if status == model.ConnectionFailed || status == model.ConnectionClosed {
+			return nil, errors.New("直播已结束")
 		}
 
+		// 有视频就可以开看；音频可选
 		if videoTrack != nil {
-			picked = make([]*webrtc.TrackLocalStaticRTP, 0, 2)
-			picked = append(picked, videoTrack)
-			if audioTrack != nil {
-				picked = append(picked, audioTrack)
-			}
-			b.Mu.Unlock()
 			break
 		}
-
-		b.Mu.Unlock()
 
 		select {
 		case <-ctx.Done():
@@ -335,25 +363,40 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 		return nil, err
 	}
 
-	for _, t := range picked {
-		log.Println("[Server][View] AddTrack:", t.ID(), t.StreamID())
+	log.Println("[Server][View] AddTrack video:", videoTrack.ID(), videoTrack.StreamID())
+	videoSender, err := pc.AddTrack(videoTrack)
+	if err != nil {
+		return nil, err
+	}
+	go func(s *webrtc.RTPSender) {
+		buf := make([]byte, 1500)
+		for {
+			n, _, readErr := s.Read(buf)
+			if readErr != nil {
+				log.Println("[Server][View] video RTCP Read error:", readErr)
+				return
+			}
+			_, _ = rtcp.Unmarshal(buf[:n])
+		}
+	}(videoSender)
 
-		sender, err := pc.AddTrack(t)
+	if audioTrack != nil {
+		log.Println("[Server][View] AddTrack audio:", audioTrack.ID(), audioTrack.StreamID())
+		audioSender, err := pc.AddTrack(audioTrack)
 		if err != nil {
 			return nil, err
 		}
-
 		go func(s *webrtc.RTPSender) {
 			buf := make([]byte, 1500)
 			for {
 				n, _, readErr := s.Read(buf)
 				if readErr != nil {
-					log.Println("[Server][View] RTCP Read error:", readErr)
+					log.Println("[Server][View] audio RTCP Read error:", readErr)
 					return
 				}
 				_, _ = rtcp.Unmarshal(buf[:n])
 			}
-		}(sender)
+		}(audioSender)
 	}
 
 	answer, err := pc.CreateAnswer(nil)
@@ -363,6 +406,7 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 	if err = pc.SetLocalDescription(answer); err != nil {
 		return nil, err
 	}
+
 	<-webrtc.GatheringCompletePromise(pc)
 
 	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
@@ -457,6 +501,7 @@ func (s *WebrtcLiveImpl) GetLessonInfoById(ctx context.Context, req *webrtc_live
 					TeacherName: lesson.TeacherName,
 					Description: lesson.Description,
 					StudentID:   ids,
+					TeacherID:   lesson.TeacherUID,
 				},
 			},
 		},
@@ -480,6 +525,11 @@ func (s *WebrtcLiveImpl) CreateLesson(ctx context.Context, req *webrtc_live.Crea
 	}
 
 	_ = s.DBManager.RDB.Del(ctx, fmt.Sprintf("lesson:info:%d", lessonid)).Err()
+
+	err = s.DBManager.AddBloom(ctx, lessonid)
+	if err != nil {
+		return nil, err
+	}
 
 	return &webrtc_live.CreateLessonResp{Resp: &common.Resp{
 		Code: 0,
@@ -589,7 +639,7 @@ func (s *WebrtcLiveImpl) IsStudentInLesson(ctx context.Context, req *webrtc_live
 	_, err = s.ensureLessonExists(ctx, req.Lessonid)
 	if err != nil {
 		if errors.Is(err, ErrLessonNotExist) {
-			return &webrtc_live.IsStudentInLessonResp{Resp: &common.Resp{Msg: "not exist"}}, nil
+			return &webrtc_live.IsStudentInLessonResp{Resp: &common.Resp{Msg: "not_exist"}}, nil
 		}
 		return nil, err
 	}
@@ -601,13 +651,13 @@ func (s *WebrtcLiveImpl) IsStudentInLesson(ctx context.Context, req *webrtc_live
 	if !ok {
 		return &webrtc_live.IsStudentInLessonResp{
 			Resp: &common.Resp{
-				Msg: "not exist",
+				Msg: "not_exist",
 			},
 		}, nil
 	}
 	return &webrtc_live.IsStudentInLessonResp{
 		Resp: &common.Resp{
-			Msg: "student exist",
+			Msg: "exist",
 		},
 	}, nil
 }
@@ -749,7 +799,7 @@ func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.Reco
 	}
 
 	go func() {
-		if err = my_cos.UploadToCos(ctx, s.cosClient, localfile, strconv.FormatInt(req.Lessonid, 10), filename); err != nil {
+		if err := my_cos.UploadToCos(ctx, s.cosClient, localfile, strconv.FormatInt(req.Lessonid, 10), filename); err != nil {
 			log.Printf("上传到 COS 失败: %v", err)
 		} else {
 			log.Printf("上传到 COS 成功: lesson=%s file=%s", req.Lessonid, filename)
@@ -827,76 +877,151 @@ func (s *WebrtcLiveImpl) PublishMic(ctx context.Context, req *webrtc_live.Publis
 	if err != nil {
 		return nil, err
 	}
+
 	ok = false
 	defer func() {
 		if !ok {
 			_ = pc.Close()
 		}
 	}()
-	_, err = pc.AddTransceiverFromKind(webrtc.RTPCodecTypeAudio, webrtc.RTPTransceiverInit{
-		Direction: webrtc.RTPTransceiverDirectionRecvonly,
-	})
+
+	_, err = pc.AddTransceiverFromKind(
+		webrtc.RTPCodecTypeAudio,
+		webrtc.RTPTransceiverInit{
+			Direction: webrtc.RTPTransceiverDirectionRecvonly,
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
+
+	sessionID := "mic-" + uuid.NewString()
+	bundle := s.getOrCreateMicBundle(req.Lessonid)
+
+	// 同一个学生重复上麦时，先关掉旧连接
+	bundle.Mu.Lock()
+	if oldPub, exists := bundle.Publishers[req.Userid]; exists && oldPub.PC != nil {
+		_ = oldPub.PC.Close()
+	}
+	bundle.Publishers[req.Userid] = &model.MicPublisher{
+		UserID:    req.Userid,
+		SessionID: sessionID,
+		PC:        pc,
+		Status:    model.ConnectionConnecting,
+	}
+	bundle.Mu.Unlock()
 
 	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
 		if c != nil {
 			log.Println("[Server][PublishMic] ICE candidate:", c.ToJSON())
 		}
 	})
-	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-		log.Println("[Server][PublishMic] ICE state:", s.String())
+
+	pc.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+		log.Println("[Server][PublishMic] ICE state:", state.String())
 	})
 
 	pc.OnTrack(func(remote *webrtc.TrackRemote, _ *webrtc.RTPReceiver) {
-		local, _ := webrtc.NewTrackLocalStaticRTP(
+		log.Println("[Server][PublishMic] OnTrack kind=", remote.Kind())
+
+		if remote.Kind() != webrtc.RTPCodecTypeAudio {
+			return
+		}
+
+		local, err := webrtc.NewTrackLocalStaticRTP(
 			remote.Codec().RTPCodecCapability,
 			"mic-"+strconv.FormatInt(req.Lessonid, 10)+"-"+strconv.FormatInt(req.Userid, 10),
 			"stream-"+strconv.FormatInt(req.Lessonid, 10),
 		)
+		if err != nil {
+			log.Println("[Server][PublishMic] track create error:", err)
+			return
+		}
 
-		raw, _ := global.WebRTCEngine.MicTracks.LoadOrStore(req.Lessonid, &model.MicBundle{
-			SessionID: "mic-" + uuid.NewString(),
-			Tracks:    make([]*webrtc.TrackLocalStaticRTP, 0, 8),
-		})
-		b := raw.(*model.MicBundle)
+		raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
+		if !ok {
+			return
+		}
+		b, ok := raw.(*model.MicBundle)
+		if !ok {
+			return
+		}
+
 		b.Mu.Lock()
-		b.Tracks = append(b.Tracks, local)
+		pub, exists := b.Publishers[req.Userid]
+		if !exists || pub.SessionID != sessionID {
+			b.Mu.Unlock()
+			return
+		}
+		pub.Track = local
 		b.Mu.Unlock()
 
 		go func() {
 			for {
 				pkt, _, readErr := remote.ReadRTP()
 				if readErr != nil {
+					log.Println("[Server][PublishMic] remote.ReadRTP error:", readErr)
 					return
 				}
 				if writeErr := local.WriteRTP(pkt); writeErr != nil {
+					log.Println("[Server][PublishMic] local.WriteRTP error:", writeErr)
 					return
 				}
 			}
-
 		}()
 	})
 
-	err = pc.SetRemoteDescription(offer)
-	if err != nil {
+	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+		log.Println("[Server][PublishMic] PeerConnection state:", state.String())
+
+		raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
+		if ok {
+			if b, ok2 := raw.(*model.MicBundle); ok2 {
+				b.Mu.Lock()
+				if pub, exists := b.Publishers[req.Userid]; exists && pub.SessionID == sessionID {
+					switch state {
+					case webrtc.PeerConnectionStateConnecting:
+						pub.Status = model.ConnectionConnecting
+					case webrtc.PeerConnectionStateConnected:
+						pub.Status = model.ConnectionConnected
+					case webrtc.PeerConnectionStateDisconnected:
+						pub.Status = model.ConnectionDisconnected
+					case webrtc.PeerConnectionStateFailed:
+						pub.Status = model.ConnectionFailed
+					case webrtc.PeerConnectionStateClosed:
+						pub.Status = model.ConnectionClosed
+					}
+				}
+				b.Mu.Unlock()
+			}
+		}
+
+		if state == webrtc.PeerConnectionStateFailed ||
+			state == webrtc.PeerConnectionStateClosed {
+			s.removeMicPublisher(req.Lessonid, req.Userid, sessionID)
+			_ = pc.Close()
+		}
+	})
+
+	if err = pc.SetRemoteDescription(offer); err != nil {
 		return nil, err
 	}
+
 	ans, err := pc.CreateAnswer(nil)
 	if err != nil {
 		return nil, err
 	}
-	err = pc.SetLocalDescription(ans)
-	if err != nil {
+	if err = pc.SetLocalDescription(ans); err != nil {
 		return nil, err
 	}
 
 	<-webrtc.GatheringCompletePromise(pc)
+
 	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
 	if err != nil {
 		return nil, err
 	}
+
 	ok = true
 	return &webrtc_live.PublishMicResp{
 		Resp: &common.Resp{
@@ -1019,6 +1144,7 @@ func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicRe
 	if err != nil {
 		return nil, err
 	}
+
 	ok = false
 	defer func() {
 		if !ok {
@@ -1026,51 +1152,94 @@ func (s *WebrtcLiveImpl) ViewMic(ctx context.Context, req *webrtc_live.ViewMicRe
 		}
 	}()
 
-	if err = pc.SetRemoteDescription(offer); err != nil {
-		return nil, err
-	}
-
 	pc.OnICECandidate(func(c *webrtc.ICECandidate) {
 		if c != nil {
 			log.Println("[Server][ViewMic] ICE candidate:", c.ToJSON())
 		}
 	})
-	pc.OnICEConnectionStateChange(func(s webrtc.ICEConnectionState) {
-		log.Println("[Server][ViewMic] ICE state:", s.String())
+	pc.OnICEConnectionStateChange(func(state webrtc.ICEConnectionState) {
+		log.Println("[Server][ViewMic] ICE state:", state.String())
+	})
+	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
+		log.Println("[Server][ViewMic] PeerConnection state:", state.String())
+		if state == webrtc.PeerConnectionStateFailed ||
+			state == webrtc.PeerConnectionStateClosed {
+			_ = pc.Close()
+		}
 	})
 
 	raw, ok := global.WebRTCEngine.MicTracks.Load(req.Lessonid)
 	if !ok {
-		return &webrtc_live.ViewMicResp{Resp: &common.Resp{Msg: "目前无任何学生上麦"}}, nil
+		return &webrtc_live.ViewMicResp{
+			Resp: &common.Resp{Msg: "目前无任何学生上麦"},
+		}, nil
 	}
 
-	b := raw.(*model.MicBundle)
-	b.Mu.Lock()
-	tracks := append([]*webrtc.TrackLocalStaticRTP(nil), b.Tracks...)
-	b.Mu.Unlock()
+	b, ok := raw.(*model.MicBundle)
+	if !ok {
+		return nil, errors.New("mic bundle type error")
+	}
+
+	var tracks []*webrtc.TrackLocalStaticRTP
+
+	b.Mu.RLock()
+	for _, pub := range b.Publishers {
+		if pub == nil || pub.Track == nil {
+			continue
+		}
+		if pub.Status == model.ConnectionFailed || pub.Status == model.ConnectionClosed {
+			continue
+		}
+		tracks = append(tracks, pub.Track)
+	}
+	b.Mu.RUnlock()
+
+	if len(tracks) == 0 {
+		return &webrtc_live.ViewMicResp{
+			Resp: &common.Resp{Msg: "目前无任何学生上麦"},
+		}, nil
+	}
+
+	if err = pc.SetRemoteDescription(offer); err != nil {
+		return nil, err
+	}
 
 	for _, t := range tracks {
-		sender, _ := pc.AddTrack(t)
+		log.Println("[Server][ViewMic] AddTrack:", t.ID(), t.StreamID())
+
+		sender, err := pc.AddTrack(t)
+		if err != nil {
+			return nil, err
+		}
+
 		go func(s *webrtc.RTPSender) {
-			buff := make([]byte, 1500)
-			_, _, readErr := s.Read(buff)
-			if readErr != nil {
-				return
+			buf := make([]byte, 1500)
+			for {
+				n, _, readErr := s.Read(buf)
+				if readErr != nil {
+					log.Println("[Server][ViewMic] RTCP Read error:", readErr)
+					return
+				}
+				_, _ = rtcp.Unmarshal(buf[:n])
 			}
 		}(sender)
 	}
 
-	// Answer
 	answer, err := pc.CreateAnswer(nil)
 	if err != nil {
 		return nil, err
 	}
-	if err := pc.SetLocalDescription(answer); err != nil {
+	if err = pc.SetLocalDescription(answer); err != nil {
 		return nil, err
 	}
+
 	<-webrtc.GatheringCompletePromise(pc)
 
-	b64ans, _ := my_webrtc.EncodeSDP(pc.LocalDescription())
+	b64ans, err := my_webrtc.EncodeSDP(pc.LocalDescription())
+	if err != nil {
+		return nil, err
+	}
+
 	ok = true
 	return &webrtc_live.ViewMicResp{
 		Resp: &common.Resp{
@@ -1234,6 +1403,41 @@ func (s *WebrtcLiveImpl) getLessonCached(ctx context.Context, lessonID int64) (*
 		return nil, errors.New("invalid lesson type")
 	}
 	return lesson, nil
+}
+
+func (s *WebrtcLiveImpl) getOrCreateMicBundle(lessonID int64) *model.MicBundle {
+	raw, _ := global.WebRTCEngine.MicTracks.LoadOrStore(lessonID, &model.MicBundle{
+		Publishers: make(map[int64]*model.MicPublisher),
+	})
+	return raw.(*model.MicBundle)
+}
+
+func (s *WebrtcLiveImpl) removeMicPublisher(lessonID, userID int64, sessionID string) {
+	raw, ok := global.WebRTCEngine.MicTracks.Load(lessonID)
+	if !ok {
+		return
+	}
+	b, ok := raw.(*model.MicBundle)
+	if !ok {
+		return
+	}
+
+	b.Mu.Lock()
+	defer b.Mu.Unlock()
+
+	pub, ok := b.Publishers[userID]
+	if !ok {
+		return
+	}
+	if pub.SessionID != sessionID {
+		return
+	}
+
+	delete(b.Publishers, userID)
+
+	if len(b.Publishers) == 0 {
+		global.WebRTCEngine.MicTracks.Delete(lessonID)
+	}
 }
 
 func strptr(s string) *string { return &s }

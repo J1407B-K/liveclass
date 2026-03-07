@@ -2,6 +2,13 @@ package main
 
 import (
 	"context"
+	quiz "liveclass/idl/kitex_gen/quiz/quizservice"
+	"liveclass/internal/rpc/quiz/dao"
+	"liveclass/internal/rpc/quiz/flag"
+	"liveclass/internal/rpc/quiz/initialize"
+	"log"
+	"net"
+
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	kServer "github.com/cloudwego/kitex/server"
@@ -9,11 +16,6 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
-	quiz "liveclass/idl/kitex_gen/quiz/quizservice"
-	"liveclass/internal/rpc/quiz/flag"
-	"liveclass/internal/rpc/quiz/initialize"
-	"log"
-	"net"
 )
 
 func main() {
@@ -25,6 +27,8 @@ func main() {
 	if !ok {
 		log.Println("未自动建表")
 	}
+
+	rdb := initialize.InitRedisDB()
 
 	p := provider.NewOpenTelemetryProvider(
 		provider.WithServiceName("quizservice"),
@@ -39,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	liveCli, err := NewLiveClient()
+	webrtcCli, err := NewWebRTCLiveClient()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -49,7 +53,7 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9003")
-	svr := quiz.NewServer(&QuizServiceImpl{DB: db, liveCli: liveCli, userCli: userCli},
+	svr := quiz.NewServer(&QuizServiceImpl{DBManager: &dao.DBManager{DB: db, RDB: rdb}, webrtcCli: webrtcCli, userCli: userCli},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "quizservice"}),
 		server.WithServiceAddr(addr),

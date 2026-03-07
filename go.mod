@@ -5,6 +5,7 @@ go 1.24.0
 replace github.com/apache/thrift => github.com/apache/thrift v0.13.0
 
 require (
+	github.com/apache/thrift v0.16.0
 	github.com/bwmarrin/snowflake v0.3.0
 	github.com/cloudwego/eino v0.3.36
 	github.com/cloudwego/eino-ext/components/document/loader/file v0.0.0-20250520101807-b2008771903a
@@ -15,7 +16,6 @@ require (
 	github.com/cloudwego/eino-ext/components/retriever/redis v0.0.0-20250520101807-b2008771903a
 	github.com/cloudwego/eino-ext/components/tool/duckduckgo v0.0.0-20250520101807-b2008771903a
 	github.com/cloudwego/eino-ext/components/tool/mcp v0.0.1
-	github.com/cloudwego/gopkg v0.1.4
 	github.com/cloudwego/hertz v0.9.7
 	github.com/cloudwego/kitex v0.13.1
 	github.com/cloudwego/kitex/pkg/protocol/bthrift v0.0.0-20250507072407-18b685d23f94
@@ -43,12 +43,12 @@ require (
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.65
 	go.mongodb.org/mongo-driver v1.17.3
 	golang.org/x/crypto v0.45.0
+	golang.org/x/sync v0.18.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.26.1
 )
 
 require (
-	github.com/apache/thrift v0.16.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bluele/gcache v0.0.2 // indirect
 	github.com/bytedance/gopkg v0.1.2 // indirect
@@ -62,6 +62,7 @@ require (
 	github.com/cloudwego/dynamicgo v0.6.2 // indirect
 	github.com/cloudwego/fastpb v0.0.5 // indirect
 	github.com/cloudwego/frugal v0.2.5 // indirect
+	github.com/cloudwego/gopkg v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/cloudwego/localsession v0.1.2 // indirect
 	github.com/cloudwego/netpoll v0.7.0 // indirect
@@ -178,7 +179,6 @@ require (
 	golang.org/x/arch v0.14.0 // indirect
 	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611 // indirect
 	golang.org/x/net v0.47.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect

@@ -6,8 +6,15 @@ import (
 	"github.com/pion/webrtc/v4"
 )
 
-type MicBundle struct {
+type MicPublisher struct {
+	UserID    int64
 	SessionID string
-	Mu        sync.Mutex
-	Tracks    []*webrtc.TrackLocalStaticRTP
+	PC        *webrtc.PeerConnection
+	Status    ConnectionStatus
+	Track     *webrtc.TrackLocalStaticRTP
+}
+
+type MicBundle struct {
+	Mu         sync.RWMutex
+	Publishers map[int64]*MicPublisher
 }

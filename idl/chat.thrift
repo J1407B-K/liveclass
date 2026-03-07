@@ -14,6 +14,7 @@ struct LiveChatResp {
 
 struct GetHistoryReq {
     1: i64 lesson_id,
+    2: i64 userid,
 }
 
 struct GetHistoryResp {
@@ -22,6 +23,7 @@ struct GetHistoryResp {
 
 struct DelHistoryReq{
     1: i64 lesson_id,
+    2: i64 userid,
 }
 
 struct DelHistoryResp {

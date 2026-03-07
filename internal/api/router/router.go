@@ -46,29 +46,11 @@ func InitRouter() {
 		v1.POST("/login", authMiddlewire.LoginHandler)
 		v1.POST("/refresh", service2.RefreshToken)
 		v1.GET("/userinfo", service2.GetUserInfo)
-		v1.GET("/is_stu_in_lesson", service2.IsStudentInLesson)
 	}
 
 	v2 := h.Group("/")
 	v2.Use(authMiddlewire.MiddlewareFunc())
 	{
-		//livego
-		v2.POST("/create_live", service2.CreateLive)
-		v2.DELETE("/close_live", service2.CloseLive)
-		//前端接口，进入or退出直播间直接调用
-		v2.PUT("/change_user_in_live", service2.ChangeUserInLive)
-		v2.PUT("/change_user_to_lesson", service2.ChangeUserToLesson)
-		//这个是直播间在线人数信息
-		v2.GET("/select_lesson", service2.SelectLessonInfo)
-		//MYSQL中课程信息
-		v2.GET("/get_lesson", service2.GetLessonInfo)
-		v2.POST("/record_lesson", service2.RecordLesson)
-		v2.POST("/create_signin", service2.CreateSignIn)
-		v2.PUT("/signin", service2.SignIn)
-		v2.GET("/select_signin", service2.SelectSignIn)
-		v2.DELETE("/del_signin", service2.DelSignIn)
-		v2.GET("/roll_call", service2.RollCallInRandom)
-
 		//webrtc
 		v2.POST("/broadcast", service2.Broadcast)
 		v2.POST("/view", service2.View)

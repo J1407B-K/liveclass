@@ -3,7 +3,6 @@ package initialize
 import (
 	"liveclass/idl/kitex_gen/agent/agentservice"
 	"liveclass/idl/kitex_gen/chat/chatservice"
-	"liveclass/idl/kitex_gen/live/liveservice"
 	"liveclass/idl/kitex_gen/quiz/quizservice"
 	"liveclass/idl/kitex_gen/user/userservice"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
@@ -26,18 +25,6 @@ func InitNewClient() error {
 		panic(err)
 	}
 	global.Clients.UserClient = uc
-
-	// Liveservice 客户端，附带 OpenTelemetry 链路追踪
-	lc, err := liveservice.NewClient(
-		"liveservice",
-		client.WithResolver(*global.Resolver),
-		client.WithSuite(tracing.NewClientSuite()),
-		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
-	)
-	if err != nil {
-		panic(err)
-	}
-	global.Clients.LiveClient = lc
 
 	// Quizservice 客户端，附带 OpenTelemetry 链路追踪
 	qc, err := quizservice.NewClient(

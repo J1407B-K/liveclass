@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	user "liveclass/idl/kitex_gen/user/userservice"
+	"liveclass/internal/rpc/user/cdc"
 	"liveclass/internal/rpc/user/dao"
 	"liveclass/internal/rpc/user/flag"
 	"liveclass/internal/rpc/user/initialize"
@@ -25,13 +26,33 @@ func main() {
 		panic(err)
 	}
 	db := initialize.InitGormDB()
-	rdb := initialize.InitRedisDB()
-
 	option := flag.Parse()
 	ok := flag.DBOption(db, option)
 	if !ok {
 		log.Println("未自动建表")
 	}
+
+	rdb := initialize.InitRedisDB()
+	err = initialize.InitBloom(db, rdb)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	reader := initialize.InitKafkaReader()
+
+	ctxBloom, cancelBloom := context.WithCancel(context.Background())
+	go initialize.InitRuntimeAddMBloom(ctxBloom, db, rdb)
+	defer cancelBloom()
+
+	ctxCDC, cancelCDC := context.WithCancel(context.Background())
+	go func() {
+		err = cdc.RunBloomWorker(ctxCDC, reader, rdb)
+		if err != nil {
+			log.Println("CDC worker error:", err)
+			return
+		}
+	}()
+	defer cancelCDC()
 
 	p := provider.NewOpenTelemetryProvider(
 		provider.WithServiceName("userservice"),
@@ -48,7 +69,7 @@ func main() {
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9001")
 
-	svr := user.NewServer(&UserServiceImpl{Manager: &dao.DBManager{DB: db, RDB: rdb, Node: snowflakeNode}},
+	svr := user.NewServer(&UserServiceImpl{DBManager: &dao.DBManager{DB: db, RDB: rdb, Node: snowflakeNode}},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "userservice"}),
 		server.WithServiceAddr(addr),

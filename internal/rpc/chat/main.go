@@ -2,6 +2,13 @@ package main
 
 import (
 	"context"
+	chat "liveclass/idl/kitex_gen/chat/chatservice"
+	"liveclass/internal/rpc/chat/global"
+	"liveclass/internal/rpc/chat/initialize"
+	"liveclass/internal/rpc/chat/kafka"
+	"log"
+	"net"
+
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	kServer "github.com/cloudwego/kitex/server"
@@ -9,17 +16,16 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
-	chat "liveclass/idl/kitex_gen/chat/chatservice"
-	"liveclass/internal/rpc/chat/initialize"
-	"log"
-	"net"
 )
 
 func main() {
 	initialize.SetupViper()
 	client := initialize.InitMongo()
 
-	liveCli, err := NewLiveClient()
+	global.Writer = initialize.InitKafkaWriter()
+	defer kafka.CloseKafkaWriter()
+
+	webrtcliveCli, err := NewWebRTCLiveClient()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,7 +45,7 @@ func main() {
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9004")
 
-	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, liveCli: liveCli},
+	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "chatservice"}),
 		server.WithServiceAddr(addr),

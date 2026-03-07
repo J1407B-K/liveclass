@@ -1,9 +1,10 @@
 package model
 
 import (
+	"sync"
+
 	"github.com/pion/interceptor"
 	"github.com/pion/webrtc/v4"
-	"sync"
 )
 
 type Engine struct {
@@ -12,6 +13,6 @@ type Engine struct {
 	InterceptorRegistry *interceptor.Registry
 	SettingEngine       webrtc.SettingEngine
 	SfuConfig           webrtc.Configuration
-	BroadcastTracks     sync.Map
+	BroadcastRooms      sync.Map
 	MicTracks           sync.Map
 }
