@@ -14,9 +14,8 @@ import (
 )
 
 func ChatWithAgent(c context.Context, ctx *app.RequestContext) {
-	//鉴权获得userid
-	data, e := ctx.Get("userid")
-	if !e {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"resp": model2.Response{
 				Code: code.AuthError,
@@ -24,16 +23,13 @@ func ChatWithAgent(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
-
 		return
 	}
-
-	userid := data.(*model2.User).UserId
 
 	msg := ctx.PostForm("message")
 
 	resp, err := global.Clients.AgentClient.ChatWithAgent(c, &agent.ChatWithAgentReq{
-		Userid:  userid,
+		Userid:  uid,
 		Message: msg,
 	})
 	if err != nil {
@@ -57,9 +53,8 @@ func ChatWithAgent(c context.Context, ctx *app.RequestContext) {
 }
 
 func ListAllUserConv(c context.Context, ctx *app.RequestContext) {
-	//鉴权获得userid
-	data, e := ctx.Get("userid")
-	if !e {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"resp": model2.Response{
 				Code: code.AuthError,
@@ -67,14 +62,11 @@ func ListAllUserConv(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
-
 		return
 	}
 
-	userid := data.(*model2.User).UserId
-
 	resp, err := global.Clients.AgentClient.ListAllUserConv(c, &agent.ListAllUserConvReq{
-		Userid: userid,
+		Userid: uid,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
@@ -97,9 +89,8 @@ func ListAllUserConv(c context.Context, ctx *app.RequestContext) {
 }
 
 func DelAllUserConv(c context.Context, ctx *app.RequestContext) {
-	//鉴权获得userid
-	data, e := ctx.Get("userid")
-	if !e {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"resp": model2.Response{
 				Code: code.AuthError,
@@ -107,14 +98,11 @@ func DelAllUserConv(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
-
 		return
 	}
 
-	userid := data.(*model2.User).UserId
-
 	resp, err := global.Clients.AgentClient.DelAllUserConv(c, &agent.DelAllUserConvReq{
-		Userid: userid,
+		Userid: uid,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{

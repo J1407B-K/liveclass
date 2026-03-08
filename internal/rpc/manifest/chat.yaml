@@ -3,4 +3,4 @@ MongoConfig:
   Database: "liveclass"
   CollectionPrefix: "messages_"
 KafkaBroker: "127.0.0.1:9092"
-KafkaTopic: "local-dev"
+KafkaTopic: "liveclass-chat"

@@ -79,7 +79,7 @@ func GetAllUserIDs(db *gorm.DB) ([]int64, error) {
 	const batchSize = 300
 
 	type row struct {
-		UserID int64 `gorm:"column:userid"`
+		UserID int64 `gorm:"column:user_id"`
 	}
 
 	var (

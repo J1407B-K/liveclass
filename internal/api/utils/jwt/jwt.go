@@ -187,3 +187,17 @@ func GenerateAccessToken(uid int64) (string, time.Time, error) {
 	s, err := t.SignedString(jwtSecret)
 	return s, exp, err
 }
+
+func ParseAccessToken(tokenStr string) (int64, error) {
+	token, err := jwtt.Parse(tokenStr, func(token *jwtt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+	if err != nil || !token.Valid {
+		return 0, err
+	}
+
+	claims := token.Claims.(jwtt.MapClaims)
+
+	uid := int64(claims["userid"].(float64))
+	return uid, nil
+}

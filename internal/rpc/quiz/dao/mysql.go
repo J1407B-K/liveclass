@@ -90,16 +90,13 @@ func (m *DBManager) GetQuestionByLesson(lessonID int64) ([]model.Question, error
 	return questions, nil
 }
 
-func (m *DBManager) CheckCloseTime(questionID int64) error {
-	q, err := m.GetQuestion(questionID)
+func (m *DBManager) CheckCloseTime(questionId int64) error {
+	q, err := m.GetQuestion(questionId)
 	if err != nil {
 		return err
 	}
 
-	if !time.Now().Before(q.CloseTime) {
-		if err = m.DelQuestionAndAnswer(questionID); err != nil {
-			return err
-		}
+	if time.Now().After(q.CloseTime) {
 		return errors.New("close")
 	}
 	return nil

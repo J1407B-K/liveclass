@@ -97,7 +97,7 @@ func (s *QuizServiceImpl) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerRe
 	if err != nil {
 		if err.Error() == "close" {
 			return &quiz.TorFAnswerResp{
-				Resp: &common.Resp{Msg: "问题已经关闭"},
+				Resp: &common.Resp{Code: 1, Msg: "问题已经关闭"},
 			}, nil
 		}
 		return nil, err

@@ -6,7 +6,7 @@ import (
 	"liveclass/internal/api/code"
 	global2 "liveclass/internal/api/global"
 	model2 "liveclass/internal/api/model"
-	"liveclass/internal/api/utils/cut"
+	"liveclass/internal/api/utils/jwt"
 	"net/http"
 	"strconv"
 
@@ -16,10 +16,25 @@ import (
 )
 
 func QuizConnection(c context.Context, ctx *app.RequestContext) {
-	lessonid := ctx.Query("lesson_id")
 	token := ctx.Query("token")
-	claim, err := parse(token)
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"code": code.AuthError,
+			"msg":  "missing token",
+		})
+		return
+	}
 
+	uid, err := jwt.ParseAccessToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, utils.H{
+			"code": code.AuthError,
+			"msg":  err.Error(),
+		})
+		return
+	}
+
+	lessonid := ctx.Query("lesson_id")
 	ilid, err := strconv.ParseInt(lessonid, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model2.Response{
@@ -28,33 +43,11 @@ func QuizConnection(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	uid, err := strconv.ParseInt(claim.UserId, 10, 64)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, model2.Response{
-			Code: code.BadRequest,
-			Msg:  err.Error(),
-		})
-		return
-	}
 
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, utils.H{
-			"resp": model2.Response{
-				Code: code.AuthError,
-				Msg:  err.Error(),
-				Data: "nil",
-			},
-		})
-		return
-	}
-	err = global2.Upgrader.Upgrade(ctx, ansHandler(c, uid, ilid))
-	if err != nil {
+	if err = global2.Upgrader.Upgrade(ctx, ansHandler(c, uid, ilid)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
-			"resp": model2.Response{
-				Code: code.UpgraderError,
-				Msg:  err.Error(),
-				Data: "nil",
-			},
+			"code": code.UpgraderError,
+			"msg":  err.Error(),
 		})
 		return
 	}
@@ -63,17 +56,22 @@ func QuizConnection(c context.Context, ctx *app.RequestContext) {
 func ansHandler(c context.Context, userId, lessonid int64) websocket.HertzHandler {
 	return func(conn *websocket.Conn) {
 		global2.Mux.Lock()
-		global2.WsConnsQuiz[conn] = userId
-		global2.WsConnsQuizLesson[conn] = lessonid
+		global2.WsConnsQuiz[conn] = &model2.QuizConnMeta{
+			LessonID: lessonid,
+			UserID:   userId,
+		}
 		global2.Mux.Unlock()
+
+		defer func() {
+			global2.Mux.Lock()
+			delete(global2.WsConnsQuiz, conn)
+			global2.Mux.Unlock()
+			_ = conn.Close()
+		}()
 
 		for {
 			var ans model2.Answer
 			if err := conn.ReadJSON(&ans); err != nil {
-				global2.Mux.Lock()
-				delete(global2.WsConnsQuiz, conn)
-				delete(global2.WsConnsQuizLesson, conn)
-				global2.Mux.Unlock()
 				break
 			}
 
@@ -83,27 +81,76 @@ func ansHandler(c context.Context, userId, lessonid int64) websocket.HertzHandle
 				UserAnswer: ans.Answer,
 			})
 			if err != nil {
-				global2.Mux.Lock()
-				delete(global2.WsConnsQuiz, conn)
-				delete(global2.WsConnsQuizLesson, conn)
-				global2.Mux.Unlock()
-				break
+				_ = conn.WriteJSON(map[string]any{
+					"type": "quiz_error",
+					"msg":  err.Error(),
+				})
+				continue
 			}
-			if resp.Resp.Msg != "" {
-				teacherid, options := cut.SplitAnsResp(resp.Resp.Msg)
-				itid, err := strconv.ParseInt(teacherid, 10, 64)
-				if err != nil {
-					break
-				}
-				err = broadcastToTeacher(itid, options)
-				if err != nil {
-					global2.Mux.Lock()
-					delete(global2.WsConnsQuiz, conn)
-					delete(global2.WsConnsQuizLesson, conn)
-					global2.Mux.Unlock()
-					break
-				}
+
+			if resp == nil || resp.Resp == nil {
+				_ = conn.WriteJSON(map[string]any{
+					"type": "quiz_error",
+					"msg":  "empty response",
+				})
+				continue
+			}
+
+			if resp.Resp.Code != 0 {
+				_ = conn.WriteJSON(map[string]any{
+					"type": "quiz_error",
+					"msg":  resp.Resp.Msg,
+				})
+				continue
+			}
+
+			if resp.Resp.Data == nil || resp.Resp.Data.QuizInfo == nil {
+				continue
+			}
+
+			if err = broadcastToTeacher(resp.Resp.Data.QuizInfo.TeacherID, map[string]any{
+				"type":    "quiz_stats",
+				"quiz_id": resp.Resp.Data.QuizInfo.QuizID,
+				"stats":   resp.Resp.Data.QuizInfo.Stats,
+			}); err != nil {
+				break
 			}
 		}
 	}
+}
+
+func broadcastToTeacher(userid int64, message interface{}) error {
+	global2.Mux.RLock()
+	targets := make([]*websocket.Conn, 0)
+	for conn, meta := range global2.WsConnsQuiz {
+		if meta.UserID == userid {
+			targets = append(targets, conn)
+		}
+	}
+	global2.Mux.RUnlock()
+
+	for _, conn := range targets {
+		if err := conn.WriteJSON(message); err != nil {
+			_ = conn.Close()
+		}
+	}
+	return nil
+}
+
+func broadcastQuizToLesson(lessonid int64, quiz interface{}) error {
+	global2.Mux.RLock()
+	targets := make([]*websocket.Conn, 0)
+	for conn, meta := range global2.WsConnsQuiz {
+		if meta.LessonID == lessonid {
+			targets = append(targets, conn)
+		}
+	}
+	global2.Mux.RUnlock()
+
+	for _, conn := range targets {
+		if err := conn.WriteJSON(quiz); err != nil {
+			_ = conn.Close()
+		}
+	}
+	return nil
 }

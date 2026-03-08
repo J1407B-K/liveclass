@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"liveclass/internal/api/global"
 	"liveclass/internal/api/initialize"
 	"liveclass/internal/api/model"
 	"liveclass/internal/api/router"
+	"liveclass/internal/api/service"
 	"log"
 
 	etcd "github.com/kitex-contrib/registry-etcd"
@@ -27,6 +29,12 @@ func main() {
 		panic(err)
 	}
 
-	go initialize.ConsumeKafkaMessages()
+	chatReader := initialize.InitChatKafkaReader("chat-api-instance-1")
+
+	go func() {
+		if err := service.RunChatConsumer(context.Background(), chatReader); err != nil {
+			log.Printf("chat consumer stopped: %v", err)
+		}
+	}()
 	router.InitRouter()
 }

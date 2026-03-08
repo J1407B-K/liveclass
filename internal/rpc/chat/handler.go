@@ -55,7 +55,7 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 	}
 
 	if err := kafka.ProduceMessage(req.Userid, req.Lessonid, msg.Timestamp, []byte(req.Message)); err != nil {
-		return nil, err
+		log.Printf("produce chat message failed: lesson=%d user=%d err=%v", req.Lessonid, req.Userid, err)
 	}
 
 	return &chat.LiveChatResp{

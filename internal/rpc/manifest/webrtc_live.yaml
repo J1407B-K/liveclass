@@ -14,4 +14,4 @@ CosConfig:
   CosRegion: ap-chongqing
 TmpBaseDir: "rpc/webrtc_live/tmp"
 KafkaBroker: "127.0.0.1:9092"
-KafkaTopic: "liveclass"
+KafkaTopic: "outbox.event.Lesson"

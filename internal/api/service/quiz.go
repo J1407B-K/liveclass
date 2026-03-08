@@ -15,9 +15,8 @@ import (
 )
 
 func CreateQuestion(c context.Context, ctx *app.RequestContext) {
-	//鉴权获得userid
-	data, e := ctx.Get("userid")
-	if !e {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"resp": model2.Response{
 				Code: code.AuthError,
@@ -25,11 +24,8 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
-
 		return
 	}
-
-	userid := data.(*model2.User).UserId
 
 	var question model2.Question
 	err := ctx.BindJSON(&question)
@@ -46,7 +42,7 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 
 	resp, err := global.Clients.QuizClient.CreateQuestion(c, &quiz.CreateQuestionReq{
 		LessonId:   question.LessonId,
-		Userid:     userid,
+		Userid:     uid,
 		Content:    question.Content,
 		OptionsNum: int32(question.OptionNums),
 		Options:    question.Options,
@@ -64,7 +60,7 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	err = broadcastToLesson(question.LessonId, utils.H{
+	err = broadcastQuizToLesson(question.LessonId, utils.H{
 		"Content": question.Content,
 		"Options": question.Options,
 	})
@@ -89,9 +85,8 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 }
 
 func DelQuestion(c context.Context, ctx *app.RequestContext) {
-	//鉴权获得userid
-	data, e := ctx.Get("userid")
-	if !e {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"resp": model2.Response{
 				Code: code.AuthError,
@@ -99,11 +94,8 @@ func DelQuestion(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
-
 		return
 	}
-
-	uid := data.(*model2.User).UserId
 	qid := ctx.PostForm("question_id")
 	iqid, err := strconv.ParseInt(qid, 10, 64)
 	if err != nil {
@@ -138,9 +130,8 @@ func DelQuestion(c context.Context, ctx *app.RequestContext) {
 }
 
 func GetAllLessonQuiz(c context.Context, ctx *app.RequestContext) {
-	//鉴权获得userid
-	data, e := ctx.Get("userid")
-	if !e {
+	uid := ctx.GetInt64("userid")
+	if uid == 0 {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"resp": model2.Response{
 				Code: code.AuthError,
@@ -148,11 +139,8 @@ func GetAllLessonQuiz(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
-
 		return
 	}
-
-	uid := data.(*model2.User).UserId
 	lid := ctx.PostForm("lesson_id")
 	ilid, err := strconv.ParseInt(lid, 10, 64)
 	if err != nil {

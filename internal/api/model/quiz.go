@@ -13,3 +13,8 @@ type Answer struct {
 	QuestionId int64  `json:"question_id"`
 	Answer     string `json:"answer"`
 }
+
+type QuizConnMeta struct {
+	UserID   int64
+	LessonID int64
+}

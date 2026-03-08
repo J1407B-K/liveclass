@@ -1,6 +1,7 @@
 package global
 
 import (
+	"liveclass/internal/api/model"
 	"sync"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -15,12 +16,11 @@ var (
 	}
 
 	//储存连接的map
-	WsConnsQuiz       = make(map[*websocket.Conn]int64) //userid
-	WsConnsQuizLesson = make(map[*websocket.Conn]int64) //lessonid
-	WsConnsChat       = make(map[*websocket.Conn]int64)
+	WsConnsQuiz     = make(map[*websocket.Conn]*model.QuizConnMeta)
+	ChatLessonConns = make(map[int64]map[*websocket.Conn]struct{})
 	//锁
-	Mux = sync.Mutex{}
+	Mux = sync.RWMutex{}
 
 	KafkaBroker = "127.0.0.1:9092"
-	KafkaTopic  = "local-dev"
+	KafkaTopic  = "liveclass-chat"
 )

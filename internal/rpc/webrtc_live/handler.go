@@ -443,7 +443,7 @@ func (s *WebrtcLiveImpl) ChangeUserInLive(ctx context.Context, req *webrtc_live.
 
 	_, err = s.DBManager.RDB.EvalSha(ctx, s.changesha,
 		[]string{countKey, memberKey},
-		req.Options, req.Userid, userinfo.UserName, userinfo.Auth,
+		req.Options, req.Userid, userinfo.Auth,
 	).Result()
 	if err != nil {
 		return nil, err
@@ -544,19 +544,14 @@ func (s *WebrtcLiveImpl) CreateLesson(ctx context.Context, req *webrtc_live.Crea
 
 // DelLesson implements the WebrtcLiveImpl interface.
 func (s *WebrtcLiveImpl) DelLesson(ctx context.Context, req *webrtc_live.DelLessonReq) (resp *webrtc_live.DelLessonResp, err error) {
-	linfo, err := s.DBManager.SelectLesson(req.Lessonid)
-	if err != nil {
-		return nil, err
-	}
-
 	_, _, err = s.requireTeacherOfLesson(ctx, req.Lessonid, req.Userid)
 	if err != nil {
 		return nil, err
 	}
 
 	if _, err = s.DBManager.RDB.EvalSha(ctx, s.delsha, []string{
-		fmt.Sprintf("%d:%s:count", linfo.LessonId, linfo.TeacherName),
-		fmt.Sprintf("%d:%s:member", linfo.LessonId, linfo.TeacherName),
+		dao.LiveCountKey(req.Lessonid),
+		dao.LiveMembersKey(req.Lessonid),
 	}).Result(); err != nil {
 		return nil, err
 	}
@@ -581,7 +576,10 @@ func (s *WebrtcLiveImpl) SelectLessonInfo(ctx context.Context, req *webrtc_live.
 		return nil, err
 	}
 
-	r, err := s.DBManager.RDB.EvalSha(ctx, s.selectsha, []string{dao.LiveMembersKey(req.Lessonid)}).Result()
+	countKey := dao.LiveCountKey(req.Lessonid)
+	memberKey := dao.LiveMembersKey(req.Lessonid)
+
+	r, err := s.DBManager.RDB.EvalSha(ctx, s.selectsha, []string{countKey, memberKey}).Result()
 	if err != nil {
 		return nil, err
 	}
@@ -591,10 +589,8 @@ func (s *WebrtcLiveImpl) SelectLessonInfo(ctx context.Context, req *webrtc_live.
 		return nil, errors.New("解析redis lessonInfo 失败")
 	}
 
-	// 解析在线人数
 	countStr := ar[0].(string)
 
-	// 解析成员列表
 	var membersStr string
 	for i := 1; i < len(ar); i++ {
 		membersStr += ar[i].(string)
