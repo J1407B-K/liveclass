@@ -31,7 +31,7 @@ struct DelAllUserConvResp {
 }
 
 service AgentService{
-    ChatWithAgentResp ChatWithAgent(1: ChatWithAgentReq req)(streaming.mode="server"),
+    ChatWithAgentResp ChatWithAgent(1: ChatWithAgentReq req),
     ListAllUserConvResp ListAllUserConv(1: ListAllUserConvReq req),
     DelAllUserConvResp DelAllUserConv(1: DelAllUserConvReq req),
 }

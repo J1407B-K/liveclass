@@ -2,6 +2,6 @@
 *.iml
 internal/rpc/manifest
 internal/api/manifest
-./docker-compose
+docker-compose
 go.mod
 go.sum
