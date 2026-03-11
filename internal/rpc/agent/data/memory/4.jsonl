@@ -1,4 +1,0 @@
-{"role":"user","content":"请告诉我(3+2)*6的结果"}
-{"role":"assistant","content":"\n(3+2)*6的结果是30.00。","response_meta":{"finish_reason":"stop","usage":{"prompt_tokens":932,"completion_tokens":79,"total_tokens":1011}},"extra":{"ark-reasoning-content":"好的，用户的问题是求(3+2)*6的结果，之前通过调用calculate函数得到了结果30.00，现在需要将这个结果清晰地反馈给用户。用户的问题是简单的算术计算，得到的结果准确，直接告知用户即可。\n","ark-request-id":"02174799215535414ccfa3786144c05af576ecf1eb39fa4b5ee54"}}
-{"role":"user","content":"王之涣写过什么诗句"}
-{"role":"assistant","content":"\n王之涣写过的诗句有《登鹳雀楼》中的“白日依山尽，黄河入海流。欲穷千里目，更上一层楼。”。","response_meta":{"finish_reason":"stop","usage":{"prompt_tokens":888,"completion_tokens":113,"total_tokens":1001}},"extra":{"ark-reasoning-content":"用户想知道王之涣写过什么诗句，已知的上下文信息中包含了相关的诗句文档，文档里有“登鹳雀楼 - 王之涣”以及对应的诗句“白日依山尽，黄河入海流。欲穷千里目，更上一层楼。”，所以可以直接从文档中提取信息回答用户问题，不需要使用工具。\n","ark-request-id":"02174799220957414ccfa3786144c05af576ecf1eb39fa4d0c442"}}

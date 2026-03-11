@@ -1,6 +1,0 @@
-MongoConfig:
-  Addr: "mongodb://admin:123456@127.0.0.1:27017"
-  Database: "liveclass"
-  CollectionPrefix: "messages_"
-KafkaBroker: "127.0.0.1:9092"
-KafkaTopic: "liveclass-chat"

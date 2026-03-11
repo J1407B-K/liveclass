@@ -1,9 +1,0 @@
-MysqlConfig:
-  Username: "root"
-  Password: "123456"
-  Addr: "localhost:3306"
-  DB: "liveclass"
-RedisConfig:
-  Addr: "localhost:6379"
-  Password: ""
-  DB: 0
