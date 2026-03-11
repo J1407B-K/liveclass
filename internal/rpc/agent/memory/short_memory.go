@@ -1,197 +1,273 @@
 package memory
 
 import (
-	"bufio"
-	"encoding/json"
+	"context"
+	"errors"
 	"fmt"
-	"os"
-	"path/filepath"
 	"strings"
-	"sync"
 
 	"github.com/cloudwego/eino/schema"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+
+	"liveclass/internal/rpc/agent/model"
 )
 
-//examples中的简易内存示例，自己修修改改了些，还不错
-//和我之前的memory实现差不多欸嘿嘿
+const defaultWindow = 6
 
-// 默认设置
-func GetDefaultMemory() *SimpleMemory {
-	return NewSimpleMemory(SimpleMemoryConfig{
-		Dir:           "data/memory",
-		MaxWindowSize: 6,
+func BuildConvID(userID int64, convID string) string {
+	convID = strings.TrimSpace(convID)
+	if convID != "" {
+		return convID
+	}
+	return fmt.Sprintf("user_%d_default", userID)
+}
+
+func BuildRequestID(requestID string) string {
+	requestID = strings.TrimSpace(requestID)
+	return requestID
+}
+
+// EnsureConversation 确保会话存在；不存在则创建，存在则刷新 updated_at
+func (m *DBManager) EnsureConversation(ctx context.Context, userID int64, convID string) error {
+	if m.DB == nil {
+		return errors.New("nil db")
+	}
+	if convID == "" {
+		return errors.New("empty convID")
+	}
+
+	conv := model.Conversation{
+		UserID: userID,
+		ConvID: convID,
+	}
+
+	return m.DB.WithContext(ctx).
+		Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "conv_id"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"updated_at": gorm.Expr("NOW()"),
+			}),
+		}).
+		Create(&conv).Error
+}
+
+// AppendMessage 幂等追加一条消息到短期记忆
+func (m *DBManager) AppendMessage(
+	ctx context.Context,
+	userID int64,
+	convID string,
+	requestID string,
+	msg *schema.Message,
+) error {
+	if m.DB == nil {
+		return errors.New("nil db")
+	}
+	if msg == nil {
+		return errors.New("nil message")
+	}
+	if convID == "" {
+		return errors.New("empty convID")
+	}
+	if requestID == "" {
+		return errors.New("empty requestID")
+	}
+
+	return m.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		conv := model.Conversation{
+			UserID: userID,
+			ConvID: convID,
+		}
+
+		if err := tx.
+			Clauses(clause.OnConflict{
+				Columns: []clause.Column{{Name: "conv_id"}},
+				DoUpdates: clause.Assignments(map[string]interface{}{
+					"updated_at": gorm.Expr("NOW()"),
+				}),
+			}).
+			Create(&conv).Error; err != nil {
+			return err
+		}
+
+		record := model.Message{
+			UserID:    userID,
+			ConvID:    convID,
+			RequestID: requestID,
+			Role:      string(msg.Role),
+			Content:   msg.Content,
+		}
+
+		if err := tx.
+			Clauses(clause.OnConflict{
+				Columns: []clause.Column{
+					{Name: "conv_id"},
+					{Name: "request_id"},
+					{Name: "role"},
+				},
+				DoNothing: true,
+			}).
+			Create(&record).Error; err != nil {
+			return err
+		}
+
+		if err := tx.
+			Model(&model.Conversation{}).
+			Where("conv_id = ?", convID).
+			Update("updated_at", gorm.Expr("NOW()")).Error; err != nil {
+			return err
+		}
+
+		return nil
 	})
 }
 
-// 配置
-type SimpleMemoryConfig struct {
-	Dir           string //存储路径
-	MaxWindowSize int    //最大返回窗口大小
+// ExistsMessage 用于判断某个 request_id + role 是否已存在
+func (m *DBManager) ExistsMessage(
+	ctx context.Context,
+	convID string,
+	requestID string,
+	role schema.RoleType,
+) (bool, error) {
+	if m.DB == nil {
+		return false, errors.New("nil db")
+	}
+	if convID == "" {
+		return false, errors.New("empty convID")
+	}
+	if requestID == "" {
+		return false, errors.New("empty requestID")
+	}
+
+	var count int64
+	err := m.DB.WithContext(ctx).
+		Model(&model.Message{}).
+		Where("conv_id = ? AND request_id = ? AND role = ?", convID, requestID, string(role)).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
-type SimpleMemory struct {
-	mu            sync.Mutex
-	dir           string
-	maxWindowSize int
-	conversations map[int64]*Conversation
+// GetRecentMessages 获取最近 window 条消息，返回顺序为 旧 -> 新
+func (m *DBManager) GetRecentMessages(
+	ctx context.Context,
+	convID string,
+	window int,
+) ([]*schema.Message, error) {
+	if m.DB == nil {
+		return nil, errors.New("nil db")
+	}
+	if convID == "" {
+		return nil, errors.New("empty convID")
+	}
+	if window <= 0 {
+		window = defaultWindow
+	}
+
+	var rows []model.Message
+	if err := m.DB.WithContext(ctx).
+		Where("conv_id = ?", convID).
+		Order("created_at desc, id desc").
+		Limit(window).
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	res := make([]*schema.Message, 0, len(rows))
+	for i := len(rows) - 1; i >= 0; i-- {
+		res = append(res, &schema.Message{
+			Role:    schema.RoleType(rows[i].Role),
+			Content: rows[i].Content,
+		})
+	}
+
+	return res, nil
 }
 
-type Conversation struct {
-	mu sync.Mutex
+// GetFullMessages 获取整个会话的完整消息，返回顺序为 旧 -> 新
+func (m *DBManager) GetFullMessages(
+	ctx context.Context,
+	convID string,
+) ([]*schema.Message, error) {
+	if m.DB == nil {
+		return nil, errors.New("nil db")
+	}
+	if convID == "" {
+		return nil, errors.New("empty convID")
+	}
 
-	ID string `json:"id"`
-	//每一条对话是一个message
-	Messages []*schema.Message `json:"messages"`
+	var rows []model.Message
+	if err := m.DB.WithContext(ctx).
+		Where("conv_id = ?", convID).
+		Order("created_at asc, id asc").
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
 
-	filePath      string
-	maxWindowSize int
+	res := make([]*schema.Message, 0, len(rows))
+	for _, row := range rows {
+		res = append(res, &schema.Message{
+			Role:    schema.RoleType(row.Role),
+			Content: row.Content,
+		})
+	}
+
+	return res, nil
 }
 
-// 创建存储目录、对话map
-func NewSimpleMemory(cfg SimpleMemoryConfig) *SimpleMemory {
-	if err := os.MkdirAll(cfg.Dir, 0755); err != nil {
+// ListConversations 列出某个用户的所有会话 conv_id，按最近更新时间倒序
+func (m *DBManager) ListConversations(
+	ctx context.Context,
+	userID int64,
+) ([]string, error) {
+	if m.DB == nil {
+		return nil, errors.New("nil db")
+	}
+
+	var rows []model.Conversation
+	if err := m.DB.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Order("updated_at desc, id desc").
+		Find(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	res := make([]string, 0, len(rows))
+	for _, row := range rows {
+		res = append(res, row.ConvID)
+	}
+	return res, nil
+}
+
+// DeleteConversation 删除一个会话及其全部消息
+func (m *DBManager) DeleteConversation(
+	ctx context.Context,
+	userID int64,
+	convID string,
+) error {
+	if m.DB == nil {
+		return errors.New("nil db")
+	}
+	if convID == "" {
+		return errors.New("empty convID")
+	}
+
+	return m.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.
+			Where("conv_id = ?", convID).
+			Delete(&model.Message{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.
+			Where("user_id = ? AND conv_id = ?", userID, convID).
+			Delete(&model.Conversation{}).Error; err != nil {
+			return err
+		}
+
 		return nil
-	}
-
-	return &SimpleMemory{
-		dir:           cfg.Dir,
-		maxWindowSize: cfg.MaxWindowSize,
-		conversations: make(map[string]*Conversation),
-	}
-}
-
-// 获取对话
-func (m *SimpleMemory) GetConversation(id int64, createIfNotExist bool) *Conversation {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	_, ok := m.conversations[id]
-
-	filePath := filepath.Join(m.dir, string(id)+".jsonl")
-	if !ok {
-		if _, err := os.Stat(filePath); os.IsNotExist(err) {
-			if createIfNotExist {
-				if err := os.WriteFile(filePath, []byte(""), 0644); err != nil {
-					return nil
-				}
-				m.conversations[id] = &Conversation{
-					ID:            id,
-					Messages:      make([]*schema.Message, 0),
-					filePath:      filePath,
-					maxWindowSize: m.maxWindowSize,
-				}
-			}
-		}
-
-		con := &Conversation{
-			ID:            id,
-			Messages:      make([]*schema.Message, 0),
-			filePath:      filePath,
-			maxWindowSize: m.maxWindowSize,
-		}
-		con.load()
-		m.conversations[id] = con
-	}
-
-	return m.conversations[id]
-}
-
-// 列出所有对话文件
-func (m *SimpleMemory) ListConversations() []string {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	files, err := os.ReadDir(m.dir)
-	if err != nil {
-		return nil
-	}
-
-	ids := make([]string, 0, len(files))
-	for _, file := range files {
-		if file.IsDir() {
-			continue
-		}
-		ids = append(ids, strings.TrimSuffix(file.Name(), ".jsonl"))
-	}
-
-	return ids
-}
-
-// 删除对话
-func (m *SimpleMemory) DeleteConversation(id string) error {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-
-	filePath := filepath.Join(m.dir, id+".jsonl")
-	if err := os.Remove(filePath); err != nil {
-		return fmt.Errorf("failed to delete file: %w", err)
-	}
-
-	delete(m.conversations, id)
-	return nil
-}
-
-func (c *Conversation) Append(msg *schema.Message) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	c.Messages = append(c.Messages, msg)
-
-	c.save(msg)
-}
-
-func (c *Conversation) GetFullMessages() []*schema.Message {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	return c.Messages
-}
-
-// get messages with max window size
-func (c *Conversation) GetMessages() []*schema.Message {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	if len(c.Messages) > c.maxWindowSize {
-		return c.Messages[len(c.Messages)-c.maxWindowSize:]
-	}
-
-	return c.Messages
-}
-
-func (c *Conversation) load() error {
-	reader, err := os.Open(c.filePath)
-	if err != nil {
-		return fmt.Errorf("failed to open file: %w", err)
-	}
-	defer reader.Close()
-
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		line := scanner.Text()
-		var msg schema.Message
-		if err := json.Unmarshal([]byte(line), &msg); err != nil {
-			return fmt.Errorf("failed to unmarshal message: %w", err)
-		}
-		c.Messages = append(c.Messages, &msg)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("scanner error: %w", err)
-	}
-
-	return nil
-}
-
-func (c *Conversation) save(msg *schema.Message) {
-	str, _ := json.Marshal(msg)
-
-	// Append to file
-	f, err := os.OpenFile(c.filePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		return
-	}
-	defer f.Close()
-	f.Write(str)
-	f.WriteString("\n")
+	})
 }

@@ -14,10 +14,9 @@ import (
 	"github.com/mark3labs/mcp-go/server"
 )
 
-func StartMCPServer() {
+func StartMCPServer() error {
 	svr := server.NewMCPServer("mcp-server", mcp.LATEST_PROTOCOL_VERSION)
 
-	// 计数器
 	svr.AddTool(mcp.NewTool("calculate",
 		mcp.WithDescription("Perform basic arithmetic operations"),
 		mcp.WithString("operation",
@@ -29,38 +28,37 @@ func StartMCPServer() {
 		mcp.WithNumber("y", mcp.Required(), mcp.Description("Second number")),
 	), calculateHandler)
 
-	// 哈希加密
 	svr.AddTool(mcp.NewTool("sha256",
 		mcp.WithDescription("Compute SHA-256 hash of input string"),
 		mcp.WithString("input", mcp.Required(), mcp.Description("String to hash")),
 	), sha256Handler)
 
-	// 生成uuid
 	svr.AddTool(mcp.NewTool("uuid4",
 		mcp.WithDescription("Generate a random UUID (version 4)"),
 	), uuidHandler)
 
-	// 随机数
 	svr.AddTool(mcp.NewTool("random_number",
 		mcp.WithDescription("Generate a random integer between min and max (inclusive)"),
 		mcp.WithNumber("min", mcp.Required(), mcp.Description("Minimum value")),
 		mcp.WithNumber("max", mcp.Required(), mcp.Description("Maximum value")),
 	), randomNumberHandler)
 
-	// 获取当前时间
 	svr.AddTool(mcp.NewTool("current_time",
 		mcp.WithDescription("Return current server time in RFC3339 format"),
 	), timeHandler)
 
-	go func() {
-		log.Println("Start MCP server on http://localhost:12345")
-		if err := server.NewSSEServer(svr, server.WithBaseURL("http://localhost:12345")).Start("localhost:12345"); err != nil {
-			log.Fatal(err)
-		}
-	}()
+	log.Println("Start MCP server on http://127.0.0.1:12345")
+	return server.NewSSEServer(
+		svr,
+		server.WithBaseURL("http://127.0.0.1:12345"),
+	).Start("127.0.0.1:12345")
 }
 
 func calculateHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	log.Println("MCP tool called: calculate")
+
+	fmt.Println(request)
+
 	args := request.Params.Arguments.(map[string]any)
 	op := args["operation"].(string)
 	x := args["x"].(float64)

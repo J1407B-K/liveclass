@@ -2,28 +2,100 @@ package main
 
 import (
 	"context"
+	agent "liveclass/idl/kitex_gen/agent/agentservice"
+	"liveclass/internal/rpc/agent/cdc"
+	"liveclass/internal/rpc/agent/flag"
+	"liveclass/internal/rpc/agent/global"
+	"liveclass/internal/rpc/agent/initialize"
+	"liveclass/internal/rpc/agent/mcp"
+	"liveclass/internal/rpc/agent/memory"
+	agent2 "liveclass/internal/rpc/agent/workflow/agent"
+	"liveclass/internal/rpc/agent/workflow/fact"
+	"log"
+	"net"
+
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	kServer "github.com/cloudwego/kitex/server"
-	"github.com/coze-dev/cozeloop-go"
 	prometheus "github.com/kitex-contrib/monitor-prometheus"
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
-	"github.com/subosito/gotenv"
-	agent "liveclass/idl/kitex_gen/agent/agentservice"
-	"liveclass/internal/rpc/agent/mcp"
-	"log"
-	"net"
 )
 
 func main() {
-	err := gotenv.Load("coze.env")
+	initialize.SetupViper()
+
+	db := initialize.InitPGDB()
+	option := flag.Parse()
+	ok := flag.DBOption(db, option)
+	if !ok {
+		log.Println("未自动建表")
+	}
+
+	qdrantCli, err := initialize.InitQdrant(context.Background(), 2048)
+	if err != nil {
+		log.Println("qdrant init err:", err)
+		return
+	}
+
+	dbm := &memory.DBManager{
+		DB:        db,
+		QdrantCli: &memory.QdrantManager{Client: qdrantCli.Client, Collection: qdrantCli.Collection},
+	}
+
+	//err = gotenv.Load("coze.env")
+	//if err != nil {
+	//	panic(err.Error())
+	//}
+
+	ctx := context.Background()
+
+	go func() {
+		if err := mcp.StartMCPServer(); err != nil {
+			log.Fatalf("start mcp server failed: %v", err)
+		}
+	}()
+
+	global.ChatModel, err = initialize.InitChatModel(ctx)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	go mcp.StartMCPServer()
+	global.MultiModalEmbedder, err = initialize.InitMultiModalEmbedder(ctx)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	global.AgentRunner, err = agent2.BuildAgent(ctx)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	global.FactExtractorRunner, err = fact.BuildFactExtractor(ctx)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if cli, err := initialize.InitUserClient(); err != nil {
+		log.Printf("init user client failed: %v", err)
+	} else {
+		global.UserClient = cli
+	}
+
+	if cli, err := initialize.InitLessonClient(); err != nil {
+		log.Printf("init lesson client failed: %v", err)
+	} else {
+		global.LessonClient = cli
+	}
+
+	reader := initialize.InitKafkaReader()
+
+	go func() {
+		if err := cdc.RunFactIndexerWorker(ctx, reader, dbm); err != nil {
+			log.Printf("fact indexer worker exited: %v", err)
+		}
+	}()
 
 	p := provider.NewOpenTelemetryProvider(
 		provider.WithServiceName("agentservice"),
@@ -38,14 +110,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cozeloopClient, _ := cozeloop.NewClient(cozeloop.WithPromptTrace(true))
-
-	userCli, err := NewUserClient()
-	if err != nil {
-		log.Fatal(err)
-	}
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9006")
-	svr := agent.NewServer(&AgentServiceImpl{userCli: userCli, cozeloopClient: cozeloopClient},
+	svr := agent.NewServer(&AgentServiceImpl{
+		DBManager:   dbm,
+		agentRunner: global.AgentRunner,
+		factRunner:  global.FactExtractorRunner,
+	},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "agentservice"}),
 		server.WithServiceAddr(addr),

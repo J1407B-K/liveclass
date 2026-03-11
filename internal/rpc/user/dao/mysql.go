@@ -1,10 +1,8 @@
 package dao
 
 import (
-	"encoding/json"
 	"errors"
 	"liveclass/internal/rpc/user/model"
-	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -20,28 +18,7 @@ func (m *DBManager) CreateUser(p model.RegisterParam) (int64, error) {
 			Status:       p.Status,
 		}
 
-		err := tx.Create(&u).Error
-		if err != nil {
-			return err
-		}
-
-		payload := map[string]any{
-			"userid": userid,
-		}
-
-		b, err := json.Marshal(payload)
-		if err != nil {
-			return err
-		}
-
-		outbox := model.OutboxEvent{
-			AggregateType: "User",
-			AggregateID:   strconv.FormatInt(userid, 10),
-			Type:          "ADD_BLOOM",
-			Payload:       string(b),
-		}
-
-		return tx.Create(&outbox).Error
+		return tx.Create(&u).Error
 	})
 
 	if err != nil {

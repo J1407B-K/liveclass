@@ -23,6 +23,11 @@ func main() {
 	global.DBManager = &model.DBManager{
 		RDB: rdb,
 	}
+	snowflake, err := initialize.InitSnowflake()
+	if err != nil {
+		panic(err)
+	}
+	global.Node = snowflake
 
 	err = initialize.InitNewClient()
 	if err != nil {

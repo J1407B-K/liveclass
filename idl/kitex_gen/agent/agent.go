@@ -11,8 +11,10 @@ import (
 )
 
 type ChatWithAgentReq struct {
-	Userid  int64  `thrift:"userid,1" frugal:"1,default,i64" json:"userid"`
-	Message string `thrift:"message,2" frugal:"2,default,string" json:"message"`
+	Userid    int64  `thrift:"userid,1" frugal:"1,default,i64" json:"userid"`
+	Message   string `thrift:"message,2" frugal:"2,default,string" json:"message"`
+	RequestId string `thrift:"request_id,3" frugal:"3,default,string" json:"request_id"`
+	ConvId    string `thrift:"conv_id,4" frugal:"4,default,string" json:"conv_id"`
 }
 
 func NewChatWithAgentReq() *ChatWithAgentReq {
@@ -29,16 +31,32 @@ func (p *ChatWithAgentReq) GetUserid() (v int64) {
 func (p *ChatWithAgentReq) GetMessage() (v string) {
 	return p.Message
 }
+
+func (p *ChatWithAgentReq) GetRequestId() (v string) {
+	return p.RequestId
+}
+
+func (p *ChatWithAgentReq) GetConvId() (v string) {
+	return p.ConvId
+}
 func (p *ChatWithAgentReq) SetUserid(val int64) {
 	p.Userid = val
 }
 func (p *ChatWithAgentReq) SetMessage(val string) {
 	p.Message = val
 }
+func (p *ChatWithAgentReq) SetRequestId(val string) {
+	p.RequestId = val
+}
+func (p *ChatWithAgentReq) SetConvId(val string) {
+	p.ConvId = val
+}
 
 var fieldIDToName_ChatWithAgentReq = map[int16]string{
 	1: "userid",
 	2: "message",
+	3: "request_id",
+	4: "conv_id",
 }
 
 func (p *ChatWithAgentReq) Read(iprot thrift.TProtocol) (err error) {
@@ -70,6 +88,22 @@ func (p *ChatWithAgentReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -126,6 +160,28 @@ func (p *ChatWithAgentReq) ReadField2(iprot thrift.TProtocol) error {
 	p.Message = _field
 	return nil
 }
+func (p *ChatWithAgentReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.RequestId = _field
+	return nil
+}
+func (p *ChatWithAgentReq) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ConvId = _field
+	return nil
+}
 
 func (p *ChatWithAgentReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -139,6 +195,14 @@ func (p *ChatWithAgentReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -191,6 +255,38 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
+func (p *ChatWithAgentReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("request_id", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.RequestId); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *ChatWithAgentReq) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("conv_id", thrift.STRING, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ConvId); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
 
 func (p *ChatWithAgentReq) String() string {
 	if p == nil {
@@ -212,6 +308,12 @@ func (p *ChatWithAgentReq) DeepEqual(ano *ChatWithAgentReq) bool {
 	if !p.Field2DeepEqual(ano.Message) {
 		return false
 	}
+	if !p.Field3DeepEqual(ano.RequestId) {
+		return false
+	}
+	if !p.Field4DeepEqual(ano.ConvId) {
+		return false
+	}
 	return true
 }
 
@@ -225,6 +327,20 @@ func (p *ChatWithAgentReq) Field1DeepEqual(src int64) bool {
 func (p *ChatWithAgentReq) Field2DeepEqual(src string) bool {
 
 	if strings.Compare(p.Message, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *ChatWithAgentReq) Field3DeepEqual(src string) bool {
+
+	if strings.Compare(p.RequestId, src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *ChatWithAgentReq) Field4DeepEqual(src string) bool {
+
+	if strings.Compare(p.ConvId, src) != 0 {
 		return false
 	}
 	return true
@@ -729,7 +845,8 @@ func (p *ListAllUserConvResp) Field1DeepEqual(src *common.Resp) bool {
 }
 
 type DelAllUserConvReq struct {
-	Userid int64 `thrift:"userid,1" frugal:"1,default,i64" json:"userid"`
+	Userid int64  `thrift:"userid,1" frugal:"1,default,i64" json:"userid"`
+	ConvId string `thrift:"conv_id,2" frugal:"2,default,string" json:"conv_id"`
 }
 
 func NewDelAllUserConvReq() *DelAllUserConvReq {
@@ -742,12 +859,20 @@ func (p *DelAllUserConvReq) InitDefault() {
 func (p *DelAllUserConvReq) GetUserid() (v int64) {
 	return p.Userid
 }
+
+func (p *DelAllUserConvReq) GetConvId() (v string) {
+	return p.ConvId
+}
 func (p *DelAllUserConvReq) SetUserid(val int64) {
 	p.Userid = val
+}
+func (p *DelAllUserConvReq) SetConvId(val string) {
+	p.ConvId = val
 }
 
 var fieldIDToName_DelAllUserConvReq = map[int16]string{
 	1: "userid",
+	2: "conv_id",
 }
 
 func (p *DelAllUserConvReq) Read(iprot thrift.TProtocol) (err error) {
@@ -771,6 +896,14 @@ func (p *DelAllUserConvReq) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -816,6 +949,17 @@ func (p *DelAllUserConvReq) ReadField1(iprot thrift.TProtocol) error {
 	p.Userid = _field
 	return nil
 }
+func (p *DelAllUserConvReq) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.ConvId = _field
+	return nil
+}
 
 func (p *DelAllUserConvReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -825,6 +969,10 @@ func (p *DelAllUserConvReq) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -861,6 +1009,22 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *DelAllUserConvReq) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("conv_id", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.ConvId); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
 
 func (p *DelAllUserConvReq) String() string {
 	if p == nil {
@@ -879,12 +1043,22 @@ func (p *DelAllUserConvReq) DeepEqual(ano *DelAllUserConvReq) bool {
 	if !p.Field1DeepEqual(ano.Userid) {
 		return false
 	}
+	if !p.Field2DeepEqual(ano.ConvId) {
+		return false
+	}
 	return true
 }
 
 func (p *DelAllUserConvReq) Field1DeepEqual(src int64) bool {
 
 	if p.Userid != src {
+		return false
+	}
+	return true
+}
+func (p *DelAllUserConvReq) Field2DeepEqual(src string) bool {
+
+	if strings.Compare(p.ConvId, src) != 0 {
 		return false
 	}
 	return true

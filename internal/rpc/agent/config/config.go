@@ -1,8 +1,29 @@
 package config
 
 type Config struct {
+	PostgresConfig
+	QdrantConfig
+	KafkaBroker    string
+	KafkaTopic     string
 	APIKey         string
 	ChatModel      string
 	EmbeddingModel string
 	RedisAddr      string
+}
+
+type PostgresConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DB       string
+	SSLMode  string
+	TimeZone string
+}
+
+type QdrantConfig struct {
+	Host       string
+	GrpcPort   int
+	Collection string
+	ApiKey     string
 }

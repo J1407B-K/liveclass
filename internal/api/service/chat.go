@@ -30,6 +30,7 @@ func GetHistory(c context.Context, ctx *app.RequestContext) {
 	ilid, err := strconv.ParseInt(lid, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.H{"code": http.StatusBadRequest, "message": err.Error()})
+		return
 	}
 	resp, err := global.Clients.ChatClient.GetHistory(c, &chat.GetHistoryReq{LessonId: ilid, Userid: uid})
 	if err != nil {
@@ -40,6 +41,7 @@ func GetHistory(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
+		return
 	}
 	ctx.JSON(http.StatusOK, utils.H{
 		"resp": model.Response{
@@ -66,6 +68,7 @@ func DelHistory(c context.Context, ctx *app.RequestContext) {
 	ilid, err := strconv.ParseInt(lid, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.H{"code": http.StatusBadRequest, "message": err.Error()})
+		return
 	}
 	resp, err := global.Clients.ChatClient.DelHistory(c, &chat.DelHistoryReq{LessonId: ilid, Userid: uid})
 	if err != nil {
@@ -76,6 +79,7 @@ func DelHistory(c context.Context, ctx *app.RequestContext) {
 				Data: "nil",
 			},
 		})
+		return
 	}
 
 	ctx.JSON(http.StatusOK, utils.H{

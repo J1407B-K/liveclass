@@ -28,9 +28,15 @@ func ChatWithAgent(c context.Context, ctx *app.RequestContext) {
 
 	msg := ctx.PostForm("message")
 
+	conv_id := ctx.PostForm("conv_id")
+
+	request_id := global.Node.Generate().String()
+
 	resp, err := global.Clients.AgentClient.ChatWithAgent(c, &agent.ChatWithAgentReq{
-		Userid:  uid,
-		Message: msg,
+		Userid:    uid,
+		Message:   msg,
+		RequestId: request_id,
+		ConvId:    conv_id,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
@@ -46,8 +52,8 @@ func ChatWithAgent(c context.Context, ctx *app.RequestContext) {
 	ctx.JSON(http.StatusOK, utils.H{
 		"resp": model2.Response{
 			Code: 0,
-			Msg:  "ok",
-			Data: resp.Resp.Data,
+			Msg:  resp.Resp.Msg,
+			Data: "nil",
 		},
 	})
 }
@@ -101,8 +107,11 @@ func DelAllUserConv(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
+	conv_id := ctx.PostForm("convid")
+
 	resp, err := global.Clients.AgentClient.DelAllUserConv(c, &agent.DelAllUserConvReq{
 		Userid: uid,
+		ConvId: conv_id,
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{

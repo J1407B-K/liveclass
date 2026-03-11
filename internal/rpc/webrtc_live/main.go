@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
-	"liveclass/internal/rpc/webrtc_live/cdc"
 	"liveclass/internal/rpc/webrtc_live/dao"
 	"liveclass/internal/rpc/webrtc_live/flag"
 	"liveclass/internal/rpc/webrtc_live/initialize"
@@ -38,8 +37,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	reader := initialize.InitKafkaReader()
-
 	changesha, delsha, selectsha := initialize.InitScript(rdb)
 	initialize.InitWebRTCEngine()
 	cosClient := initialize.SetUpCos()
@@ -47,16 +44,6 @@ func main() {
 	ctxBloom, cancelBloom := context.WithCancel(context.Background())
 	go initialize.InitRuntimeAddMBloom(ctxBloom, db, rdb)
 	defer cancelBloom()
-
-	ctxCDC, cancelCDC := context.WithCancel(context.Background())
-	go func() {
-		err = cdc.RunBloomWorker(ctxCDC, reader, rdb)
-		if err != nil {
-			log.Println("CDC worker error:", err)
-			return
-		}
-	}()
-	defer cancelCDC()
 
 	userCli, err := NewUserClient()
 	if err != nil {

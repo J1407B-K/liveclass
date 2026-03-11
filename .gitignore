@@ -1,2 +1,7 @@
 .idea/
 *.iml
+internal/rpc/manifest
+internal/api/manifest
+./docker-compose
+go.mod
+go.sum

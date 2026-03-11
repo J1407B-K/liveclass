@@ -2,18 +2,31 @@ package agent
 
 import (
 	"context"
-	"liveclass/internal/rpc/agent/model"
-
-	_type "liveclass/internal/rpc/agent/eino_gen/agent/type"
-	"liveclass/internal/rpc/agent/global"
+	"errors"
+	"fmt"
 	"liveclass/internal/rpc/agent/memory"
+	"liveclass/internal/rpc/agent/model"
+	userprofile "liveclass/internal/rpc/agent/profile"
+	"liveclass/internal/rpc/agent/rerank"
+	"log"
 
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 )
+
+type AgentRunner interface {
+	Invoke(context.Context, *model.UserMessage, ...compose.Option) (*schema.Message, error)
+}
+
+type FactRunner interface {
+	Invoke(context.Context, *model.FactExtractInput, ...compose.Option) ([]*model.FactCandidate, error)
+}
 
 func ChatWithAgent(
 	ctx context.Context,
 	dbm *memory.DBManager,
+	agentRunner AgentRunner,
+	factRunner FactRunner,
 	userID int64,
 	convID string,
 	requestID string,
@@ -33,13 +46,36 @@ func ChatWithAgent(
 		return "", err
 	}
 
-	userMsg := &_type.UserMessage{
+	var factText string
+	relevantFacts, err := dbm.RetrieveRelevantFacts(ctx, userID, msg, 5)
+	if err == nil && len(relevantFacts) > 0 {
+		rankedFacts, rerr := rerank.Facts(ctx, msg, relevantFacts, 5)
+		if rerr != nil {
+			log.Println("rerank facts failed:", rerr)
+		} else if len(rankedFacts) > 0 {
+			relevantFacts = rankedFacts
+		}
+		factText = memory.FormatFactsForPrompt(relevantFacts)
+	}
+
+	profileSummary, err := userprofile.EnsureUserProfile(ctx, dbm, userID)
+	if err != nil {
+		log.Println("generate user profile failed:", err)
+	}
+
+	userMsg := &model.UserMessage{
 		ID:      userID,
 		Query:   msg,
 		History: history,
+		Facts:   factText,
+		Profile: profileSummary,
 	}
 
-	resp, err := global.AgentRunner.Invoke(ctx, userMsg)
+	if agentRunner == nil {
+		return "", errors.New("nil agent runner")
+	}
+
+	resp, err := agentRunner.Invoke(ctx, userMsg)
 	if err != nil {
 		return "", err
 	}
@@ -52,15 +88,35 @@ func ChatWithAgent(
 		return "", err
 	}
 
-	go func() {
-		bgctx := context.Background()
-
-		facts, err := ExtractFacts(bgctx, msg)
-		if err != nil {
+	go func(userID int64, convID, msg string) {
+		if factRunner == nil {
 			return
 		}
 
+		bgctx := context.Background()
+
+		input := &model.FactExtractInput{
+			UserID:  userID,
+			ConvID:  convID,
+			Message: msg,
+		}
+
+		facts, err := factRunner.Invoke(bgctx, input)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		fmt.Println(facts)
+
 		for _, f := range facts {
+			if f == nil {
+				continue
+			}
+			if f.Confidence < 0.5 {
+				continue
+			}
+
 			_, _ = dbm.InsertFactWithOutbox(
 				bgctx,
 				userID,
@@ -70,12 +126,7 @@ func ChatWithAgent(
 				convID,
 			)
 		}
-	}()
+	}(userID, convID, msg)
 
 	return resp.Content, nil
-}
-
-func ExtractFacts(ctx context.Context, msg string) ([]model.FactCandidate, error) {
-	//TODO
-	return nil, nil
 }

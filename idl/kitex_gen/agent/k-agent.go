@@ -76,6 +76,34 @@ func (p *ChatWithAgentReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField3(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = bthrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField4(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = bthrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = bthrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -139,6 +167,34 @@ func (p *ChatWithAgentReq) FastReadField2(buf []byte) (int, error) {
 	return offset, nil
 }
 
+func (p *ChatWithAgentReq) FastReadField3(buf []byte) (int, error) {
+	offset := 0
+
+	if v, l, err := bthrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+
+		p.RequestId = v
+
+	}
+	return offset, nil
+}
+
+func (p *ChatWithAgentReq) FastReadField4(buf []byte) (int, error) {
+	offset := 0
+
+	if v, l, err := bthrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+
+		p.ConvId = v
+
+	}
+	return offset, nil
+}
+
 // for compatibility
 func (p *ChatWithAgentReq) FastWrite(buf []byte) int {
 	return 0
@@ -150,6 +206,8 @@ func (p *ChatWithAgentReq) FastWriteNocopy(buf []byte, binaryWriter bthrift.Bina
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], binaryWriter)
 		offset += p.fastWriteField2(buf[offset:], binaryWriter)
+		offset += p.fastWriteField3(buf[offset:], binaryWriter)
+		offset += p.fastWriteField4(buf[offset:], binaryWriter)
 	}
 	offset += bthrift.Binary.WriteFieldStop(buf[offset:])
 	offset += bthrift.Binary.WriteStructEnd(buf[offset:])
@@ -162,6 +220,8 @@ func (p *ChatWithAgentReq) BLength() int {
 	if p != nil {
 		l += p.field1Length()
 		l += p.field2Length()
+		l += p.field3Length()
+		l += p.field4Length()
 	}
 	l += bthrift.Binary.FieldStopLength()
 	l += bthrift.Binary.StructEndLength()
@@ -186,6 +246,24 @@ func (p *ChatWithAgentReq) fastWriteField2(buf []byte, binaryWriter bthrift.Bina
 	return offset
 }
 
+func (p *ChatWithAgentReq) fastWriteField3(buf []byte, binaryWriter bthrift.BinaryWriter) int {
+	offset := 0
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "request_id", thrift.STRING, 3)
+	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.RequestId)
+
+	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
+	return offset
+}
+
+func (p *ChatWithAgentReq) fastWriteField4(buf []byte, binaryWriter bthrift.BinaryWriter) int {
+	offset := 0
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "conv_id", thrift.STRING, 4)
+	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.ConvId)
+
+	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
+	return offset
+}
+
 func (p *ChatWithAgentReq) field1Length() int {
 	l := 0
 	l += bthrift.Binary.FieldBeginLength("userid", thrift.I64, 1)
@@ -199,6 +277,24 @@ func (p *ChatWithAgentReq) field2Length() int {
 	l := 0
 	l += bthrift.Binary.FieldBeginLength("message", thrift.STRING, 2)
 	l += bthrift.Binary.StringLengthNocopy(p.Message)
+
+	l += bthrift.Binary.FieldEndLength()
+	return l
+}
+
+func (p *ChatWithAgentReq) field3Length() int {
+	l := 0
+	l += bthrift.Binary.FieldBeginLength("request_id", thrift.STRING, 3)
+	l += bthrift.Binary.StringLengthNocopy(p.RequestId)
+
+	l += bthrift.Binary.FieldEndLength()
+	return l
+}
+
+func (p *ChatWithAgentReq) field4Length() int {
+	l := 0
+	l += bthrift.Binary.FieldBeginLength("conv_id", thrift.STRING, 4)
+	l += bthrift.Binary.StringLengthNocopy(p.ConvId)
 
 	l += bthrift.Binary.FieldEndLength()
 	return l
@@ -624,6 +720,20 @@ func (p *DelAllUserConvReq) FastRead(buf []byte) (int, error) {
 					goto SkipFieldError
 				}
 			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				l, err = p.FastReadField2(buf[offset:])
+				offset += l
+				if err != nil {
+					goto ReadFieldError
+				}
+			} else {
+				l, err = bthrift.Binary.Skip(buf[offset:], fieldTypeId)
+				offset += l
+				if err != nil {
+					goto SkipFieldError
+				}
+			}
 		default:
 			l, err = bthrift.Binary.Skip(buf[offset:], fieldTypeId)
 			offset += l
@@ -673,6 +783,20 @@ func (p *DelAllUserConvReq) FastReadField1(buf []byte) (int, error) {
 	return offset, nil
 }
 
+func (p *DelAllUserConvReq) FastReadField2(buf []byte) (int, error) {
+	offset := 0
+
+	if v, l, err := bthrift.Binary.ReadString(buf[offset:]); err != nil {
+		return offset, err
+	} else {
+		offset += l
+
+		p.ConvId = v
+
+	}
+	return offset, nil
+}
+
 // for compatibility
 func (p *DelAllUserConvReq) FastWrite(buf []byte) int {
 	return 0
@@ -683,6 +807,7 @@ func (p *DelAllUserConvReq) FastWriteNocopy(buf []byte, binaryWriter bthrift.Bin
 	offset += bthrift.Binary.WriteStructBegin(buf[offset:], "DelAllUserConvReq")
 	if p != nil {
 		offset += p.fastWriteField1(buf[offset:], binaryWriter)
+		offset += p.fastWriteField2(buf[offset:], binaryWriter)
 	}
 	offset += bthrift.Binary.WriteFieldStop(buf[offset:])
 	offset += bthrift.Binary.WriteStructEnd(buf[offset:])
@@ -694,6 +819,7 @@ func (p *DelAllUserConvReq) BLength() int {
 	l += bthrift.Binary.StructBeginLength("DelAllUserConvReq")
 	if p != nil {
 		l += p.field1Length()
+		l += p.field2Length()
 	}
 	l += bthrift.Binary.FieldStopLength()
 	l += bthrift.Binary.StructEndLength()
@@ -709,10 +835,28 @@ func (p *DelAllUserConvReq) fastWriteField1(buf []byte, binaryWriter bthrift.Bin
 	return offset
 }
 
+func (p *DelAllUserConvReq) fastWriteField2(buf []byte, binaryWriter bthrift.BinaryWriter) int {
+	offset := 0
+	offset += bthrift.Binary.WriteFieldBegin(buf[offset:], "conv_id", thrift.STRING, 2)
+	offset += bthrift.Binary.WriteStringNocopy(buf[offset:], binaryWriter, p.ConvId)
+
+	offset += bthrift.Binary.WriteFieldEnd(buf[offset:])
+	return offset
+}
+
 func (p *DelAllUserConvReq) field1Length() int {
 	l := 0
 	l += bthrift.Binary.FieldBeginLength("userid", thrift.I64, 1)
 	l += bthrift.Binary.I64Length(p.Userid)
+
+	l += bthrift.Binary.FieldEndLength()
+	return l
+}
+
+func (p *DelAllUserConvReq) field2Length() int {
+	l := 0
+	l += bthrift.Binary.FieldBeginLength("conv_id", thrift.STRING, 2)
+	l += bthrift.Binary.StringLengthNocopy(p.ConvId)
 
 	l += bthrift.Binary.FieldEndLength()
 	return l

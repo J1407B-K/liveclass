@@ -2,110 +2,141 @@ package main
 
 import (
 	"context"
-	"github.com/cloudwego/kitex/client"
-	"github.com/cloudwego/kitex/pkg/transmeta"
-	"github.com/coze-dev/cozeloop-go"
-	"github.com/kitex-contrib/obs-opentelemetry/tracing"
-	etcd "github.com/kitex-contrib/registry-etcd"
+	"fmt"
 	agent "liveclass/idl/kitex_gen/agent"
 	"liveclass/idl/kitex_gen/common"
-	"liveclass/idl/kitex_gen/user/userservice"
 	myagent "liveclass/internal/rpc/agent/agent"
 	_const "liveclass/internal/rpc/agent/const"
-	"liveclass/internal/rpc/agent/global"
-	"log"
-	"os"
+	"liveclass/internal/rpc/agent/memory"
 	"strings"
+
+	uuid2 "github.com/google/uuid"
+	"golang.org/x/sync/singleflight"
 )
 
 // AgentServiceImpl implements the last service interface defined in the IDL.
 type AgentServiceImpl struct {
-	userCli userservice.Client
+	DBManager   *memory.DBManager
+	agentRunner myagent.AgentRunner
+	factRunner  myagent.FactRunner
 
-	cozeloopClient cozeloop.Client
-}
+	//cozeloopClient cozeloop.Client
 
-func NewUserClient() (userservice.Client, error) {
-	r, err := etcd.NewEtcdResolver([]string{"127.0.0.1:2379"})
-	if err != nil {
-		log.Fatal(err)
-	}
-	return userservice.NewClient("userservice", client.WithResolver(r),
-		client.WithSuite(tracing.NewClientSuite()),
-		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
+	sfAgent singleflight.Group
 }
 
 // ChatWithAgent implements the AgentServiceImpl interface.
-func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWithAgentReq) (resp *agent.ChatWithAgentResp, err error) {
-	input := map[string]interface{}{
-		"message": req.Message,
+func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWithAgentReq) (*agent.ChatWithAgentResp, error) {
+	if req == nil || strings.TrimSpace(req.Message) == "" {
+		return &agent.ChatWithAgentResp{
+			Resp: &common.Resp{Msg: "empty message"},
+		}, nil
 	}
 
-	cozeCtx, root := s.cozeloopClient.StartSpan(context.Background(), req.Userid, "graph")
-	root.SetInput(cozeCtx, input)
+	convID := memory.BuildConvID(req.Userid, req.ConvId)
+	requestID := strings.TrimSpace(req.RequestId)
+	if requestID == "" {
+		requestID = uuid2.NewString()
+	}
 
-	agentResp, err := myagent.ChatWithAgent(ctx, req.Userid, req.Message)
-	if err != nil {
-		var respAgain string
-		for i := 0; i < _const.MAXRETRY; i++ {
-			respAgain, err = myagent.ChatWithAgent(ctx, req.Userid, req.Message)
+	//input := map[string]interface{}{
+	//	"userid":     req.Userid,
+	//	"message":    req.Message,
+	//	"conv_id":    convID,
+	//	"request_id": requestID,
+	//}
+
+	//cozeCtx, root := s.cozeloopClient.StartSpan(ctx, strconv.FormatInt(req.Userid, 10), "graph")
+	//defer root.Finish(cozeCtx)
+	//
+	//root.SetInput(cozeCtx, input)
+
+	sfKey := fmt.Sprintf("%d:%s:%s", req.Userid, convID, requestID)
+
+	v, err, _ := s.sfAgent.Do(sfKey, func() (interface{}, error) {
+		var (
+			agentResp string
+			err       error
+		)
+
+		for i := 0; i <= _const.MAXRETRY; i++ {
+			agentResp, err = myagent.ChatWithAgent(
+				ctx,
+				s.DBManager,
+				s.agentRunner,
+				s.factRunner,
+				req.Userid,
+				convID,
+				requestID,
+				req.Message,
+			)
 			if err == nil {
-				break
+				return agentResp, nil
 			}
 		}
-		agentResp = respAgain
+
+		return "", err
+	})
+
+	if err != nil {
+		//root.SetOutput(cozeCtx, map[string]interface{}{
+		//	"error":      err.Error(),
+		//	"conv_id":    convID,
+		//	"request_id": requestID,
+		//	"shared":     shared,
+		//})
+		return &agent.ChatWithAgentResp{
+			Resp: &common.Resp{Msg: "agent service temporarily unavailable"},
+		}, err
 	}
 
-	root.SetOutput(cozeCtx, agentResp)
-	root.Finish(cozeCtx)
+	agentResp, ok := v.(string)
+	if !ok {
+		return nil, fmt.Errorf("singleflight result type assertion failed")
+	}
 
-	s.cozeloopClient.Close(cozeCtx)
+	//root.SetOutput(cozeCtx, map[string]interface{}{
+	//	"reply":      agentResp,
+	//	"conv_id":    convID,
+	//	"request_id": requestID,
+	//	"shared":     shared,
+	//})
 
-	return &agent.ChatWithAgentResp{Resp: &common.Resp{Data: agentResp}}, nil
+	return &agent.ChatWithAgentResp{
+		Resp: &common.Resp{Msg: agentResp},
+	}, nil
 }
 
 // ListAllUserConv implements the AgentServiceImpl interface.
-func (s *AgentServiceImpl) ListAllUserConv(ctx context.Context, req *agent.ListAllUserConvReq) (resp *agent.ListAllUserConvResp, err error) {
-	convsf := global.Mem.ListConversations()
-
-	for _, convf := range convsf {
-		if !strings.Contains(convf, req.Userid) {
-			continue
-		}
-
-		bytes, err := os.ReadFile("data/memory/" + convf + ".jsonl")
-		if err != nil {
-			return nil, err
-		}
-
-		return &agent.ListAllUserConvResp{Resp: &common.Resp{Data: string(bytes)}}, nil
+func (s *AgentServiceImpl) ListAllUserConv(ctx context.Context, req *agent.ListAllUserConvReq) (*agent.ListAllUserConvResp, error) {
+	convIDs, err := s.DBManager.ListConversations(ctx, req.Userid)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+
+	if len(convIDs) == 0 {
+		return &agent.ListAllUserConvResp{
+			Resp: &common.Resp{Msg: "no conversations"},
+		}, nil
+	}
+
+	return &agent.ListAllUserConvResp{
+		Resp: &common.Resp{Msg: strings.Join(convIDs, "\n")},
+	}, nil
 }
 
 // DelAllUserConv implements the AgentServiceImpl interface.
-func (s *AgentServiceImpl) DelAllUserConv(ctx context.Context, req *agent.DelAllUserConvReq) (resp *agent.DelAllUserConvResp, err error) {
-	convsf := global.Mem.ListConversations()
+func (s *AgentServiceImpl) DelAllUserConv(ctx context.Context, req *agent.DelAllUserConvReq) (*agent.DelAllUserConvResp, error) {
+	convID := memory.BuildConvID(req.Userid, req.ConvId)
 
-	for _, convf := range convsf {
-		if !strings.Contains(convf, req.Userid) {
-			continue
-		}
-
-		err := os.Remove("data/memory/" + convf + ".jsonl")
-		if err != nil {
-			return nil, err
-		}
-
-		return &agent.DelAllUserConvResp{
-			Resp: &common.Resp{
-				Data: "success",
-			},
-		}, nil
+	err := s.DBManager.DeleteConversation(ctx, req.Userid, convID)
+	if err != nil {
+		return nil, err
 	}
+
 	return &agent.DelAllUserConvResp{
 		Resp: &common.Resp{
-			Data: "not found file",
+			Msg: "success",
 		},
 	}, nil
 }

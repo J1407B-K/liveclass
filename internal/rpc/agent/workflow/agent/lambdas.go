@@ -2,18 +2,27 @@ package agent
 
 import (
 	"context"
-	_type "liveclass/internal/rpc/agent/eino_gen/agent/type"
+	"fmt"
+	"liveclass/internal/rpc/agent/model"
 	"time"
 )
 
-func newInputToQuery(ctx context.Context, input *_type.UserMessage, opts ...any) (output string, err error) {
-	return input.Query, nil
-}
+func newInputToTemplateVars(ctx context.Context, input *model.UserMessage, opts ...any) (map[string]any, error) {
+	facts := input.Facts
+	if facts == "" {
+		facts = "暂无相关长期记忆。"
+	}
+	profile := input.Profile
+	if profile == "" {
+		profile = "暂无画像数据。"
+	}
 
-func newInputToHistory(ctx context.Context, input *_type.UserMessage, opts ...any) (output map[string]any, err error) {
 	return map[string]any{
 		"content": input.Query,
 		"history": input.History,
+		"facts":   facts,
+		"profile": profile,
+		"user_id": fmt.Sprintf("%d", input.ID),
 		"date":    time.Now().Format("2006-01-02 15:04:05"),
 	}, nil
 }
