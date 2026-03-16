@@ -4,6 +4,7 @@ type Config struct {
 	MongoConfig
 	KafkaBroker string
 	KafkaTopic  string
+	KafkaGroup  string
 }
 
 type MongoConfig struct {

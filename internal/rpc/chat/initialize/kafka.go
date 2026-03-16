@@ -7,10 +7,19 @@ import (
 )
 
 func InitKafkaWriter() *kafka.Writer {
-	w := &kafka.Writer{
-		Addr:     kafka.TCP(global.Config.KafkaBroker), // 设置 Kafka broker 地址
-		Topic:    global.Config.KafkaTopic,             // 设置 Kafka topic
-		Balancer: &kafka.LeastBytes{},                  // 设置负载均衡策略
+	return &kafka.Writer{
+		Addr:     kafka.TCP(global.Config.KafkaBroker),
+		Topic:    global.Config.KafkaTopic,
+		Balancer: &kafka.LeastBytes{},
 	}
-	return w
+}
+
+func InitKafkaReader(groupID string) *kafka.Reader {
+	return kafka.NewReader(kafka.ReaderConfig{
+		Brokers:  []string{global.Config.KafkaBroker},
+		Topic:    global.Config.KafkaTopic,
+		GroupID:  groupID,
+		MinBytes: 1e3,
+		MaxBytes: 10e6,
+	})
 }

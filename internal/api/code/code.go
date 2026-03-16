@@ -7,6 +7,7 @@ const (
 	AuthError
 	UpgraderError
 	BroadCastError
+	TooManyRequests
 )
 
 const (

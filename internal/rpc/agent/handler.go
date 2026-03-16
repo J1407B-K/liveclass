@@ -7,7 +7,9 @@ import (
 	"liveclass/idl/kitex_gen/common"
 	myagent "liveclass/internal/rpc/agent/agent"
 	_const "liveclass/internal/rpc/agent/const"
+	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/memory"
+	"liveclass/internal/rpc/agent/rag"
 	"strings"
 
 	uuid2 "github.com/google/uuid"
@@ -16,9 +18,11 @@ import (
 
 // AgentServiceImpl implements the last service interface defined in the IDL.
 type AgentServiceImpl struct {
-	DBManager   *memory.DBManager
-	agentRunner myagent.AgentRunner
-	factRunner  myagent.FactRunner
+	DBManager    *memory.DBManager
+	agentRunner  myagent.AgentRunner
+	factRunner   myagent.FactRunner
+	docRetriever *rag.DocRetriever
+	embedder     global.TextMultiModalEmbedder
 
 	//cozeloopClient cozeloop.Client
 
@@ -65,10 +69,13 @@ func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWit
 				s.DBManager,
 				s.agentRunner,
 				s.factRunner,
+				s.docRetriever,
+				s.embedder,
 				req.Userid,
 				convID,
 				requestID,
 				req.Message,
+				req.LessonId,
 			)
 			if err == nil {
 				return agentResp, nil

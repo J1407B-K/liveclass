@@ -41,8 +41,6 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		return nil, err
 	}
 
-	coll := dao.ChooseCollection(req.Lessonid, s.mongoClient)
-
 	msg := model.Message{
 		LessonID:  req.Lessonid,
 		Sender:    req.Userid,
@@ -50,12 +48,8 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		Timestamp: time.Now(),
 	}
 
-	if err := dao.InsertMongo(ctx, coll, msg); err != nil {
-		return nil, err
-	}
-
 	if err := kafka.ProduceMessage(req.Userid, req.Lessonid, msg.Timestamp, []byte(req.Message)); err != nil {
-		log.Printf("produce chat message failed: lesson=%d user=%d err=%v", req.Lessonid, req.Userid, err)
+		return nil, err
 	}
 
 	return &chat.LiveChatResp{

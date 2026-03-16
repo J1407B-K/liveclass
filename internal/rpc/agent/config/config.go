@@ -22,8 +22,9 @@ type PostgresConfig struct {
 }
 
 type QdrantConfig struct {
-	Host       string
-	GrpcPort   int
-	Collection string
-	ApiKey     string
+	Host          string
+	GrpcPort      int
+	Collection    string
+	DocCollection string
+	ApiKey        string
 }

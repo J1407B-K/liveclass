@@ -7,6 +7,7 @@ struct ChatWithAgentReq{
     2:string message,
     3:string request_id,
     4:string conv_id,
+    5:i64 lesson_id,
 }
 
 struct ChatWithAgentResp {

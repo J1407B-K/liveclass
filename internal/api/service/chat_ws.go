@@ -3,15 +3,18 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"liveclass/idl/kitex_gen/chat"
 	"liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/internal/api/code"
 	global2 "liveclass/internal/api/global"
 	model2 "liveclass/internal/api/model"
 	"liveclass/internal/api/utils/jwt"
+	"liveclass/internal/api/utils/ratelimit"
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
@@ -115,6 +118,24 @@ func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandl
 			var msgJson model2.Message
 			if err = json.Unmarshal(message, &msgJson); err != nil {
 				log.Println("unmarshal chat message error:", err)
+				continue
+			}
+
+			allowed, err := ratelimit.AllowRedis(
+				c,
+				global2.DBManager.RDB,
+				fmt.Sprintf("rl:chat:send:%d", userId),
+				20,
+				40,
+				1,
+				time.Minute,
+			)
+			if err != nil {
+				log.Println("chat limiter error:", err)
+				continue
+			}
+			if !allowed {
+				_ = conn.WriteMessage(websocket.TextMessage, []byte("发送过于频繁，请稍后再试"))
 				continue
 			}
 

@@ -9,6 +9,7 @@ import (
 	"liveclass/internal/rpc/agent/initialize"
 	"liveclass/internal/rpc/agent/mcp"
 	"liveclass/internal/rpc/agent/memory"
+	"liveclass/internal/rpc/agent/rag"
 	agent2 "liveclass/internal/rpc/agent/workflow/agent"
 	"liveclass/internal/rpc/agent/workflow/fact"
 	"log"
@@ -77,6 +78,15 @@ func main() {
 		panic(err.Error())
 	}
 
+	docMgr, err := initialize.InitDocQdrant(ctx, 2048)
+	if err != nil {
+		panic(err.Error())
+	}
+	docRetriever, err := rag.NewDocRetriever(docMgr)
+	if err != nil {
+		panic(err.Error())
+	}
+
 	if cli, err := initialize.InitUserClient(); err != nil {
 		log.Printf("init user client failed: %v", err)
 	} else {
@@ -112,9 +122,11 @@ func main() {
 
 	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9006")
 	svr := agent.NewServer(&AgentServiceImpl{
-		DBManager:   dbm,
-		agentRunner: global.AgentRunner,
-		factRunner:  global.FactExtractorRunner,
+		DBManager:    dbm,
+		agentRunner:  global.AgentRunner,
+		factRunner:   global.FactExtractorRunner,
+		docRetriever: docRetriever,
+		embedder:     global.MultiModalEmbedder,
 	},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "agentservice"}),

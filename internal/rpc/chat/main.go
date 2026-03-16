@@ -25,6 +25,19 @@ func main() {
 	global.Writer = initialize.InitKafkaWriter()
 	defer kafka.CloseKafkaWriter()
 
+	ctx := context.Background()
+
+	groupID := global.Config.KafkaGroup
+	if groupID == "" {
+		groupID = "chat-mongo-writer"
+	}
+	reader := initialize.InitKafkaReader(groupID)
+	go func() {
+		if err := kafka.RunMongoWriter(ctx, reader, client); err != nil {
+			log.Printf("chat mongo writer exited: %v", err)
+		}
+	}()
+
 	webrtcliveCli, err := NewWebRTCLiveClient()
 	if err != nil {
 		log.Fatal(err)

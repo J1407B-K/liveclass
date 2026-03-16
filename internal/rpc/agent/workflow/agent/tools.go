@@ -41,6 +41,12 @@ func GetTools(ctx context.Context) ([]tool.BaseTool, error) {
 		}
 	}
 
+	if searchTool, err := skill.NewSearchTool(); err != nil {
+		log.Printf("init search tool failed: %v", err)
+	} else {
+		tools = append(tools, searchTool)
+	}
+
 	tools = append(tools, ddgTool)
 
 	return tools, nil

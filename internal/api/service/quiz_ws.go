@@ -2,13 +2,16 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"liveclass/idl/kitex_gen/quiz"
 	"liveclass/internal/api/code"
 	global2 "liveclass/internal/api/global"
 	model2 "liveclass/internal/api/model"
 	"liveclass/internal/api/utils/jwt"
+	"liveclass/internal/api/utils/ratelimit"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
@@ -73,6 +76,30 @@ func ansHandler(c context.Context, userId, lessonid int64) websocket.HertzHandle
 			var ans model2.Answer
 			if err := conn.ReadJSON(&ans); err != nil {
 				break
+			}
+
+			allowed, err := ratelimit.AllowRedis(
+				c,
+				global2.DBManager.RDB,
+				fmt.Sprintf("rl:quiz:answer:%d", userId),
+				10,
+				20,
+				1,
+				time.Minute,
+			)
+			if err != nil {
+				_ = conn.WriteJSON(map[string]any{
+					"type": "quiz_error",
+					"msg":  "限流错误，请稍后再试",
+				})
+				continue
+			}
+			if !allowed {
+				_ = conn.WriteJSON(map[string]any{
+					"type": "quiz_error",
+					"msg":  "提交过于频繁，请稍后再试",
+				})
+				continue
 			}
 
 			resp, err := global2.Clients.QuizClient.TorFAnswer(c, &quiz.TorFAnswerReq{

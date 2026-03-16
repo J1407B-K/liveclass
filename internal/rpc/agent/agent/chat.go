@@ -4,11 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/model"
 	userprofile "liveclass/internal/rpc/agent/profile"
+	"liveclass/internal/rpc/agent/rag"
 	"liveclass/internal/rpc/agent/rerank"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
@@ -27,10 +31,13 @@ func ChatWithAgent(
 	dbm *memory.DBManager,
 	agentRunner AgentRunner,
 	factRunner FactRunner,
+	docRetriever *rag.DocRetriever,
+	embedder global.TextMultiModalEmbedder,
 	userID int64,
 	convID string,
 	requestID string,
 	msg string,
+	lessonID int64,
 ) (string, error) {
 	// 幂等
 	existedResp, err := dbm.GetAssistantMessageByRequestID(ctx, convID, requestID)
@@ -46,7 +53,11 @@ func ChatWithAgent(
 		return "", err
 	}
 
-	var factText string
+	var (
+		factText string
+		docText  string
+	)
+
 	relevantFacts, err := dbm.RetrieveRelevantFacts(ctx, userID, msg, 5)
 	if err == nil && len(relevantFacts) > 0 {
 		rankedFacts, rerr := rerank.Facts(ctx, msg, relevantFacts, 5)
@@ -58,6 +69,39 @@ func ChatWithAgent(
 		factText = memory.FormatFactsForPrompt(relevantFacts)
 	}
 
+	if lessonID > 0 && docRetriever != nil && embedder != nil {
+		vector, embErr := embedder.EmbedText(ctx, msg)
+		if embErr != nil {
+			log.Printf("doc embed error: %v", embErr)
+		} else {
+			chunks, retrErr := docRetriever.Search(ctx, lessonID, vector, 6)
+			if retrErr != nil {
+				log.Printf("doc search error: %v", retrErr)
+			} else {
+				if reranked, rerr := rerank.Docs(ctx, msg, chunks, 3); rerr == nil && len(reranked) > 0 {
+					chunks = reranked
+				} else if rerr != nil {
+					log.Printf("doc rerank error: %v", rerr)
+				}
+				var builder strings.Builder
+				for _, chunk := range chunks {
+					builder.WriteString("- 来源: ")
+					if chunk.Source != "" {
+						builder.WriteString(chunk.Source)
+					} else {
+						builder.WriteString("unknown")
+					}
+					builder.WriteString(" #段落")
+					builder.WriteString(strconv.FormatInt(int64(chunk.ChunkIdx), 10))
+					builder.WriteString("\n")
+					builder.WriteString(chunk.Text)
+					builder.WriteString("\n")
+				}
+				docText = strings.TrimSpace(builder.String())
+			}
+		}
+	}
+
 	profileSummary, err := userprofile.EnsureUserProfile(ctx, dbm, userID)
 	if err != nil {
 		log.Println("generate user profile failed:", err)
@@ -65,10 +109,12 @@ func ChatWithAgent(
 
 	userMsg := &model.UserMessage{
 		ID:      userID,
+		Lesson:  lessonID,
 		Query:   msg,
 		History: history,
 		Facts:   factText,
 		Profile: profileSummary,
+		Docs:    docText,
 	}
 
 	if agentRunner == nil {

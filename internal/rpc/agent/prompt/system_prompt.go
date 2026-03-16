@@ -37,4 +37,8 @@ var SystemPrompt = `
 ==== facts start ====
 {facts}
 ==== facts end ====
+- 课程资料片段：
+==== docs start ====
+{docs}
+==== docs end ====
 `

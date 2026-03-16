@@ -16,6 +16,7 @@ func newChatTemplate(ctx context.Context) (prompt.ChatTemplate, error) {
 			schema.SystemMessage(my_prompt.SystemPrompt),
 			schema.SystemMessage("以下是对当前用户的画像摘要，请酌情参考：\n{profile}"),
 			schema.SystemMessage("以下是与当前用户相关的历史事实与偏好，请仅在相关时参考：\n{facts}"),
+			schema.SystemMessage("以下为可参考的课程资料片段：\n{docs}"),
 			schema.SystemMessage("当前用户ID：{user_id}"),
 			schema.MessagesPlaceholder("history", true),
 			schema.UserMessage("{content}"),
