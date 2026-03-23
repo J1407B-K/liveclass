@@ -11,7 +11,7 @@ import (
 	"liveclass/internal/rpc/agent/memory"
 )
 
-func RunFactIndexerWorker(ctx context.Context, r *kafka.Reader, dbm *memory.DBManager) error {
+func RunFactIndexerConsumer(ctx context.Context, r *kafka.Reader, dbm *memory.DBManager) error {
 	defer func() {
 		if err := r.Close(); err != nil {
 			log.Printf("[fact-indexer] close reader failed: %v", err)
@@ -32,26 +32,22 @@ func RunFactIndexerWorker(ctx context.Context, r *kafka.Reader, dbm *memory.DBMa
 		var env debeziumEnvelope
 		if err := json.Unmarshal(msg.Value, &env); err != nil {
 			log.Printf("[fact-indexer] unmarshal envelope failed offset=%d err=%v raw=%s", msg.Offset, err, string(msg.Value))
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
 		if env.Payload == "" {
 			log.Printf("[fact-indexer] empty envelope payload offset=%d raw=%s", msg.Offset, string(msg.Value))
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
 		var e FactCreatedEvent
 		if err := json.Unmarshal([]byte(env.Payload), &e); err != nil {
 			log.Printf("[fact-indexer] unmarshal event payload failed offset=%d err=%v payload=%s", msg.Offset, err, env.Payload)
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
 		if e.FactID <= 0 || e.UserID <= 0 || e.FactType == "" || e.Content == "" {
 			log.Printf("[fact-indexer] invalid event offset=%d event=%+v", msg.Offset, e)
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
@@ -62,14 +58,12 @@ func RunFactIndexerWorker(ctx context.Context, r *kafka.Reader, dbm *memory.DBMa
 		if err != nil {
 			log.Printf("[fact-indexer] embed failed offset=%d fact_id=%d err=%v", msg.Offset, e.FactID, err)
 			_ = dbm.UpdateFactIndexStatus(context.Background(), e.FactID, "failed")
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
 		if len(vector) == 0 {
 			log.Printf("[fact-indexer] empty embedding offset=%d fact_id=%d", msg.Offset, e.FactID)
 			_ = dbm.UpdateFactIndexStatus(context.Background(), e.FactID, "failed")
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
@@ -87,7 +81,6 @@ func RunFactIndexerWorker(ctx context.Context, r *kafka.Reader, dbm *memory.DBMa
 		if err != nil {
 			log.Printf("[fact-indexer] qdrant upsert failed offset=%d fact_id=%d err=%v", msg.Offset, e.FactID, err)
 			_ = dbm.UpdateFactIndexStatus(context.Background(), e.FactID, "failed")
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 
@@ -95,7 +88,6 @@ func RunFactIndexerWorker(ctx context.Context, r *kafka.Reader, dbm *memory.DBMa
 
 		if err := dbm.UpdateFactIndexStatus(ctx, e.FactID, "done"); err != nil {
 			log.Printf("[fact-indexer] update status done failed offset=%d fact_id=%d err=%v", msg.Offset, e.FactID, err)
-			_ = r.CommitMessages(ctx, msg)
 			continue
 		}
 

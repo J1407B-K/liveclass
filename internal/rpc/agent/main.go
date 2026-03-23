@@ -100,10 +100,17 @@ func main() {
 	}
 
 	reader := initialize.InitKafkaReader()
-
 	go func() {
-		if err := cdc.RunFactIndexerWorker(ctx, reader, dbm); err != nil {
+		if err := cdc.RunFactIndexerConsumer(ctx, reader, dbm); err != nil {
 			log.Printf("fact indexer worker exited: %v", err)
+		}
+	}()
+
+	writer := initialize.InitKafkaWriter()
+	defer writer.Close()
+	go func() {
+		if err := cdc.RunOutboxDispatcher(ctx, dbm, writer); err != nil {
+			log.Printf("outbox dispatcher exited: %v", err)
 		}
 	}()
 
