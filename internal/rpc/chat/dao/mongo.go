@@ -21,9 +21,11 @@ func InsertMongo(ctx context.Context, coll *mongo.Collection, msg interface{}) e
 }
 
 func SelectMongo(ctx context.Context, coll *mongo.Collection) (string, error) {
+	const maxHistoryLimit = 100
+
 	opts := options.Find().
-		SetSort(bson.D{{Key: "timestamp", Value: 1}}).
-		SetLimit(100)
+		SetSort(bson.D{{Key: "timestamp", Value: -1}}).
+		SetLimit(maxHistoryLimit)
 
 	cursor, err := coll.Find(ctx, bson.M{}, opts)
 	if err != nil {

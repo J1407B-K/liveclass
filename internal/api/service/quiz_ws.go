@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"liveclass/idl/kitex_gen/quiz"
 	"liveclass/internal/api/code"
@@ -9,12 +10,14 @@ import (
 	model2 "liveclass/internal/api/model"
 	"liveclass/internal/api/utils/jwt"
 	"liveclass/internal/api/utils/ratelimit"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/go-redis/redis/v8"
 	"github.com/hertz-contrib/websocket"
 )
 
@@ -180,4 +183,31 @@ func broadcastQuizToLesson(lessonid int64, quiz interface{}) error {
 		}
 	}
 	return nil
+}
+
+func RunQuizRedisSubscriber(ctx context.Context, rdb *redis.Client) error {
+	pubsub := rdb.Subscribe(ctx, "quiz:broadcast")
+	defer pubsub.Close()
+
+	ch := pubsub.Channel()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case msg := <-ch:
+			var quizMsg map[string]interface{}
+			if err := json.Unmarshal([]byte(msg.Payload), &quizMsg); err != nil {
+				log.Printf("quiz redis unmarshal failed: err=%v", err)
+				continue
+			}
+
+			msgType, _ := quizMsg["type"].(string)
+			if msgType == "quiz_stats" {
+				teacherID, _ := quizMsg["teacher_id"].(float64)
+				if teacherID > 0 {
+					_ = broadcastToTeacher(int64(teacherID), quizMsg)
+				}
+			}
+		}
+	}
 }

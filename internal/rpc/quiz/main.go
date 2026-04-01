@@ -32,27 +32,30 @@ func main() {
 
 	p := provider.NewOpenTelemetryProvider(
 		provider.WithServiceName("quizservice"),
-		provider.WithExportEndpoint("localhost:4317"),
+		provider.WithExportEndpoint(global.Config.JaegerEndpoint),
 		provider.WithInsecure(),
 		provider.WithEnableMetrics(false),
 	)
 	defer p.Shutdown(context.Background())
 
-	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
+	r, err := etcd.NewEtcdRegistry([]string{global.Config.EtcdAddr})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create etcd registry: %v", err)
+		return
 	}
 
 	webrtcCli, err := NewWebRTCLiveClient()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create WebRTC client: %v", err)
+		return
 	}
 	userCli, err := NewUserClient()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create User client: %v", err)
+		return
 	}
 
-	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9003")
+	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
 	svr := quiz.NewServer(&QuizServiceImpl{DBManager: &dao.DBManager{DB: db, RDB: rdb}, webrtcCli: webrtcCli, userCli: userCli},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "quizservice"}),
@@ -61,7 +64,7 @@ func main() {
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 			ServiceName: "quizservice",
 		}),
-		kServer.WithTracer(prometheus.NewServerTracer(":10004", "/metrics")))
+		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics")))
 
 	err = svr.Run()
 	if err != nil {

@@ -1,7 +1,12 @@
 package global
 
-import "liveclass/internal/rpc/quiz/config"
+import (
+	"liveclass/internal/rpc/quiz/config"
+
+	"github.com/go-redis/redis/v8"
+)
 
 var (
-	Config *config.Config
+	Config      *config.Config
+	RedisClient *redis.Client
 )

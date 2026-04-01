@@ -42,7 +42,8 @@ func Broadcast(c context.Context, ctx *app.RequestContext) {
 	}
 	offer := ctx.PostForm("b64offer")
 
-	resp, err := global.Clients.Webrtc_liveClient.Broadcast(c, &webrtc_live.BroadcastReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.Broadcast(rpcCtx, &webrtc_live.BroadcastReq{
 		Userid:   uid,
 		LessonId: ilid,
 		B64offer: offer,
@@ -95,7 +96,8 @@ func View(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	resp, err := global.Clients.Webrtc_liveClient.View(c, &webrtc_live.ViewReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.View(rpcCtx, &webrtc_live.ViewReq{
 		Userid:   uid,
 		LessonId: ilid,
 		B64offer: offer,
@@ -186,7 +188,8 @@ func DelLesson(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	resp, err := global.Clients.Webrtc_liveClient.DelLesson(c, &webrtc_live.DelLessonReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.DelLesson(rpcCtx, &webrtc_live.DelLessonReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -249,7 +252,8 @@ func ChangeUserToLesson_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.ChangeUserToLesson(c, &webrtc_live.ChangeUserToLessonReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.ChangeUserToLesson(rpcCtx, &webrtc_live.ChangeUserToLessonReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		Stuid:    istuid,
@@ -300,7 +304,8 @@ func ChangeUserInLive_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.ChangeUserInLive(c, &webrtc_live.ChangeUserInLiveReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.ChangeUserInLive(rpcCtx, &webrtc_live.ChangeUserInLiveReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		Options:  o,
@@ -338,7 +343,8 @@ func SelectLessonInfo_WebRTC(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	resp, err := global.Clients.Webrtc_liveClient.SelectLessonInfo(c, &webrtc_live.SelectLessonInfoReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.SelectLessonInfo(rpcCtx, &webrtc_live.SelectLessonInfoReq{
 		Lessonid: ilid,
 	})
 	if err != nil {
@@ -428,7 +434,8 @@ func CreateSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.CreateSignIn(c, &webrtc_live.CreateSignInReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.CreateSignIn(rpcCtx, &webrtc_live.CreateSignInReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		Duration: int64(iduration),
@@ -477,7 +484,8 @@ func SignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.SignIn(c, &webrtc_live.SignInReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.SignIn(rpcCtx, &webrtc_live.SignInReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -525,7 +533,8 @@ func SelectSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.SelectSignIn(c, &webrtc_live.SelectSignInReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.SelectSignIn(rpcCtx, &webrtc_live.SelectSignInReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -573,7 +582,8 @@ func DelSignIn_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.DelSign(c, &webrtc_live.DelSignInReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.DelSign(rpcCtx, &webrtc_live.DelSignInReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -621,7 +631,8 @@ func RollCallInRandom_WebRTC(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.RollCallInRandom(c, &webrtc_live.RollCallInRandomReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.RollCallInRandom(rpcCtx, &webrtc_live.RollCallInRandomReq{
 		Userid:   uid,
 		LessonId: ilid,
 	})
@@ -715,7 +726,8 @@ func RecordLesson_WebRTC(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	resp, err := global.Clients.Webrtc_liveClient.RecordLesson(c, &webrtc_live.RecordLessonReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.RecordLesson(rpcCtx, &webrtc_live.RecordLessonReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		Data:     dataBytes,
@@ -766,7 +778,8 @@ func SaveWhiteBoard(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	resp, err := global.Clients.Webrtc_liveClient.SaveWhiteBoardJson(c, &webrtc_live.SaveWhiteBoardJsonReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.SaveWhiteBoardJson(rpcCtx, &webrtc_live.SaveWhiteBoardJsonReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		File:     file,
@@ -815,7 +828,8 @@ func GetWhiteBoard(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.GetWhiteBoardJson(c, &webrtc_live.GetWhiteBoardJsonReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.GetWhiteBoardJson(rpcCtx, &webrtc_live.GetWhiteBoardJsonReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -864,7 +878,8 @@ func PublishMic(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.PublishMic(c, &webrtc_live.PublishMicReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.PublishMic(rpcCtx, &webrtc_live.PublishMicReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		B64offer: offer,
@@ -914,7 +929,8 @@ func RaiseHand(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.RaiseHand(c, &webrtc_live.RaiseHandReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.RaiseHand(rpcCtx, &webrtc_live.RaiseHandReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -963,7 +979,8 @@ func GetRaiseHand(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.GetRaiseHand(c, &webrtc_live.GetRaiseHandReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.GetRaiseHand(rpcCtx, &webrtc_live.GetRaiseHandReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -1024,7 +1041,8 @@ func ApproveHand(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.ApproveHand(c, &webrtc_live.ApproveHandReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.ApproveHand(rpcCtx, &webrtc_live.ApproveHandReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		Stuid:    istuid,
@@ -1075,7 +1093,8 @@ func ViewMic(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.ViewMic(c, &webrtc_live.ViewMicReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.ViewMic(rpcCtx, &webrtc_live.ViewMicReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		B64offer: b64off,
@@ -1126,7 +1145,8 @@ func ListAllLessonRecord(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.ListAllLessonRecord(c, &webrtc_live.ListAllLessonRecordReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.ListAllLessonRecord(rpcCtx, &webrtc_live.ListAllLessonRecordReq{
 		Userid:   uid,
 		Lessonid: ilid,
 	})
@@ -1176,7 +1196,8 @@ func GetLessonRecord(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	file, err := global.Clients.Webrtc_liveClient.GetLessonRecord(c, &webrtc_live.GetLessonRecordReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	file, err := global.Clients.Webrtc_liveClient.GetLessonRecord(rpcCtx, &webrtc_live.GetLessonRecordReq{
 		Userid:   uid,
 		Lessonid: ilid,
 		Key:      key,
@@ -1223,7 +1244,8 @@ func IsStuInLesson(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	resp, err := global.Clients.Webrtc_liveClient.IsStudentInLesson(c, &webrtc_live.IsStudentInLessonReq{
+	rpcCtx := context.WithValue(c, "lessonID", ilid)
+	resp, err := global.Clients.Webrtc_liveClient.IsStudentInLesson(rpcCtx, &webrtc_live.IsStudentInLessonReq{
 		Studentid: uid,
 		Lessonid:  ilid,
 	})

@@ -120,11 +120,36 @@ func (s *QuizServiceImpl) TorFAnswer(ctx context.Context, req *quiz.TorFAnswerRe
 		return nil, err
 	}
 
+	quizInfo := &common.Quiz{
+		QuizID:    q.ID,
+		TeacherID: q.TeacherID,
+		Stats:     toQuizStats(stats),
+		Answer:    q.Answer,
+	}
+
+	go func() {
+		msgBytes, err := json.Marshal(map[string]interface{}{
+			"type":       "quiz_stats",
+			"quiz_id":    q.ID,
+			"teacher_id": q.TeacherID,
+			"stats":      toQuizStats(stats),
+		})
+		if err != nil {
+			log.Printf("[TorFAnswer] Redis marshal failed: %v", err)
+			return
+		}
+		if s.DBManager.RDB != nil {
+			if err := s.DBManager.RDB.Publish(context.Background(), "quiz:broadcast", msgBytes).Err(); err != nil {
+				log.Printf("[TorFAnswer] Redis publish failed: %v", err)
+			}
+		}
+	}()
+
 	return &quiz.TorFAnswerResp{
 		Resp: &common.Resp{
 			Code: 0,
 			Msg:  "success",
-			Data: &common.Data{QuizInfo: &common.Quiz{QuizID: q.ID, TeacherID: q.TeacherID, Stats: toQuizStats(stats), Answer: q.Answer}},
+			Data: &common.Data{QuizInfo: quizInfo},
 		},
 	}, nil
 }
@@ -210,6 +235,22 @@ func (s *QuizServiceImpl) getLessonInfo(ctx context.Context, lessonID int64) (*c
 }
 
 func (s *QuizServiceImpl) requireTeacherOfLesson(ctx context.Context, lessonID int64, userID int64) (*common.Lesson, *common.User, error) {
+	cacheKey := fmt.Sprintf("perm:teacher:%d:%d", lessonID, userID)
+
+	if s.DBManager.RDB != nil {
+		if val, _ := s.DBManager.RDB.Get(ctx, cacheKey).Result(); val == "1" {
+			u, err := s.getUserInfo(ctx, userID)
+			if err != nil {
+				return nil, nil, err
+			}
+			lesson, err := s.getLessonInfo(ctx, lessonID)
+			if err != nil {
+				return nil, nil, err
+			}
+			return lesson, u, nil
+		}
+	}
+
 	u, err := s.getUserInfo(ctx, userID)
 	if err != nil {
 		return nil, nil, err
@@ -223,10 +264,22 @@ func (s *QuizServiceImpl) requireTeacherOfLesson(ctx context.Context, lessonID i
 	if lesson.TeacherID != u.UserID {
 		return nil, nil, errors.New("权限不够：你不是该课程老师")
 	}
+
+	if s.DBManager.RDB != nil {
+		_ = s.DBManager.RDB.Set(ctx, cacheKey, "1", 5*time.Minute).Err()
+	}
 	return lesson, u, nil
 }
 
 func (s *QuizServiceImpl) requireStudentInLesson(ctx context.Context, lessonID int64, userID int64) error {
+	cacheKey := fmt.Sprintf("perm:stu:%d:%d", lessonID, userID)
+
+	if s.DBManager.RDB != nil {
+		if val, _ := s.DBManager.RDB.Get(ctx, cacheKey).Result(); val == "1" {
+			return nil
+		}
+	}
+
 	resp, err := s.webrtcCli.IsStudentInLesson(ctx, &webrtc_live.IsStudentInLessonReq{
 		Lessonid:  lessonID,
 		Studentid: userID,
@@ -239,6 +292,10 @@ func (s *QuizServiceImpl) requireStudentInLesson(ctx context.Context, lessonID i
 	}
 	if resp.Resp.Msg != "exist" {
 		return errors.New("你不是该课程学生")
+	}
+
+	if s.DBManager.RDB != nil {
+		_ = s.DBManager.RDB.Set(ctx, cacheKey, "1", 5*time.Minute).Err()
 	}
 	return nil
 }

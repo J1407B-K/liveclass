@@ -116,18 +116,19 @@ func main() {
 
 	p := provider.NewOpenTelemetryProvider(
 		provider.WithServiceName("agentservice"),
-		provider.WithExportEndpoint("localhost:4317"),
+		provider.WithExportEndpoint(global.Config.JaegerEndpoint),
 		provider.WithInsecure(),
 		provider.WithEnableMetrics(false),
 	)
 	defer p.Shutdown(context.Background())
 
-	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
+	r, err := etcd.NewEtcdRegistry([]string{global.Config.EtcdAddr})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create etcd registry: %v", err)
+		return
 	}
 
-	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9006")
+	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
 	svr := agent.NewServer(&AgentServiceImpl{
 		DBManager:    dbm,
 		agentRunner:  global.AgentRunner,
@@ -142,7 +143,7 @@ func main() {
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 			ServiceName: "agentservice",
 		}),
-		kServer.WithTracer(prometheus.NewServerTracer(":10007", "/metrics")))
+		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics")))
 
 	err = svr.Run()
 

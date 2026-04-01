@@ -18,22 +18,21 @@ func CloseKafkaWriter() error {
 	return nil
 }
 
-func ProduceMessage(userid, targetLesson int64, timestamp time.Time, message []byte) error {
-	cleanedContent := filter.FilterSensitiveWords(filter.CleanMessage(string(message)))
+func FilterMessage(message string) (string, time.Time) {
+	cleanedContent := filter.FilterSensitiveWords(filter.CleanMessage(message))
+	return cleanedContent, time.Now()
+}
 
-	msg := model.Message{
-		Sender:    userid,
-		LessonID:  targetLesson,
-		Content:   cleanedContent,
-		Timestamp: timestamp,
-	}
-
+func ProduceFilteredMessage(userid, targetLesson int64, msg model.Message) error {
 	messageBytes, err := json.Marshal(msg)
 	if err != nil {
 		return err
 	}
 
-	return global.Writer.WriteMessages(context.Background(),
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return global.Writer.WriteMessages(ctx,
 		kafka.Message{
 			Value: messageBytes,
 		},

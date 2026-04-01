@@ -9,6 +9,10 @@ type Config struct {
 	ChatModel      string
 	EmbeddingModel string
 	RedisAddr      string
+	EtcdAddr       string
+	JaegerEndpoint string
+	PrometheusPort string
+	ServiceAddr    string
 }
 
 type PostgresConfig struct {

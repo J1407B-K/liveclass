@@ -3,6 +3,10 @@ package config
 type Config struct {
 	MysqlConfig
 	RedisConfig
+	EtcdAddr       string
+	JaegerEndpoint string
+	PrometheusPort string
+	ServiceAddr    string
 }
 
 type MysqlConfig struct {

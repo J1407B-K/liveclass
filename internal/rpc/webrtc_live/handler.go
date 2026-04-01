@@ -1329,6 +1329,22 @@ func (s *WebrtcLiveImpl) mustLesson(ctx context.Context, lessonID int64) (*model
 }
 
 func (s *WebrtcLiveImpl) requireTeacherOfLesson(ctx context.Context, lessonID int64, userID int64) (*model.WebrtcLesson, *common.User, error) {
+	cacheKey := fmt.Sprintf("perm:teacher:%d:%d", lessonID, userID)
+
+	if s.DBManager.RDB != nil {
+		if val, _ := s.DBManager.RDB.Get(ctx, cacheKey).Result(); val == "1" {
+			u, err := s.getUserInfo(ctx, userID)
+			if err != nil {
+				return nil, nil, err
+			}
+			lesson, err := s.mustLesson(ctx, lessonID)
+			if err != nil {
+				return nil, nil, err
+			}
+			return lesson, u, nil
+		}
+	}
+
 	u, err := s.getUserInfo(ctx, userID)
 	if err != nil {
 		return nil, nil, err
@@ -1340,6 +1356,10 @@ func (s *WebrtcLiveImpl) requireTeacherOfLesson(ctx context.Context, lessonID in
 
 	if lesson.TeacherUID != u.UserID {
 		return nil, nil, errors.New("权限不够：你不是该课程老师")
+	}
+
+	if s.DBManager.RDB != nil {
+		_ = s.DBManager.RDB.Set(ctx, cacheKey, "1", 5*time.Minute).Err()
 	}
 	return lesson, u, nil
 }

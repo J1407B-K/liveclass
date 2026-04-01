@@ -34,12 +34,17 @@ func main() {
 		panic(err)
 	}
 
-	chatReader := initialize.InitChatKafkaReader("chat-api-instance-1")
-
 	go func() {
-		if err := service.RunChatConsumer(context.Background(), chatReader); err != nil {
-			log.Printf("chat consumer stopped: %v", err)
+		if err := service.RunChatRedisSubscriber(context.Background(), rdb); err != nil {
+			log.Printf("chat redis subscriber stopped: %v", err)
 		}
 	}()
+
+	go func() {
+		if err := service.RunQuizRedisSubscriber(context.Background(), rdb); err != nil {
+			log.Printf("quiz redis subscriber stopped: %v", err)
+		}
+	}()
+
 	router.InitRouter()
 }

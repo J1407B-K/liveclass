@@ -25,6 +25,9 @@ func main() {
 	global.Writer = initialize.InitKafkaWriter()
 	defer kafka.CloseKafkaWriter()
 
+	global.RedisClient = initialize.InitRedis()
+	defer global.RedisClient.Close()
+
 	ctx := context.Background()
 
 	groupID := global.Config.KafkaGroup
@@ -40,23 +43,25 @@ func main() {
 
 	webrtcliveCli, err := NewWebRTCLiveClient()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create WebRTC client: %v", err)
+		return
 	}
 
 	p := provider.NewOpenTelemetryProvider(
 		provider.WithServiceName("chatservice"),
-		provider.WithExportEndpoint("localhost:4317"),
+		provider.WithExportEndpoint(global.Config.JaegerEndpoint),
 		provider.WithInsecure(),
 		provider.WithEnableMetrics(false),
 	)
 	defer p.Shutdown(context.Background())
 
-	r, err := etcd.NewEtcdRegistry([]string{"127.0.0.1:2379"})
+	r, err := etcd.NewEtcdRegistry([]string{global.Config.EtcdAddr})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to create etcd registry: %v", err)
+		return
 	}
 
-	addr, _ := net.ResolveTCPAddr("tcp", "127.0.0.1:9004")
+	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
 
 	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli},
 		server.WithSuite(tracing.NewServerSuite()),
@@ -66,7 +71,7 @@ func main() {
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 			ServiceName: "chatservice",
 		}),
-		kServer.WithTracer(prometheus.NewServerTracer(":10005", "/metrics")))
+		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics")))
 
 	err = svr.Run()
 

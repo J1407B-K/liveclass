@@ -7,6 +7,7 @@ import (
 	"liveclass/idl/kitex_gen/user/userservice"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 	"liveclass/internal/api/global"
+	"liveclass/internal/api/utils"
 
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/transmeta"
@@ -62,12 +63,13 @@ func InitNewClient() error {
 	}
 	global.Clients.ChatClient = cc
 
-	// WebrtcLiveService 客户端，附带 OpenTelemetry 链路追踪
+	// WebrtcLiveService 客户端，附带 OpenTelemetry 链路追踪和一致性哈希负载均衡
 	wc, err := webrtc_live.NewClient(
 		"webrtc_liveservice",
 		client.WithResolver(*global.Resolver),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithLoadBalancer(utils.NewConsistentHashLoadBalancer()),
 	)
 	if err != nil {
 		panic(err)

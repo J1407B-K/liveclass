@@ -4,7 +4,11 @@ type Config struct {
 	MysqlConfig
 	RedisConfig
 	CosConfig
-	TmpBaseDir string
+	TmpBaseDir     string
+	EtcdAddr       string
+	JaegerEndpoint string
+	PrometheusPort string
+	ServiceAddr    string
 }
 
 type MysqlConfig struct {

@@ -18,6 +18,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/go-redis/redis/v8"
 	"github.com/hertz-contrib/websocket"
 	"github.com/segmentio/kafka-go"
 )
@@ -57,6 +58,26 @@ func ChatConnections(c context.Context, ctx *app.RequestContext) {
 			"msg":  err.Error(),
 		})
 		return
+	}
+}
+
+func RunChatRedisSubscriber(ctx context.Context, rdb *redis.Client) error {
+	pubsub := rdb.Subscribe(ctx, "chat:broadcast")
+	defer pubsub.Close()
+
+	ch := pubsub.Channel()
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case msg := <-ch:
+			var chatMsg model2.ShowMessage
+			if err := json.Unmarshal([]byte(msg.Payload), &chatMsg); err != nil {
+				log.Printf("chat redis unmarshal failed: err=%v", err)
+				continue
+			}
+			broadcastChatToLesson(chatMsg.LessonID, chatMsg)
+		}
 	}
 }
 
