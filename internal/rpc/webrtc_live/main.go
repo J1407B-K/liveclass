@@ -5,6 +5,7 @@ import (
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 	"liveclass/internal/rpc/webrtc_live/dao"
 	"liveclass/internal/rpc/webrtc_live/flag"
+	"liveclass/internal/rpc/webrtc_live/global"
 	"liveclass/internal/rpc/webrtc_live/initialize"
 	"log"
 	"net"

@@ -98,7 +98,7 @@ func (m *DBManager) AppendMessage(
 			Content:   msg.Content,
 		}
 
-		if err := tx.
+		return tx.
 			Clauses(clause.OnConflict{
 				Columns: []clause.Column{
 					{Name: "conv_id"},
@@ -107,18 +107,7 @@ func (m *DBManager) AppendMessage(
 				},
 				DoNothing: true,
 			}).
-			Create(&record).Error; err != nil {
-			return err
-		}
-
-		if err := tx.
-			Model(&model.Conversation{}).
-			Where("conv_id = ?", convID).
-			Update("updated_at", gorm.Expr("NOW()")).Error; err != nil {
-			return err
-		}
-
-		return nil
+			Create(&record).Error
 	})
 }
 

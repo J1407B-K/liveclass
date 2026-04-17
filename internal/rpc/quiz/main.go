@@ -5,6 +5,7 @@ import (
 	quiz "liveclass/idl/kitex_gen/quiz/quizservice"
 	"liveclass/internal/rpc/quiz/dao"
 	"liveclass/internal/rpc/quiz/flag"
+	"liveclass/internal/rpc/quiz/global"
 	"liveclass/internal/rpc/quiz/initialize"
 	"log"
 	"net"

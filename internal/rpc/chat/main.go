@@ -5,7 +5,6 @@ import (
 	chat "liveclass/idl/kitex_gen/chat/chatservice"
 	"liveclass/internal/rpc/chat/global"
 	"liveclass/internal/rpc/chat/initialize"
-	"liveclass/internal/rpc/chat/kafka"
 	"log"
 	"net"
 
@@ -22,24 +21,8 @@ func main() {
 	initialize.SetupViper()
 	client := initialize.InitMongo()
 
-	global.Writer = initialize.InitKafkaWriter()
-	defer kafka.CloseKafkaWriter()
-
 	global.RedisClient = initialize.InitRedis()
 	defer global.RedisClient.Close()
-
-	ctx := context.Background()
-
-	groupID := global.Config.KafkaGroup
-	if groupID == "" {
-		groupID = "chat-mongo-writer"
-	}
-	reader := initialize.InitKafkaReader(groupID)
-	go func() {
-		if err := kafka.RunMongoWriter(ctx, reader, client); err != nil {
-			log.Printf("chat mongo writer exited: %v", err)
-		}
-	}()
 
 	webrtcliveCli, err := NewWebRTCLiveClient()
 	if err != nil {

@@ -7,11 +7,15 @@ import (
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/model"
 	my_prompt "liveclass/internal/rpc/agent/prompt"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/cloudwego/eino/schema"
+	"golang.org/x/sync/singleflight"
 )
+
+var sfGroup singleflight.Group
 
 const (
 	profileTTL           = 12 * time.Hour
@@ -24,43 +28,55 @@ func EnsureUserProfile(ctx context.Context, dbm *memory.DBManager, userID int64)
 	if err != nil {
 		return "", err
 	}
+
+	// 缓存有效：直接返回
 	if profile != nil && profile.Summary != "" && time.Since(profile.UpdatedAt) < profileTTL {
 		return profile.Summary, nil
 	}
 
+	// 缓存过期但有旧值：先返回旧值，后台异步刷新，不阻塞请求热路径
+	if profile != nil && profile.Summary != "" {
+		go refreshProfile(dbm, userID)
+		return profile.Summary, nil
+	}
+
+	// 首次生成：同步执行，singleflight 防并发重复 LLM 调用
+	key := fmt.Sprintf("profile:%d", userID)
+	v, err, _ := sfGroup.Do(key, func() (interface{}, error) {
+		return generateAndSaveProfile(ctx, dbm, userID)
+	})
+	if err != nil {
+		return "", err
+	}
+	return v.(string), nil
+}
+
+func refreshProfile(dbm *memory.DBManager, userID int64) {
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	if _, err := generateAndSaveProfile(ctx, dbm, userID); err != nil {
+		log.Printf("async profile refresh failed user=%d: %v", userID, err)
+	}
+}
+
+func generateAndSaveProfile(ctx context.Context, dbm *memory.DBManager, userID int64) (string, error) {
 	facts, err := dbm.ListFactsForProfile(ctx, userID, profileFactLimit, profileMinConfidence)
 	if err != nil {
 		return "", err
 	}
-
 	if len(facts) == 0 {
-		if profile != nil {
-			return profile.Summary, nil
-		}
 		return "", nil
 	}
 
 	summary, err := summarizeFacts(ctx, facts)
-	if err != nil {
-		if profile != nil {
-			// Return stale profile if generation failed.
-			return profile.Summary, nil
-		}
+	if err != nil || strings.TrimSpace(summary) == "" {
 		return "", err
 	}
 
 	summary = strings.TrimSpace(summary)
-	if summary == "" {
-		if profile != nil {
-			return profile.Summary, nil
-		}
-		return "", nil
-	}
-
 	if err := dbm.UpsertUserProfile(ctx, userID, summary); err != nil {
 		return summary, err
 	}
-
 	return summary, nil
 }
 

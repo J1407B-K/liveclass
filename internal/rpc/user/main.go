@@ -6,6 +6,7 @@ import (
 	"liveclass/internal/rpc/user/cdc"
 	"liveclass/internal/rpc/user/dao"
 	"liveclass/internal/rpc/user/flag"
+	"liveclass/internal/rpc/user/global"
 	"liveclass/internal/rpc/user/initialize"
 	"log"
 	"net"

@@ -7,6 +7,7 @@ const (
 	RedisIndexer     = "RedisIndexer"
 
 	//agentNodes
+	AdvisorNode         = "AdvisorNode"
 	InputToQuery        = "InputToQuery"
 	InputToTemplateVars = "InputToTemplateVars"
 	ChatTemplate        = "ChatTemplate"

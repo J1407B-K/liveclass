@@ -9,9 +9,9 @@ import (
 	"liveclass/idl/kitex_gen/common"
 	"liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/idl/kitex_gen/webrtc_live/webrtclive"
+	"liveclass/internal/api/utils/filter"
 	"liveclass/internal/rpc/chat/dao"
 	"liveclass/internal/rpc/chat/global"
-	"liveclass/internal/rpc/chat/kafka"
 	"liveclass/internal/rpc/chat/model"
 	"log"
 	"time"
@@ -46,7 +46,8 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		return nil, err
 	}
 
-	cleanedMsg, timestamp := kafka.FilterMessage(req.Message)
+	cleanedMsg := filter.FilterSensitiveWords(filter.CleanMessage(req.Message))
+	timestamp := time.Now()
 
 	msg := model.Message{
 		LessonID:  req.Lessonid,
@@ -56,33 +57,13 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 	}
 
 	tracer := otel.Tracer("chatservice")
-	var kafkaErr, mongoErr error
-	done := make(chan struct{}, 2)
-
-	go func() {
-		spanCtx, span := tracer.Start(ctx, "kafka.produce")
-		defer span.End()
-		kafkaErr = kafka.ProduceFilteredMessage(req.Userid, req.Lessonid, msg)
-		if kafkaErr != nil {
-			log.Printf("[LiveChat] Kafka write failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, kafkaErr)
-		}
-		_ = spanCtx
-		done <- struct{}{}
-	}()
-
-	go func() {
-		spanCtx, span := tracer.Start(ctx, "mongo.insert")
-		defer span.End()
-		coll := dao.ChooseCollection(req.Lessonid, s.mongoClient)
-		mongoErr = dao.InsertMongo(spanCtx, coll, msg)
-		if mongoErr != nil {
-			log.Printf("[LiveChat] MongoDB write failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, mongoErr)
-		}
-		done <- struct{}{}
-	}()
-
-	<-done
-	<-done
+	spanCtx, span := tracer.Start(ctx, "mongo.insert")
+	coll := dao.ChooseCollection(req.Lessonid, s.mongoClient)
+	mongoErr := dao.InsertMongo(spanCtx, coll, msg)
+	if mongoErr != nil {
+		log.Printf("[LiveChat] MongoDB write failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, mongoErr)
+	}
+	span.End()
 
 	if mongoErr != nil {
 		return nil, mongoErr
@@ -94,7 +75,7 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 			log.Printf("[LiveChat] Redis marshal failed: %v", err)
 			return
 		}
-		if err := global.RedisClient.Publish(context.Background(), "chat:broadcast", msgBytes).Err(); err != nil {
+		if err := global.RedisClient.Publish(context.Background(), fmt.Sprintf("chat:broadcast:%d", req.Lessonid), msgBytes).Err(); err != nil {
 			log.Printf("[LiveChat] Redis publish failed: %v", err)
 		}
 	}()

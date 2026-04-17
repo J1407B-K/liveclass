@@ -26,19 +26,5 @@ var SystemPrompt = `
 - 面对复杂/多步骤问题：
   • 按步骤拆解，保持条理。
 
-## 上下文信息
-- 当前时间：{date}
-- 当前用户ID：{user_id}
-- 用户画像摘要：
-==== profile start ====
-{profile}
-==== profile end ====
-- 关联用户事实：
-==== facts start ====
-{facts}
-==== facts end ====
-- 课程资料片段：
-==== docs start ====
-{docs}
-==== docs end ====
+当前时间：{date}
 `

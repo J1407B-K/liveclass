@@ -12,39 +12,58 @@ import (
 func BuildAgent(ctx context.Context) (r compose.Runnable[*model.UserMessage, *schema.Message], err error) {
 	g := compose.NewGraph[*model.UserMessage, *schema.Message]()
 
-	//inputToTemplateVars节点
-	_ = g.AddLambdaNode(
+	if err = g.AddLambdaNode(
+		_const.AdvisorNode,
+		compose.InvokableLambdaWithOption(runAdvisor),
+		compose.WithNodeName("AdvisorNode"),
+	); err != nil {
+		return nil, err
+	}
+
+	if err = g.AddLambdaNode(
 		_const.InputToTemplateVars,
 		compose.InvokableLambdaWithOption(newInputToTemplateVars),
 		compose.WithNodeName("InputToTemplateVars"),
-	)
+	); err != nil {
+		return nil, err
+	}
 
 	//chatTemplate节点
 	chatTemplateKey, err := newChatTemplate(ctx)
 	if err != nil {
 		return nil, err
 	}
-	_ = g.AddChatTemplateNode(
+	if err = g.AddChatTemplateNode(
 		_const.ChatTemplate,
 		chatTemplateKey,
 		compose.WithNodeName("ChatTemplate"),
-	)
+	); err != nil {
+		return nil, err
+	}
 
-	//reactAgent节点
 	reactAgentKey, err := newReactAgent(ctx)
 	if err != nil {
 		return nil, err
 	}
-	_ = g.AddLambdaNode(
+	if err = g.AddLambdaNode(
 		_const.ReactAgent,
 		reactAgentKey,
 		compose.WithNodeName("ReactAgent"),
-	)
+	); err != nil {
+		return nil, err
+	}
 
-	_ = g.AddEdge(compose.START, _const.InputToTemplateVars)
-	_ = g.AddEdge(_const.InputToTemplateVars, _const.ChatTemplate)
-	_ = g.AddEdge(_const.ChatTemplate, _const.ReactAgent)
-	_ = g.AddEdge(_const.ReactAgent, compose.END)
+	for _, e := range [][2]string{
+		{compose.START, _const.AdvisorNode},
+		{_const.AdvisorNode, _const.InputToTemplateVars},
+		{_const.InputToTemplateVars, _const.ChatTemplate},
+		{_const.ChatTemplate, _const.ReactAgent},
+		{_const.ReactAgent, compose.END},
+	} {
+		if err = g.AddEdge(e[0], e[1]); err != nil {
+			return nil, err
+		}
+	}
 
 	r, err = g.Compile(ctx, compose.WithGraphName("Agent"), compose.WithNodeTriggerMode(compose.AllPredecessor))
 	if err != nil {

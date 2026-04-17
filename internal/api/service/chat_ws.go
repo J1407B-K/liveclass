@@ -62,7 +62,7 @@ func ChatConnections(c context.Context, ctx *app.RequestContext) {
 }
 
 func RunChatRedisSubscriber(ctx context.Context, rdb *redis.Client) error {
-	pubsub := rdb.Subscribe(ctx, "chat:broadcast")
+	pubsub := rdb.PSubscribe(ctx, "chat:broadcast:*")
 	defer pubsub.Close()
 
 	ch := pubsub.Channel()
