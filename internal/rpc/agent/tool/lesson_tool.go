@@ -1,15 +1,16 @@
-package skill
+package tool
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/components/tool/utils"
 	"liveclass/idl/kitex_gen/common"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/idl/kitex_gen/webrtc_live/webrtclive"
+
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/components/tool/utils"
 )
 
 type LessonInfoRequest struct {

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	chat "liveclass/idl/kitex_gen/chat"
@@ -26,8 +25,9 @@ import (
 
 // ChatServiceImpl implements the last service interface defined in the IDL.
 type ChatServiceImpl struct {
-	mongoClient *mongo.Client
-	webrtcCli   webrtclive.Client
+	mongoClient     *mongo.Client
+	webrtcCli       webrtclive.Client
+	kafkaDispatcher *KafkaDispatcher
 }
 
 func NewWebRTCLiveClient() (webrtclive.Client, error) {
@@ -69,16 +69,10 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		return nil, mongoErr
 	}
 
-	go func() {
-		msgBytes, err := json.Marshal(msg)
-		if err != nil {
-			log.Printf("[LiveChat] Redis marshal failed: %v", err)
-			return
-		}
-		if err := global.RedisClient.Publish(context.Background(), fmt.Sprintf("chat:broadcast:%d", req.Lessonid), msgBytes).Err(); err != nil {
-			log.Printf("[LiveChat] Redis publish failed: %v", err)
-		}
-	}()
+	if err := s.kafkaDispatcher.Publish(ctx, msg); err != nil {
+		log.Printf("[LiveChat] Kafka dispatch failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, err)
+		return nil, err
+	}
 
 	return &chat.LiveChatResp{
 		Resp: &common.Resp{

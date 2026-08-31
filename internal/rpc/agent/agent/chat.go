@@ -94,7 +94,7 @@ func ChatWithAgent(
 			log.Printf("doc embed error: %v", embErr)
 			return nil
 		}
-		chunks, retrErr := docRetriever.Search(egCtx, lessonID, vector, 6)
+		chunks, retrErr := docRetriever.SearchHybrid(egCtx, lessonID, msg, vector, 6)
 		if retrErr != nil {
 			log.Printf("doc search error: %v", retrErr)
 			return nil

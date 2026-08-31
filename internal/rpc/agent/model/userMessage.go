@@ -15,10 +15,10 @@ type UserMessage struct {
 	SkillAdvice *SkillAdvice `json:"skill_advice,omitempty"`
 }
 
-// SkillAdvice 是 Advisor 节点的输出：技能类型 + 针对本次任务的流程指引
+// SkillAdvice 是 Advisor 节点的输出：技能类型列表 + 合并后的流程指引
 type SkillAdvice struct {
-	// Skill 技能类型：student_qa / lesson_plan / quiz_help / lesson_summary / general
-	Skill string `json:"skill"`
-	// Guidance 注入给 React Agent 的流程指引（1-3句，告诉 agent 怎么做）
+	// Skills 命中的技能类型列表，支持多 tool 组合
+	Skills []string `json:"skills"`
+	// Guidance 注入给 React Agent 的流程指引（从 .md 文件加载并合并）
 	Guidance string `json:"guidance"`
 }

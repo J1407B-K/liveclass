@@ -8,6 +8,7 @@ import (
 	"liveclass/internal/api/router"
 	"liveclass/internal/api/service"
 	"log"
+	"os"
 
 	etcd "github.com/kitex-contrib/registry-etcd"
 )
@@ -35,8 +36,10 @@ func main() {
 	}
 
 	go func() {
-		if err := service.RunChatRedisSubscriber(context.Background(), rdb); err != nil {
-			log.Printf("chat redis subscriber stopped: %v", err)
+		hostname, _ := os.Hostname()
+		reader := initialize.InitChatKafkaReader("chat-api-" + hostname)
+		if err := service.RunChatConsumer(context.Background(), reader); err != nil {
+			log.Printf("chat kafka consumer stopped: %v", err)
 		}
 	}()
 

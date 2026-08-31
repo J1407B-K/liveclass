@@ -1,15 +1,16 @@
-package skill
+package tool
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"github.com/cloudwego/eino/components/tool"
-	"github.com/cloudwego/eino/components/tool/utils"
 	"liveclass/idl/kitex_gen/common"
 	user "liveclass/idl/kitex_gen/user"
 	"liveclass/idl/kitex_gen/user/userservice"
+
+	"github.com/cloudwego/eino/components/tool"
+	"github.com/cloudwego/eino/components/tool/utils"
 )
 
 type UserInfoRequest struct {

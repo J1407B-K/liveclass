@@ -23,9 +23,11 @@ func newInputToTemplateVars(_ context.Context, input *model.UserMessage, opts ..
 	}
 
 	// 从 Advisor 获取技能指引，未命中时降级为 general
-	skillGuidance := my_prompt.SkillPrompts[my_prompt.SkillGeneral]
+	skillGuidance := ""
 	if input.SkillAdvice != nil && input.SkillAdvice.Guidance != "" {
 		skillGuidance = input.SkillAdvice.Guidance
+	} else {
+		skillGuidance, _ = my_prompt.LoadSkillContent("general")
 	}
 
 	return map[string]any{

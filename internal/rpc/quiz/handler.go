@@ -31,8 +31,7 @@ type QuizServiceImpl struct {
 	DBManager *dao.DBManager
 	webrtcCli webrtclive.Client
 	userCli   userservice.Client
-
-	sfQuiz singleflight.Group
+	sfQuiz    singleflight.Group
 }
 
 func NewWebRTCLiveClient() (webrtclive.Client, error) {

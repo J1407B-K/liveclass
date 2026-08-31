@@ -4,6 +4,7 @@ import (
 	"errors"
 	"liveclass/idl/kitex_gen/quiz"
 	"liveclass/internal/rpc/quiz/model"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
@@ -51,7 +52,21 @@ func (m *DBManager) CreateUserAnswer(question *model.Question, userID int64, use
 		Answer:     userAnswer,
 		IsCorrect:  userAnswer == question.Answer,
 	}
-	return m.DB.Create(a).Error
+	err := m.DB.Create(a).Error
+	if isDuplicateAnswerError(err) {
+		return errors.New("你已经回答过此问题")
+	}
+	return err
+}
+
+func isDuplicateAnswerError(err error) bool {
+	if err == nil {
+		return false
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "Duplicate entry") ||
+		strings.Contains(msg, "idx_question_user") ||
+		strings.Contains(msg, "SQLSTATE 23505")
 }
 
 func (m *DBManager) CountAnswersByQuestion(questionID int64) ([]model.AnswerStat, error) {

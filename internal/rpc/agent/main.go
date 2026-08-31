@@ -82,7 +82,13 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	docRetriever, err := rag.NewDocRetriever(docMgr)
+	var docES *rag.ElasticsearchManager
+	if mgr, esErr := initialize.InitDocElasticsearch(ctx); esErr != nil {
+		log.Printf("init doc elasticsearch failed, fallback to vector-only retrieval: %v", esErr)
+	} else {
+		docES = mgr
+	}
+	docRetriever, err := rag.NewDocRetriever(docMgr, docES)
 	if err != nil {
 		panic(err.Error())
 	}

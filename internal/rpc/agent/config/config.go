@@ -3,11 +3,15 @@ package config
 type Config struct {
 	PostgresConfig
 	QdrantConfig
+	ElasticsearchConfig
 	KafkaBroker    string
 	KafkaTopic     string
 	APIKey         string
 	ChatModel      string
 	EmbeddingModel string
+	RerankURL      string
+	RerankModel    string
+	RerankFormat   string
 	RedisAddr      string
 	EtcdAddr       string
 	JaegerEndpoint string
@@ -31,4 +35,9 @@ type QdrantConfig struct {
 	Collection    string
 	DocCollection string
 	ApiKey        string
+}
+
+type ElasticsearchConfig struct {
+	Addr     string
+	DocIndex string
 }

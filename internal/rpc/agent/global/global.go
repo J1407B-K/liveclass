@@ -4,6 +4,8 @@ import (
 	"context"
 	"liveclass/internal/rpc/agent/config"
 	"liveclass/internal/rpc/agent/model"
+	"os"
+	"path/filepath"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino/compose"
@@ -20,6 +22,13 @@ var (
 	ChatModel           *ark.ChatModel
 	UserClient          userservice.Client
 	LessonClient        webrtclive.Client
+
+	SkriptsDir = func() string {
+		if d := os.Getenv("SCRIPTS_DIR"); d != "" {
+			return d
+		}
+		return filepath.Join(os.Getenv("PWD"), "internal/rpc/agent/skills/scripts")
+	}()
 )
 
 type TextMultiModalEmbedder interface {

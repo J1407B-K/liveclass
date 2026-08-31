@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"liveclass/idl/kitex_gen/quiz"
 	"liveclass/internal/api/code"
@@ -60,11 +61,7 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	err = broadcastQuizToLesson(question.LessonId, utils.H{
-		"Content": question.Content,
-		"Options": question.Options,
-	})
-	if err != nil {
+	if err = publishQuizQuestion(c, question, resp); err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
 			"resp": model2.Response{
 				Code: code.BroadCastError,
@@ -82,6 +79,31 @@ func CreateQuestion(c context.Context, ctx *app.RequestContext) {
 			Data: resp.Resp.Data,
 		},
 	})
+}
+
+func publishQuizQuestion(c context.Context, question model2.Question, resp *quiz.CreateQuestionResp) error {
+	quizID := int64(0)
+	if resp != nil && resp.Resp != nil && resp.Resp.Data != nil && resp.Resp.Data.QuizInfo != nil {
+		quizID = resp.Resp.Data.QuizInfo.QuizID
+	}
+
+	msg := utils.H{
+		"type":        "quiz_question",
+		"lesson_id":   question.LessonId,
+		"question_id": quizID,
+		"content":     question.Content,
+		"options":     question.Options,
+	}
+
+	if global.DBManager == nil || global.DBManager.RDB == nil {
+		return broadcastQuizToLesson(question.LessonId, msg)
+	}
+
+	payload, err := json.Marshal(msg)
+	if err != nil {
+		return err
+	}
+	return global.DBManager.RDB.Publish(c, "quiz:broadcast", payload).Err()
 }
 
 func DelQuestion(c context.Context, ctx *app.RequestContext) {

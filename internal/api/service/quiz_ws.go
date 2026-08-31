@@ -202,10 +202,16 @@ func RunQuizRedisSubscriber(ctx context.Context, rdb *redis.Client) error {
 			}
 
 			msgType, _ := quizMsg["type"].(string)
-			if msgType == "quiz_stats" {
+			switch msgType {
+			case "quiz_stats":
 				teacherID, _ := quizMsg["teacher_id"].(float64)
 				if teacherID > 0 {
 					_ = broadcastToTeacher(int64(teacherID), quizMsg)
+				}
+			case "quiz_question":
+				lessonID, _ := quizMsg["lesson_id"].(float64)
+				if lessonID > 0 {
+					_ = broadcastQuizToLesson(int64(lessonID), quizMsg)
 				}
 			}
 		}

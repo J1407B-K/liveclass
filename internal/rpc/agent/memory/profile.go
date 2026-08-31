@@ -79,7 +79,7 @@ func (m *DBManager) ListFactsForProfile(
 
 	var facts []*model.UserFact
 	if err := query.
-		Order("updated_at DESC").
+		Order("updated_at DESC, confidence DESC").
 		Limit(limit).
 		Find(&facts).Error; err != nil {
 		return nil, err

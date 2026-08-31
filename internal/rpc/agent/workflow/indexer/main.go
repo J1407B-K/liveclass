@@ -15,6 +15,7 @@ import (
 
 	"liveclass/internal/rpc/agent/initialize"
 	"liveclass/internal/rpc/agent/memory"
+	"liveclass/internal/rpc/agent/rag"
 )
 
 const (
@@ -60,6 +61,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	esMgr, err := initialize.InitDocElasticsearch(ctx)
+	if err != nil {
+		fmt.Printf("elasticsearch init failed, skip bm25 index: %v\n", err)
+	}
 
 	content, err := os.ReadFile(filePath)
 	if err != nil {
@@ -73,11 +78,13 @@ func main() {
 	}
 
 	points := make([]*qdrant.PointStruct, 0, batchSize)
+	esChunks := make([]rag.DocChunk, 0, batchSize)
 	for idx, chunk := range chunks {
 		vector, err := multiEmbedder.EmbedText(ctx, chunk)
 		if err != nil {
 			panic(err)
 		}
+		chunkID := uuid.NewString()
 		payload := map[string]any{
 			"lesson_id": lessonID,
 			"source":    source,
@@ -85,26 +92,44 @@ func main() {
 			"text":      chunk,
 		}
 
-		points = append(points, buildPoint(memory.Float64To32(vector), payload))
+		points = append(points, buildPoint(chunkID, memory.Float64To32(vector), payload))
+		esChunks = append(esChunks, rag.DocChunk{
+			ID:       chunkID,
+			Text:     chunk,
+			LessonID: lessonID,
+			Source:   source,
+			ChunkIdx: int32(idx),
+		})
 		if len(points) >= batchSize {
 			if err := upsertPoints(ctx, qdrantMgr, points); err != nil {
 				panic(err)
 			}
+			if esMgr != nil {
+				if err := esMgr.BulkUpsertDocChunks(ctx, esChunks); err != nil {
+					panic(err)
+				}
+			}
 			points = points[:0]
+			esChunks = esChunks[:0]
 		}
 	}
 	if len(points) > 0 {
 		if err := upsertPoints(ctx, qdrantMgr, points); err != nil {
 			panic(err)
 		}
+		if esMgr != nil {
+			if err := esMgr.BulkUpsertDocChunks(ctx, esChunks); err != nil {
+				panic(err)
+			}
+		}
 	}
 
 	fmt.Printf("Indexed %d chunks into collection %s\n", len(chunks), qdrantMgr.Collection)
 }
 
-func buildPoint(vector []float32, payload map[string]any) *qdrant.PointStruct {
+func buildPoint(id string, vector []float32, payload map[string]any) *qdrant.PointStruct {
 	return &qdrant.PointStruct{
-		Id:      qdrant.NewID(uuid.NewString()),
+		Id:      qdrant.NewID(id),
 		Vectors: qdrant.NewVectors(vector...),
 		Payload: qdrant.NewValueMap(payload),
 	}

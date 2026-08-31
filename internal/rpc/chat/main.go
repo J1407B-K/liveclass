@@ -24,6 +24,12 @@ func main() {
 	global.RedisClient = initialize.InitRedis()
 	defer global.RedisClient.Close()
 
+	global.KafkaWriter = initialize.InitKafkaWriter()
+	defer global.KafkaWriter.Close()
+	kafkaDispatcher := NewKafkaDispatcher(global.KafkaWriter)
+	kafkaDispatcher.Start()
+	defer kafkaDispatcher.Stop()
+
 	webrtcliveCli, err := NewWebRTCLiveClient()
 	if err != nil {
 		log.Fatalf("Failed to create WebRTC client: %v", err)
@@ -46,7 +52,7 @@ func main() {
 
 	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
 
-	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli},
+	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli, kafkaDispatcher: kafkaDispatcher},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "chatservice"}),
 		server.WithServiceAddr(addr),

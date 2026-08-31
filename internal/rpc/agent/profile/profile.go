@@ -19,7 +19,7 @@ var sfGroup singleflight.Group
 
 const (
 	profileTTL           = 12 * time.Hour
-	profileFactLimit     = 12
+	profileFactLimit     = 20
 	profileMinConfidence = 0.4
 )
 

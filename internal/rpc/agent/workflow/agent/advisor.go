@@ -13,20 +13,18 @@ import (
 	"github.com/cloudwego/eino/schema"
 )
 
-// runAdvisor 调用 LLM 对用户意图进行分类，返回技能类型和执行指引。
-// 这是一次轻量级 LLM 调用，不走完整的 React Agent 流程。
 func runAdvisor(ctx context.Context, input *model.UserMessage, _ ...any) (*model.UserMessage, error) {
+	index, err := my_prompt.LoadSkillIndex()
+	if err != nil || len(index) == 0 {
+		log.Printf("advisor: failed to load tool index: %v, falling back to general", err)
+		return applySkills(input, []string{"general"})
+	}
+
 	if global.ChatModel == nil {
-		// 降级：没有模型时直接走 general 技能
-		input.SkillAdvice = &model.SkillAdvice{
-			Skill:    my_prompt.SkillGeneral,
-			Guidance: my_prompt.SkillPrompts[my_prompt.SkillGeneral],
-		}
-		return input, nil
+		return applySkills(input, []string{"general"})
 	}
 
 	userContent := input.Query
-	// 附带最近一轮完整对话（user+assistant）避免断章取义
 	if len(input.History) >= 2 {
 		prev := input.History[len(input.History)-2]
 		last := input.History[len(input.History)-1]
@@ -38,64 +36,59 @@ func runAdvisor(ctx context.Context, input *model.UserMessage, _ ...any) (*model
 	}
 
 	msgs := []*schema.Message{
-		schema.SystemMessage(my_prompt.AdvisorSystemPrompt),
+		schema.SystemMessage(my_prompt.BuildAdvisorSystemPrompt(index)),
 		schema.UserMessage(userContent),
 	}
 
 	resp, err := global.ChatModel.Generate(ctx, msgs)
 	if err != nil {
 		log.Printf("advisor LLM call failed: %v, falling back to general", err)
-		input.SkillAdvice = fallbackAdvice()
-		return input, nil
+		return applySkills(input, []string{"general"})
 	}
 
-	advice, err := parseAdvisorResponse(resp.Content)
-	if err != nil {
+	skills, err := parseAdvisorResponse(resp.Content)
+	if err != nil || len(skills) == 0 {
 		log.Printf("advisor parse failed: %v (raw: %q), falling back to general", err, resp.Content)
-		input.SkillAdvice = fallbackAdvice()
-		return input, nil
+		return applySkills(input, []string{"general"})
 	}
 
-	// 用 Skill Prompt 库里的完整 SOP 替换 LLM 给的简短 guidance，
-	// LLM 给的 guidance 只作为补充说明追加在后面。
-	skillPrompt, ok := my_prompt.SkillPrompts[advice.Skill]
-	if !ok {
-		skillPrompt = my_prompt.SkillPrompts[my_prompt.SkillGeneral]
-	}
-	if advice.Guidance != "" {
-		skillPrompt = skillPrompt + "\n**本次任务补充说明：** " + advice.Guidance
-	}
+	return applySkills(input, skills)
+}
 
+func applySkills(input *model.UserMessage, skills []string) (*model.UserMessage, error) {
+	var parts []string
+	for _, name := range skills {
+		content, err := my_prompt.LoadSkillContent(name)
+		if err != nil {
+			log.Printf("advisor: tool %q not found, skipping: %v", name, err)
+			continue
+		}
+		parts = append(parts, content)
+	}
+	if len(parts) == 0 {
+		content, _ := my_prompt.LoadSkillContent("general")
+		parts = []string{content}
+		skills = []string{"general"}
+	}
 	input.SkillAdvice = &model.SkillAdvice{
-		Skill:    advice.Skill,
-		Guidance: skillPrompt,
+		Skills:   skills,
+		Guidance: strings.Join(parts, "\n\n---\n\n"),
 	}
 	return input, nil
 }
 
-func parseAdvisorResponse(raw string) (*model.SkillAdvice, error) {
-	// 尝试从输出中提取 JSON（LLM 有时会带前后缀文字）
+func parseAdvisorResponse(raw string) ([]string, error) {
 	raw = strings.TrimSpace(raw)
 	start := strings.Index(raw, "{")
 	end := strings.LastIndex(raw, "}")
 	if start == -1 || end == -1 || end <= start {
-		return nil, fmt.Errorf("advisor: no JSON object found in response: %q", raw)
+		return nil, fmt.Errorf("no JSON found in: %q", raw)
 	}
-	raw = raw[start : end+1]
-
-	var advice model.SkillAdvice
-	if err := json.Unmarshal([]byte(raw), &advice); err != nil {
+	var result struct {
+		Skills []string `json:"skills"`
+	}
+	if err := json.Unmarshal([]byte(raw[start:end+1]), &result); err != nil {
 		return nil, err
 	}
-	if advice.Skill == "" {
-		advice.Skill = my_prompt.SkillGeneral
-	}
-	return &advice, nil
-}
-
-func fallbackAdvice() *model.SkillAdvice {
-	return &model.SkillAdvice{
-		Skill:    my_prompt.SkillGeneral,
-		Guidance: my_prompt.SkillPrompts[my_prompt.SkillGeneral],
-	}
+	return result.Skills, nil
 }
