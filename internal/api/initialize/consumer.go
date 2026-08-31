@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"liveclass/internal/api/global"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -11,7 +12,8 @@ func InitChatKafkaReader(groupID string) *kafka.Reader {
 		Brokers:  []string{global.KafkaBroker},
 		Topic:    global.KafkaTopic,
 		GroupID:  groupID,
-		MinBytes: 1e3,
+		MinBytes: 1,
 		MaxBytes: 10e6,
+		MaxWait:  50 * time.Millisecond,
 	})
 }

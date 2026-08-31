@@ -2,13 +2,14 @@ package router
 
 import (
 	"context"
+	"liveclass/internal/api/observability"
 	service2 "liveclass/internal/api/service"
 	"liveclass/internal/api/utils/cors"
 	"liveclass/internal/api/utils/jwt"
 	"log"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
-	prometheus "github.com/hertz-contrib/monitor-prometheus"
+	hertzprometheus "github.com/hertz-contrib/monitor-prometheus"
 	"github.com/hertz-contrib/obs-opentelemetry/provider"
 	"github.com/hertz-contrib/obs-opentelemetry/tracing"
 )
@@ -24,7 +25,7 @@ func InitRouter() {
 
 	tracer, cfg := tracing.NewServerTracer()
 
-	prom := prometheus.NewServerTracer(":10001", "/metrics")
+	prom := hertzprometheus.NewServerTracer(":10001", "/metrics", hertzprometheus.WithRegistry(observability.Registry))
 
 	h := server.New(server.WithHostPorts(":8080"),
 		server.WithMaxRequestBodySize(1024*1024*1024),

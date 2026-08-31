@@ -289,7 +289,8 @@ func (p *LiveChatReq) Field3DeepEqual(src string) bool {
 }
 
 type LiveChatResp struct {
-	Resp *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
+	Resp      *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
+	MessageId *string      `thrift:"message_id,2,optional" frugal:"2,optional,string" json:"message_id,omitempty"`
 }
 
 func NewLiveChatResp() *LiveChatResp {
@@ -307,16 +308,33 @@ func (p *LiveChatResp) GetResp() (v *common.Resp) {
 	}
 	return p.Resp
 }
+
+var LiveChatResp_MessageId_DEFAULT string
+
+func (p *LiveChatResp) GetMessageId() (v string) {
+	if !p.IsSetMessageId() {
+		return LiveChatResp_MessageId_DEFAULT
+	}
+	return *p.MessageId
+}
 func (p *LiveChatResp) SetResp(val *common.Resp) {
 	p.Resp = val
+}
+func (p *LiveChatResp) SetMessageId(val *string) {
+	p.MessageId = val
 }
 
 var fieldIDToName_LiveChatResp = map[int16]string{
 	1: "resp",
+	2: "message_id",
 }
 
 func (p *LiveChatResp) IsSetResp() bool {
 	return p.Resp != nil
+}
+
+func (p *LiveChatResp) IsSetMessageId() bool {
+	return p.MessageId != nil
 }
 
 func (p *LiveChatResp) Read(iprot thrift.TProtocol) (err error) {
@@ -340,6 +358,14 @@ func (p *LiveChatResp) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -382,6 +408,17 @@ func (p *LiveChatResp) ReadField1(iprot thrift.TProtocol) error {
 	p.Resp = _field
 	return nil
 }
+func (p *LiveChatResp) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.MessageId = _field
+	return nil
+}
 
 func (p *LiveChatResp) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -391,6 +428,10 @@ func (p *LiveChatResp) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -427,6 +468,24 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *LiveChatResp) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetMessageId() {
+		if err = oprot.WriteFieldBegin("message_id", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.MessageId); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
 
 func (p *LiveChatResp) String() string {
 	if p == nil {
@@ -445,6 +504,9 @@ func (p *LiveChatResp) DeepEqual(ano *LiveChatResp) bool {
 	if !p.Field1DeepEqual(ano.Resp) {
 		return false
 	}
+	if !p.Field2DeepEqual(ano.MessageId) {
+		return false
+	}
 	return true
 }
 
@@ -455,10 +517,24 @@ func (p *LiveChatResp) Field1DeepEqual(src *common.Resp) bool {
 	}
 	return true
 }
+func (p *LiveChatResp) Field2DeepEqual(src *string) bool {
+
+	if p.MessageId == src {
+		return true
+	} else if p.MessageId == nil || src == nil {
+		return false
+	}
+	if strings.Compare(*p.MessageId, *src) != 0 {
+		return false
+	}
+	return true
+}
 
 type GetHistoryReq struct {
-	LessonId int64 `thrift:"lesson_id,1" frugal:"1,default,i64" json:"lesson_id"`
-	Userid   int64 `thrift:"userid,2" frugal:"2,default,i64" json:"userid"`
+	LessonId int64   `thrift:"lesson_id,1" frugal:"1,default,i64" json:"lesson_id"`
+	Userid   int64   `thrift:"userid,2" frugal:"2,default,i64" json:"userid"`
+	Cursor   *string `thrift:"cursor,3,optional" frugal:"3,optional,string" json:"cursor,omitempty"`
+	Limit    *int32  `thrift:"limit,4,optional" frugal:"4,optional,i32" json:"limit,omitempty"`
 }
 
 func NewGetHistoryReq() *GetHistoryReq {
@@ -475,16 +551,50 @@ func (p *GetHistoryReq) GetLessonId() (v int64) {
 func (p *GetHistoryReq) GetUserid() (v int64) {
 	return p.Userid
 }
+
+var GetHistoryReq_Cursor_DEFAULT string
+
+func (p *GetHistoryReq) GetCursor() (v string) {
+	if !p.IsSetCursor() {
+		return GetHistoryReq_Cursor_DEFAULT
+	}
+	return *p.Cursor
+}
+
+var GetHistoryReq_Limit_DEFAULT int32
+
+func (p *GetHistoryReq) GetLimit() (v int32) {
+	if !p.IsSetLimit() {
+		return GetHistoryReq_Limit_DEFAULT
+	}
+	return *p.Limit
+}
 func (p *GetHistoryReq) SetLessonId(val int64) {
 	p.LessonId = val
 }
 func (p *GetHistoryReq) SetUserid(val int64) {
 	p.Userid = val
 }
+func (p *GetHistoryReq) SetCursor(val *string) {
+	p.Cursor = val
+}
+func (p *GetHistoryReq) SetLimit(val *int32) {
+	p.Limit = val
+}
 
 var fieldIDToName_GetHistoryReq = map[int16]string{
 	1: "lesson_id",
 	2: "userid",
+	3: "cursor",
+	4: "limit",
+}
+
+func (p *GetHistoryReq) IsSetCursor() bool {
+	return p.Cursor != nil
+}
+
+func (p *GetHistoryReq) IsSetLimit() bool {
+	return p.Limit != nil
 }
 
 func (p *GetHistoryReq) Read(iprot thrift.TProtocol) (err error) {
@@ -516,6 +626,22 @@ func (p *GetHistoryReq) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -572,6 +698,28 @@ func (p *GetHistoryReq) ReadField2(iprot thrift.TProtocol) error {
 	p.Userid = _field
 	return nil
 }
+func (p *GetHistoryReq) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Cursor = _field
+	return nil
+}
+func (p *GetHistoryReq) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Limit = _field
+	return nil
+}
 
 func (p *GetHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -585,6 +733,14 @@ func (p *GetHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -637,6 +793,42 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
+func (p *GetHistoryReq) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetCursor() {
+		if err = oprot.WriteFieldBegin("cursor", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Cursor); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *GetHistoryReq) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetLimit() {
+		if err = oprot.WriteFieldBegin("limit", thrift.I32, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI32(*p.Limit); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
 
 func (p *GetHistoryReq) String() string {
 	if p == nil {
@@ -658,6 +850,12 @@ func (p *GetHistoryReq) DeepEqual(ano *GetHistoryReq) bool {
 	if !p.Field2DeepEqual(ano.Userid) {
 		return false
 	}
+	if !p.Field3DeepEqual(ano.Cursor) {
+		return false
+	}
+	if !p.Field4DeepEqual(ano.Limit) {
+		return false
+	}
 	return true
 }
 
@@ -675,9 +873,34 @@ func (p *GetHistoryReq) Field2DeepEqual(src int64) bool {
 	}
 	return true
 }
+func (p *GetHistoryReq) Field3DeepEqual(src *string) bool {
+
+	if p.Cursor == src {
+		return true
+	} else if p.Cursor == nil || src == nil {
+		return false
+	}
+	if strings.Compare(*p.Cursor, *src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *GetHistoryReq) Field4DeepEqual(src *int32) bool {
+
+	if p.Limit == src {
+		return true
+	} else if p.Limit == nil || src == nil {
+		return false
+	}
+	if *p.Limit != *src {
+		return false
+	}
+	return true
+}
 
 type GetHistoryResp struct {
-	Resp *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
+	Resp       *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
+	NextCursor *string      `thrift:"next_cursor,2,optional" frugal:"2,optional,string" json:"next_cursor,omitempty"`
 }
 
 func NewGetHistoryResp() *GetHistoryResp {
@@ -695,16 +918,33 @@ func (p *GetHistoryResp) GetResp() (v *common.Resp) {
 	}
 	return p.Resp
 }
+
+var GetHistoryResp_NextCursor_DEFAULT string
+
+func (p *GetHistoryResp) GetNextCursor() (v string) {
+	if !p.IsSetNextCursor() {
+		return GetHistoryResp_NextCursor_DEFAULT
+	}
+	return *p.NextCursor
+}
 func (p *GetHistoryResp) SetResp(val *common.Resp) {
 	p.Resp = val
+}
+func (p *GetHistoryResp) SetNextCursor(val *string) {
+	p.NextCursor = val
 }
 
 var fieldIDToName_GetHistoryResp = map[int16]string{
 	1: "resp",
+	2: "next_cursor",
 }
 
 func (p *GetHistoryResp) IsSetResp() bool {
 	return p.Resp != nil
+}
+
+func (p *GetHistoryResp) IsSetNextCursor() bool {
+	return p.NextCursor != nil
 }
 
 func (p *GetHistoryResp) Read(iprot thrift.TProtocol) (err error) {
@@ -728,6 +968,14 @@ func (p *GetHistoryResp) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -770,6 +1018,17 @@ func (p *GetHistoryResp) ReadField1(iprot thrift.TProtocol) error {
 	p.Resp = _field
 	return nil
 }
+func (p *GetHistoryResp) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.NextCursor = _field
+	return nil
+}
 
 func (p *GetHistoryResp) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -779,6 +1038,10 @@ func (p *GetHistoryResp) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
 			goto WriteFieldError
 		}
 	}
@@ -815,6 +1078,24 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
+func (p *GetHistoryResp) writeField2(oprot thrift.TProtocol) (err error) {
+	if p.IsSetNextCursor() {
+		if err = oprot.WriteFieldBegin("next_cursor", thrift.STRING, 2); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.NextCursor); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
 
 func (p *GetHistoryResp) String() string {
 	if p == nil {
@@ -833,12 +1114,27 @@ func (p *GetHistoryResp) DeepEqual(ano *GetHistoryResp) bool {
 	if !p.Field1DeepEqual(ano.Resp) {
 		return false
 	}
+	if !p.Field2DeepEqual(ano.NextCursor) {
+		return false
+	}
 	return true
 }
 
 func (p *GetHistoryResp) Field1DeepEqual(src *common.Resp) bool {
 
 	if !p.Resp.DeepEqual(src) {
+		return false
+	}
+	return true
+}
+func (p *GetHistoryResp) Field2DeepEqual(src *string) bool {
+
+	if p.NextCursor == src {
+		return true
+	} else if p.NextCursor == nil || src == nil {
+		return false
+	}
+	if strings.Compare(*p.NextCursor, *src) != 0 {
 		return false
 	}
 	return true

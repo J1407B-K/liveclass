@@ -17,6 +17,7 @@ require (
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/google/uuid v1.6.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/hertz-contrib/jwt v1.0.4
 	github.com/hertz-contrib/monitor-prometheus v0.1.3
 	github.com/hertz-contrib/obs-opentelemetry/provider v0.3.0

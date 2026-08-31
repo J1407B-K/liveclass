@@ -1,6 +1,7 @@
 package global
 
 import (
+	"liveclass/internal/api/chatroom"
 	"liveclass/internal/api/model"
 	"sync"
 
@@ -16,8 +17,8 @@ var (
 	}
 
 	//储存连接的map
-	WsConnsQuiz     = make(map[*websocket.Conn]*model.QuizConnMeta)
-	ChatLessonConns = make(map[int64]map[*websocket.Conn]struct{})
+	WsConnsQuiz = make(map[*websocket.Conn]*model.QuizConnMeta)
+	ChatRooms   *chatroom.Manager
 	//锁
 	Mux = sync.RWMutex{}
 

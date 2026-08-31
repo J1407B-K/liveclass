@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	chat "liveclass/idl/kitex_gen/chat"
@@ -17,6 +18,7 @@ import (
 
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/transmeta"
+	"github.com/google/uuid"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -47,19 +49,30 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 	}
 
 	cleanedMsg := filter.FilterSensitiveWords(filter.CleanMessage(req.Message))
-	timestamp := time.Now()
+	messageID, err := uuid.NewV7()
+	if err != nil {
+		return nil, fmt.Errorf("generate message id: %w", err)
+	}
+	createdAt := time.Now().UTC()
 
 	msg := model.Message{
+		MessageID: messageID.String(),
 		LessonID:  req.Lessonid,
-		Sender:    req.Userid,
+		SenderID:  req.Userid,
 		Content:   cleanedMsg,
-		Timestamp: timestamp,
+		CreatedAt: createdAt,
 	}
 
 	tracer := otel.Tracer("chatservice")
 	spanCtx, span := tracer.Start(ctx, "mongo.insert")
-	coll := dao.ChooseCollection(req.Lessonid, s.mongoClient)
+	coll := dao.MessagesCollection(s.mongoClient)
+	mongoStarted := time.Now()
+	if err := waitForDependency(spanCtx, global.Config.FaultInjection.MongoDelay); err != nil {
+		span.End()
+		return nil, err
+	}
 	mongoErr := dao.InsertMongo(spanCtx, coll, msg)
+	chatMongoLatency.Observe(time.Since(mongoStarted).Seconds())
 	if mongoErr != nil {
 		log.Printf("[LiveChat] MongoDB write failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, mongoErr)
 	}
@@ -74,12 +87,28 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		return nil, err
 	}
 
+	messageIDString := messageID.String()
 	return &chat.LiveChatResp{
 		Resp: &common.Resp{
 			Code: 0,
 			Msg:  "success",
 		},
+		MessageId: &messageIDString,
 	}, nil
+}
+
+func waitForDependency(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return nil
+	}
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
+	}
 }
 
 // GetHistory implements the ChatServiceImpl interface.
@@ -93,22 +122,30 @@ func (s *ChatServiceImpl) GetHistory(ctx context.Context, req *chat.GetHistoryRe
 		return nil, errors.New("你无权查看聊天记录")
 	}
 
-	coll := dao.ChooseCollection(req.LessonId, s.mongoClient)
+	coll := dao.MessagesCollection(s.mongoClient)
 
-	h, err := dao.SelectMongo(ctx, coll)
+	messages, nextCursor, err := dao.SelectMongo(ctx, coll, req.LessonId, req.GetCursor(), req.GetLimit())
 	if err != nil {
 		log.Printf("[GetHistory] Query failed: user=%d, lesson=%d, err=%v", req.Userid, req.LessonId, err)
 		return nil, err
 	}
+	historyJSON, err := json.Marshal(messages)
+	if err != nil {
+		return nil, err
+	}
 
 	log.Printf("[GetHistory] Success: user=%d, lesson=%d", req.Userid, req.LessonId)
-	return &chat.GetHistoryResp{
+	response := &chat.GetHistoryResp{
 		Resp: &common.Resp{
 			Code: 0,
 			Msg:  "success",
-			Data: &common.Data{ChatInfo: &common.Chat{Message: h}},
+			Data: &common.Data{ChatInfo: &common.Chat{Message: string(historyJSON)}},
 		},
-	}, nil
+	}
+	if nextCursor != "" {
+		response.NextCursor = &nextCursor
+	}
+	return response, nil
 }
 
 // DelHistory implements the ChatServiceImpl interface.
@@ -122,10 +159,10 @@ func (s *ChatServiceImpl) DelHistory(ctx context.Context, req *chat.DelHistoryRe
 		return nil, err
 	}
 
-	coll := dao.ChooseCollection(req.LessonId, s.mongoClient)
+	coll := dao.MessagesCollection(s.mongoClient)
 
-	if err := dao.DropCollection(ctx, coll); err != nil {
-		log.Printf("[DelHistory] Drop collection failed: user=%d, lesson=%d, err=%v", req.Userid, req.LessonId, err)
+	if err := dao.DeleteLessonMessages(ctx, coll, req.LessonId); err != nil {
+		log.Printf("[DelHistory] Delete messages failed: user=%d, lesson=%d, err=%v", req.Userid, req.LessonId, err)
 		return nil, err
 	}
 

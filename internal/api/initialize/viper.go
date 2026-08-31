@@ -7,6 +7,12 @@ import (
 )
 
 func SetupViper() {
+	viper.SetDefault("ChatWebSocket.SendQueueSize", 256)
+	viper.SetDefault("ChatWebSocket.WriteWait", "10s")
+	viper.SetDefault("ChatWebSocket.PongWait", "60s")
+	viper.SetDefault("ChatWebSocket.PingPeriod", "54s")
+	viper.SetDefault("ChatWebSocket.MaxMessageSize", 4096)
+	viper.SetDefault("FaultInjection.RedisDelay", "0s")
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("api")
 	viper.SetConfigFile("./manifest/api.yaml")

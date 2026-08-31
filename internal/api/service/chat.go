@@ -26,13 +26,29 @@ func GetHistory(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
-	lid := ctx.PostForm("lesson_id")
+	lid := ctx.Query("lesson_id")
+	if lid == "" {
+		lid = ctx.PostForm("lesson_id")
+	}
 	ilid, err := strconv.ParseInt(lid, 10, 64)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, utils.H{"code": http.StatusBadRequest, "message": err.Error()})
 		return
 	}
-	resp, err := global.Clients.ChatClient.GetHistory(c, &chat.GetHistoryReq{LessonId: ilid, Userid: uid})
+	request := &chat.GetHistoryReq{LessonId: ilid, Userid: uid}
+	if cursor := ctx.Query("cursor"); cursor != "" {
+		request.Cursor = &cursor
+	}
+	if rawLimit := ctx.Query("limit"); rawLimit != "" {
+		parsed, parseErr := strconv.ParseInt(rawLimit, 10, 32)
+		if parseErr != nil || parsed <= 0 {
+			ctx.JSON(http.StatusBadRequest, utils.H{"code": http.StatusBadRequest, "message": "invalid limit"})
+			return
+		}
+		limit := int32(parsed)
+		request.Limit = &limit
+	}
+	resp, err := global.Clients.ChatClient.GetHistory(c, request)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
 			"resp": model.Response{
@@ -47,7 +63,10 @@ func GetHistory(c context.Context, ctx *app.RequestContext) {
 		"resp": model.Response{
 			Code: 0,
 			Msg:  "ok",
-			Data: resp.Resp.Data,
+			Data: utils.H{
+				"messages":    resp.Resp.Data.ChatInfo.Message,
+				"next_cursor": resp.GetNextCursor(),
+			},
 		},
 	})
 }

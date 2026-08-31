@@ -7,8 +7,9 @@ type Message struct {
 }
 
 type ShowMessage struct {
+	MessageID string    `json:"message_id"`
 	LessonID  int64     `json:"lesson_id"`
-	Sender    int64     `json:"sender"`
+	SenderID  int64     `json:"sender_id"`
 	Content   string    `json:"content"`
-	Timestamp time.Time `json:"timestamp"`
+	CreatedAt time.Time `json:"created_at"`
 }

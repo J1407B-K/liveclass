@@ -9,9 +9,11 @@ import (
 	"liveclass/internal/api/code"
 	global2 "liveclass/internal/api/global"
 	model2 "liveclass/internal/api/model"
+	"liveclass/internal/api/observability"
 	"liveclass/internal/api/utils/jwt"
 	"liveclass/internal/api/utils/ratelimit"
 	"log"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
@@ -51,6 +53,24 @@ func ChatConnections(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
+	resp, err := global2.Clients.Webrtc_liveClient.IsStudentInLesson(
+		c,
+		&webrtc_live.IsStudentInLessonReq{Lessonid: ilid, Studentid: uid},
+	)
+	if err != nil {
+		ctx.JSON(http.StatusServiceUnavailable, utils.H{
+			"code": code.RPCError,
+			"msg":  "lesson permission check failed",
+		})
+		return
+	}
+	if resp == nil || resp.Resp == nil || resp.Resp.Msg != "exist" {
+		ctx.JSON(http.StatusForbidden, utils.H{
+			"code": code.AuthError,
+			"msg":  "not a lesson member",
+		})
+		return
+	}
 
 	if err = global2.Upgrader.Upgrade(ctx, chatHandler(c, uid, ilid)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
@@ -76,14 +96,22 @@ func RunChatRedisSubscriber(ctx context.Context, rdb *redis.Client) error {
 				log.Printf("chat redis unmarshal failed: err=%v", err)
 				continue
 			}
-			broadcastChatToLesson(chatMsg.LessonID, chatMsg)
+			if err := global2.ChatRooms.BroadcastJSON(chatMsg.LessonID, chatMsg); err != nil {
+				log.Printf("chat redis broadcast marshal failed: err=%v", err)
+			}
 		}
 	}
 }
 
-func RunChatConsumer(ctx context.Context, reader *kafka.Reader) error {
-	defer reader.Close()
+type ChatReader interface {
+	FetchMessage(context.Context) (kafka.Message, error)
+	CommitMessages(context.Context, ...kafka.Message) error
+	Close() error
+}
 
+func consumeChat(ctx context.Context, reader ChatReader) error {
+	observability.SubscriberConnected.Set(1)
+	defer observability.SubscriberConnected.Set(0)
 	for {
 		m, err := reader.FetchMessage(ctx)
 		if err != nil {
@@ -96,7 +124,9 @@ func RunChatConsumer(ctx context.Context, reader *kafka.Reader) error {
 			continue
 		}
 
-		broadcastChatToLesson(msg.LessonID, msg)
+		if err = global2.ChatRooms.BroadcastJSON(msg.LessonID, msg); err != nil {
+			log.Printf("chat consumer broadcast marshal failed: offset=%d err=%v", m.Offset, err)
+		}
 
 		if err = reader.CommitMessages(ctx, m); err != nil {
 			log.Printf("chat consumer commit failed: offset=%d err=%v", m.Offset, err)
@@ -104,46 +134,64 @@ func RunChatConsumer(ctx context.Context, reader *kafka.Reader) error {
 	}
 }
 
+func RunChatConsumer(ctx context.Context, newReader func() ChatReader) error {
+	const (
+		initialBackoff = 100 * time.Millisecond
+		maxBackoff     = 5 * time.Second
+		stableWindow   = 30 * time.Second
+	)
+
+	backoff := initialBackoff
+	for {
+		reader := newReader()
+		started := time.Now()
+		err := consumeChat(ctx, reader)
+		_ = reader.Close()
+		if ctx.Err() != nil {
+			return nil
+		}
+		log.Printf("chat kafka consumer fetch failed: err=%v", err)
+		observability.SubscriberReconnectTotal.Inc()
+		if time.Since(started) >= stableWindow {
+			backoff = initialBackoff
+		}
+		jitter := time.Duration(rand.Int63n(int64(backoff/2) + 1))
+		timer := time.NewTimer(backoff + jitter)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil
+		case <-timer.C:
+		}
+		backoff *= 2
+		if backoff > maxBackoff {
+			backoff = maxBackoff
+		}
+	}
+}
+
 func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandler {
 	return func(conn *websocket.Conn) {
-		resp, err := global2.Clients.Webrtc_liveClient.IsStudentInLesson(
-			c,
-			&webrtc_live.IsStudentInLessonReq{
-				Lessonid:  lessonId,
-				Studentid: userId,
-			},
-		)
-		if err != nil {
-			_ = conn.Close()
-			return
-		}
-		if resp == nil || resp.Resp == nil || resp.Resp.Msg != "exist" {
-			_ = conn.WriteMessage(websocket.TextMessage, []byte("不是该课程成员！"))
-			_ = conn.Close()
-			return
-		}
-
-		addChatConn(lessonId, conn)
-		defer removeChatConn(lessonId, conn)
-		defer conn.Close()
-
-		for {
-			messageType, message, err := conn.ReadMessage()
-			if err != nil {
-				break
-			}
+		// The HTTP request context has a short deadline. A successfully upgraded
+		// WebSocket is a long-lived session and must not inherit that deadline.
+		client := global2.ChatRooms.NewClient(context.WithoutCancel(c), lessonId, conn)
+		_ = client.Serve(func(clientCtx context.Context, messageType int, message []byte) error {
 			if messageType != websocket.TextMessage {
-				continue
+				return nil
 			}
 
 			var msgJson model2.Message
-			if err = json.Unmarshal(message, &msgJson); err != nil {
+			if err := json.Unmarshal(message, &msgJson); err != nil {
 				log.Println("unmarshal chat message error:", err)
-				continue
+				return nil
 			}
 
+			redisStarted := time.Now()
+			if err := waitForDependency(clientCtx, global2.Config.FaultInjection.RedisDelay); err != nil {
+				return err
+			}
 			allowed, err := ratelimit.AllowRedis(
-				c,
+				clientCtx,
 				global2.DBManager.RDB,
 				fmt.Sprintf("rl:chat:send:%d", userId),
 				20,
@@ -151,63 +199,43 @@ func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandl
 				1,
 				time.Minute,
 			)
+			observability.ChatRedisRateLimitLatency.Observe(time.Since(redisStarted).Seconds())
 			if err != nil {
 				log.Println("chat limiter error:", err)
-				continue
+				return nil
 			}
 			if !allowed {
-				_ = conn.WriteMessage(websocket.TextMessage, []byte("发送过于频繁，请稍后再试"))
-				continue
+				client.Enqueue([]byte("发送过于频繁，请稍后再试"))
+				return nil
 			}
 
-			_, err = global2.Clients.ChatClient.LiveChat(c, &chat.LiveChatReq{
+			observability.ChatMessagesTotal.Inc()
+			rpcStarted := time.Now()
+			_, err = global2.Clients.ChatClient.LiveChat(clientCtx, &chat.LiveChatReq{
 				Lessonid: lessonId,
 				Userid:   userId,
 				Message:  msgJson.Content,
 			})
+			observability.ChatRPCLatency.Observe(time.Since(rpcStarted).Seconds())
 			if err != nil {
 				log.Println("chat rpc error:", err)
-				continue
+				return nil
 			}
-		}
+			return nil
+		})
 	}
 }
 
-func addChatConn(lessonID int64, conn *websocket.Conn) {
-	global2.Mux.Lock()
-	defer global2.Mux.Unlock()
-
-	if global2.ChatLessonConns[lessonID] == nil {
-		global2.ChatLessonConns[lessonID] = make(map[*websocket.Conn]struct{})
+func waitForDependency(ctx context.Context, delay time.Duration) error {
+	if delay <= 0 {
+		return nil
 	}
-	global2.ChatLessonConns[lessonID][conn] = struct{}{}
-}
-
-func removeChatConn(lessonID int64, conn *websocket.Conn) {
-	global2.Mux.Lock()
-	defer global2.Mux.Unlock()
-
-	if conns, ok := global2.ChatLessonConns[lessonID]; ok {
-		delete(conns, conn)
-		if len(conns) == 0 {
-			delete(global2.ChatLessonConns, lessonID)
-		}
-	}
-}
-
-func broadcastChatToLesson(lessonID int64, msg interface{}) {
-	global2.Mux.RLock()
-	conns := global2.ChatLessonConns[lessonID]
-	targets := make([]*websocket.Conn, 0, len(conns))
-	for conn := range conns {
-		targets = append(targets, conn)
-	}
-	global2.Mux.RUnlock()
-
-	for _, conn := range targets {
-		if err := conn.WriteJSON(msg); err != nil {
-			_ = conn.Close()
-			removeChatConn(lessonID, conn)
-		}
+	timer := time.NewTimer(delay)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-timer.C:
+		return nil
 	}
 }

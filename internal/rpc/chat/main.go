@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	chat "liveclass/idl/kitex_gen/chat/chatservice"
+	"liveclass/internal/rpc/chat/dao"
 	"liveclass/internal/rpc/chat/global"
 	"liveclass/internal/rpc/chat/initialize"
 	"log"
 	"net"
+	"time"
 
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
@@ -15,20 +17,49 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
+	clientprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 func main() {
 	initialize.SetupViper()
 	client := initialize.InitMongo()
+	mongoCtx, cancelMongo := context.WithTimeout(context.Background(), 10*time.Second)
+	if err := client.Ping(mongoCtx, readpref.Primary()); err != nil {
+		cancelMongo()
+		log.Fatalf("MongoDB ping failed: %v", err)
+	}
+	if err := dao.EnsureMessageIndexes(mongoCtx, client); err != nil {
+		cancelMongo()
+		log.Fatalf("Create chat message indexes: %v", err)
+	}
+	cancelMongo()
 
 	global.RedisClient = initialize.InitRedis()
 	defer global.RedisClient.Close()
 
 	global.KafkaWriter = initialize.InitKafkaWriter()
 	defer global.KafkaWriter.Close()
-	kafkaDispatcher := NewKafkaDispatcher(global.KafkaWriter)
+	kafkaDispatcher, err := NewKafkaDispatcher(global.KafkaWriter, DispatcherConfig{
+		QueueSize:        global.Config.KafkaDispatcher.QueueSize,
+		Workers:          global.Config.KafkaDispatcher.Workers,
+		EnqueueTimeout:   global.Config.KafkaDispatcher.EnqueueTimeout,
+		WriteTimeout:     global.Config.KafkaDispatcher.WriteTimeout,
+		RetryAttempts:    global.Config.KafkaDispatcher.RetryAttempts,
+		RetryBaseBackoff: global.Config.KafkaDispatcher.RetryBaseBackoff,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 	kafkaDispatcher.Start()
-	defer kafkaDispatcher.Stop()
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		if err := kafkaDispatcher.Stop(ctx); err != nil {
+			log.Printf("Kafka dispatcher shutdown: %v", err)
+		}
+	}()
 
 	webrtcliveCli, err := NewWebRTCLiveClient()
 	if err != nil {
@@ -51,6 +82,16 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
+	registry := clientprometheus.NewRegistry()
+	registry.MustRegister(
+		collectors.NewGoCollector(),
+		collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		chatMongoLatency,
+		chatPublishLatency,
+		chatPublishErrorsTotal,
+		chatPublishQueueDepth,
+		chatPublishQueueFullTotal,
+	)
 
 	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli, kafkaDispatcher: kafkaDispatcher},
 		server.WithSuite(tracing.NewServerSuite()),
@@ -60,7 +101,7 @@ func main() {
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 			ServiceName: "chatservice",
 		}),
-		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics")))
+		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics", prometheus.WithRegistry(registry))))
 
 	err = svr.Run()
 

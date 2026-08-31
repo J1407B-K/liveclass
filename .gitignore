@@ -6,3 +6,6 @@ docker-compose
 go.mod
 go.sum
 .DS_Store
+targets.md
+benchmark-results
+.claude

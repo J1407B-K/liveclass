@@ -10,15 +10,19 @@ struct LiveChatReq {
 
 struct LiveChatResp {
     1:common.resp resp,
+    2:optional string message_id,
 }
 
 struct GetHistoryReq {
     1: i64 lesson_id,
     2: i64 userid,
+    3:optional string cursor,
+    4:optional i32 limit,
 }
 
 struct GetHistoryResp {
     1: common.resp resp,
+    2:optional string next_cursor,
 }
 
 struct DelHistoryReq{

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"liveclass/internal/api/chatroom"
 	"liveclass/internal/api/global"
 	"liveclass/internal/api/initialize"
 	"liveclass/internal/api/model"
@@ -9,12 +10,24 @@ import (
 	"liveclass/internal/api/service"
 	"log"
 	"os"
+	"sync"
 
 	etcd "github.com/kitex-contrib/registry-etcd"
 )
 
 func main() {
 	initialize.SetupViper()
+	chatRooms, err := chatroom.NewManager(chatroom.Config{
+		SendQueueSize:  global.Config.ChatWebSocket.SendQueueSize,
+		WriteWait:      global.Config.ChatWebSocket.WriteWait,
+		PongWait:       global.Config.ChatWebSocket.PongWait,
+		PingPeriod:     global.Config.ChatWebSocket.PingPeriod,
+		MaxMessageSize: global.Config.ChatWebSocket.MaxMessageSize,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	global.ChatRooms = chatRooms
 	rdb := initialize.InitRedisDB()
 	resolver, err := etcd.NewEtcdResolver([]string{"127.0.0.1:2379"})
 	if err != nil {
@@ -35,19 +48,28 @@ func main() {
 		panic(err)
 	}
 
+	backgroundCtx, cancelBackground := context.WithCancel(context.Background())
+	var background sync.WaitGroup
+	background.Add(1)
 	go func() {
+		defer background.Done()
 		hostname, _ := os.Hostname()
-		reader := initialize.InitChatKafkaReader("chat-api-" + hostname)
-		if err := service.RunChatConsumer(context.Background(), reader); err != nil {
+		if err := service.RunChatConsumer(backgroundCtx, func() service.ChatReader {
+			return initialize.InitChatKafkaReader("chat-api-" + hostname)
+		}); err != nil {
 			log.Printf("chat kafka consumer stopped: %v", err)
 		}
 	}()
 
+	background.Add(1)
 	go func() {
-		if err := service.RunQuizRedisSubscriber(context.Background(), rdb); err != nil {
+		defer background.Done()
+		if err := service.RunQuizRedisSubscriber(backgroundCtx, rdb); err != nil && backgroundCtx.Err() == nil {
 			log.Printf("quiz redis subscriber stopped: %v", err)
 		}
 	}()
 
 	router.InitRouter()
+	cancelBackground()
+	background.Wait()
 }
