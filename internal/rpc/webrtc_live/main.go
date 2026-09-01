@@ -17,6 +17,8 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
+	clientprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 func main() {
@@ -39,7 +41,7 @@ func main() {
 	}
 
 	changesha, delsha, selectsha := initialize.InitScript(rdb)
-	initialize.InitWebRTCEngine()
+	initialize.InitWebRTCEngine(func() { webrtcRTPInjectedDrops.Inc() })
 	cosClient := initialize.SetUpCos()
 
 	ctxBloom, cancelBloom := context.WithCancel(context.Background())
@@ -66,6 +68,9 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
+	registry := clientprometheus.NewRegistry()
+	registry.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	registerWebRTCMetrics(registry)
 	svr := webrtc_live.NewServer(&WebrtcLiveImpl{DBManager: &dao.DBManager{DB: db, RDB: rdb, Node: node}, userCli: userCli, changesha: changesha, selectsha: selectsha, delsha: delsha, cosClient: cosClient},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "webrtc_liveservice"}),
@@ -74,7 +79,7 @@ func main() {
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{
 			ServiceName: "webrtc_liveservice",
 		}),
-		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics")))
+		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics", prometheus.WithRegistry(registry))))
 
 	err = svr.Run()
 

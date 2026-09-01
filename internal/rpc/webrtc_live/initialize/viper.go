@@ -10,6 +10,16 @@ func SetupViper() {
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("webrtc_live")
 	viper.SetConfigFile("./rpc/manifest/webrtc_live.yaml")
+	viper.SetDefault("NACKEnabled", true)
+	viper.SetDefault("PLIMinInterval", "500ms")
+	viper.SetDefault("RTPDropEveryN", 0)
+	viper.SetDefault("ICEUDPAddr", ":50000")
+	viper.SetDefault("TrackReadyTimeout", "3s")
+	_ = viper.BindEnv("NACKEnabled", "LIVECLASS_WEBRTC_NACK_ENABLED")
+	_ = viper.BindEnv("PLIMinInterval", "LIVECLASS_WEBRTC_PLI_MIN_INTERVAL")
+	_ = viper.BindEnv("RTPDropEveryN", "LIVECLASS_WEBRTC_RTP_DROP_EVERY_N")
+	_ = viper.BindEnv("ICEUDPAddr", "LIVECLASS_WEBRTC_ICE_UDP_ADDR")
+	_ = viper.BindEnv("TrackReadyTimeout", "LIVECLASS_WEBRTC_TRACK_READY_TIMEOUT")
 
 	//读取
 	err := viper.ReadInConfig()

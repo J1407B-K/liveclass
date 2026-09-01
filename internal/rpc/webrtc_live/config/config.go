@@ -4,11 +4,16 @@ type Config struct {
 	MysqlConfig
 	RedisConfig
 	CosConfig
-	TmpBaseDir     string
-	EtcdAddr       string
-	JaegerEndpoint string
-	PrometheusPort string
-	ServiceAddr    string
+	TmpBaseDir        string
+	EtcdAddr          string
+	JaegerEndpoint    string
+	PrometheusPort    string
+	ServiceAddr       string
+	NACKEnabled       bool
+	PLIMinInterval    string
+	RTPDropEveryN     int
+	ICEUDPAddr        string
+	TrackReadyTimeout string
 }
 
 type MysqlConfig struct {

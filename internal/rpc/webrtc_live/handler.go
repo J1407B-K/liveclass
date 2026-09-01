@@ -79,8 +79,10 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 	if err != nil {
 		return nil, err
 	}
+	lifecycle := newPeerLifecycle("publisher")
 	defer func() {
 		if !ok {
+			lifecycle.close()
 			_ = pc.Close()
 		}
 	}()
@@ -120,6 +122,7 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		SessionID:       sessionID,
 		PublisherPC:     pc,
 		PublisherStatus: model.ConnectionConnecting,
+		ExpectsAudio:    offerExpectsSendingMedia(offer, "audio"),
 	}
 	global.WebRTCEngine.BroadcastRooms.Store(req.LessonId, bundle)
 
@@ -165,41 +168,27 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 		switch remote.Kind() {
 		case webrtc.RTPCodecTypeVideo:
 			b.VideoTrack = local
+			b.VideoSSRC = uint32(remote.SSRC())
 		case webrtc.RTPCodecTypeAudio:
 			b.AudioTrack = local
 		}
 		b.Mu.Unlock()
 
-		if remote.Kind() == webrtc.RTPCodecTypeVideo {
-			go func(ssrc uint32) {
-				ticker := time.NewTicker(2 * time.Second)
-				defer ticker.Stop()
-				for {
-					select {
-					case <-ctx.Done():
-						return
-					case <-ticker.C:
-						if err := pc.WriteRTCP([]rtcp.Packet{
-							&rtcp.PictureLossIndication{MediaSSRC: ssrc},
-						}); err != nil {
-							return
-						}
-					}
-				}
-			}(uint32(remote.SSRC()))
-		}
-
 		go func() {
+			kind := remote.Kind().String()
 			for {
 				pkt, _, readErr := remote.ReadRTP()
 				if readErr != nil {
 					log.Println("[Server][Broadcast] remote.ReadRTP error:", readErr)
 					return
 				}
+				webrtcRTPPacketsIn.WithLabelValues(kind).Inc()
 				if writeErr := local.WriteRTP(pkt); writeErr != nil {
+					webrtcRTPWriteErrors.WithLabelValues(kind).Inc()
 					log.Println("[Server][Broadcast] local.WriteRTP error:", writeErr)
-					return
+					continue
 				}
+				webrtcRTPPacketsOut.WithLabelValues(kind).Inc()
 			}
 		}()
 	})
@@ -210,6 +199,7 @@ func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.Broadca
 
 	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
 		log.Println("[Server][Broadcast] PeerConnection state:", state.String())
+		lifecycle.observe(state.String(), state == webrtc.PeerConnectionStateFailed || state == webrtc.PeerConnectionStateClosed)
 
 		raw, ok := global.WebRTCEngine.BroadcastRooms.Load(req.LessonId)
 		if ok {
@@ -295,9 +285,11 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 	if err != nil {
 		return nil, err
 	}
+	lifecycle := newPeerLifecycle("viewer")
 	ok = false
 	defer func() {
 		if !ok {
+			lifecycle.close()
 			_ = pc.Close()
 		}
 	}()
@@ -312,6 +304,10 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 	})
 	pc.OnConnectionStateChange(func(state webrtc.PeerConnectionState) {
 		log.Println("[Server][View] PeerConnection state:", state.String())
+		lifecycle.observe(state.String(), state == webrtc.PeerConnectionStateFailed || state == webrtc.PeerConnectionStateClosed)
+		if state == webrtc.PeerConnectionStateConnected {
+			requestLessonKeyframe(req.LessonId)
+		}
 		if state == webrtc.PeerConnectionStateFailed ||
 			state == webrtc.PeerConnectionStateClosed {
 			_ = pc.Close()
@@ -327,37 +323,9 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 		return nil, errors.New("broadcast bundle type error")
 	}
 
-	var videoTrack *webrtc.TrackLocalStaticRTP
-	var audioTrack *webrtc.TrackLocalStaticRTP
-
-	deadline := time.NewTimer(3 * time.Second)
-	ticker := time.NewTicker(100 * time.Millisecond)
-	defer deadline.Stop()
-	defer ticker.Stop()
-
-	for {
-		b.Mu.RLock()
-		status := b.PublisherStatus
-		videoTrack = b.VideoTrack
-		audioTrack = b.AudioTrack
-		b.Mu.RUnlock()
-
-		if status == model.ConnectionFailed || status == model.ConnectionClosed {
-			return nil, errors.New("直播已结束")
-		}
-
-		// 有视频就可以开看；音频可选
-		if videoTrack != nil {
-			break
-		}
-
-		select {
-		case <-ctx.Done():
-			return nil, ctx.Err()
-		case <-deadline.C:
-			return nil, errors.New("老师视频轨尚未就绪，请稍后再试")
-		case <-ticker.C:
-		}
+	videoTrack, audioTrack, err := waitForBroadcastTracks(ctx, b, trackReadyTimeout())
+	if err != nil {
+		return nil, err
 	}
 
 	if err = pc.SetRemoteDescription(offer); err != nil {
@@ -369,17 +337,7 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 	if err != nil {
 		return nil, err
 	}
-	go func(s *webrtc.RTPSender) {
-		buf := make([]byte, 1500)
-		for {
-			n, _, readErr := s.Read(buf)
-			if readErr != nil {
-				log.Println("[Server][View] video RTCP Read error:", readErr)
-				return
-			}
-			_, _ = rtcp.Unmarshal(buf[:n])
-		}
-	}(videoSender)
+	go consumeViewerRTCP(videoSender, b, true)
 
 	if audioTrack != nil {
 		log.Println("[Server][View] AddTrack audio:", audioTrack.ID(), audioTrack.StreamID())
@@ -387,17 +345,7 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 		if err != nil {
 			return nil, err
 		}
-		go func(s *webrtc.RTPSender) {
-			buf := make([]byte, 1500)
-			for {
-				n, _, readErr := s.Read(buf)
-				if readErr != nil {
-					log.Println("[Server][View] audio RTCP Read error:", readErr)
-					return
-				}
-				_, _ = rtcp.Unmarshal(buf[:n])
-			}
-		}(audioSender)
+		go consumeViewerRTCP(audioSender, b, false)
 	}
 
 	answer, err := pc.CreateAnswer(nil)
@@ -421,6 +369,140 @@ func (s *WebrtcLiveImpl) View(ctx context.Context, req *webrtc_live.ViewReq) (*w
 			Data: &common.Data{Sdp: strptr(b64ans)},
 		},
 	}, nil
+}
+
+func pliMinInterval() time.Duration {
+	d, err := time.ParseDuration(global.Config.PLIMinInterval)
+	if err != nil || d <= 0 {
+		return 500 * time.Millisecond
+	}
+	return d
+}
+
+func trackReadyTimeout() time.Duration {
+	d, err := time.ParseDuration(global.Config.TrackReadyTimeout)
+	if err != nil || d <= 0 {
+		return 3 * time.Second
+	}
+	return d
+}
+
+// offerExpectsSendingMedia distinguishes a real audio publisher from a
+// video-only publisher. A recvonly/inactive m-line does not promise media.
+func offerExpectsSendingMedia(offer webrtc.SessionDescription, kind string) bool {
+	description, err := offer.Unmarshal()
+	if err != nil {
+		return false
+	}
+	for _, media := range description.MediaDescriptions {
+		if media.MediaName.Media != kind || media.MediaName.Port.Value == 0 {
+			continue
+		}
+		if _, inactive := media.Attribute("inactive"); inactive {
+			return false
+		}
+		if _, recvOnly := media.Attribute("recvonly"); recvOnly {
+			return false
+		}
+		if _, sendOnly := media.Attribute("sendonly"); sendOnly {
+			return true
+		}
+		if _, sendRecv := media.Attribute("sendrecv"); sendRecv {
+			return true
+		}
+		// If the media section has no direction, the session-level direction
+		// applies; with neither present RFC 3264 defaults to sendrecv.
+		if _, inactive := description.Attribute("inactive"); inactive {
+			return false
+		}
+		if _, recvOnly := description.Attribute("recvonly"); recvOnly {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+func waitForBroadcastTracks(ctx context.Context, b *model.BroadcastBundle, timeout time.Duration) (*webrtc.TrackLocalStaticRTP, *webrtc.TrackLocalStaticRTP, error) {
+	deadline := time.NewTimer(timeout)
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer deadline.Stop()
+	defer ticker.Stop()
+
+	for {
+		b.Mu.RLock()
+		status := b.PublisherStatus
+		videoTrack, audioTrack := b.VideoTrack, b.AudioTrack
+		expectsAudio := b.ExpectsAudio
+		b.Mu.RUnlock()
+
+		if status == model.ConnectionFailed || status == model.ConnectionClosed {
+			return nil, nil, errors.New("直播已结束")
+		}
+		if videoTrack != nil && (!expectsAudio || audioTrack != nil) {
+			return videoTrack, audioTrack, nil
+		}
+
+		select {
+		case <-ctx.Done():
+			return nil, nil, ctx.Err()
+		case <-deadline.C:
+			kind := "video"
+			if videoTrack != nil && expectsAudio && audioTrack == nil {
+				kind = "audio"
+			}
+			webrtcTrackReadyTimeouts.WithLabelValues(kind).Inc()
+			return nil, nil, fmt.Errorf("老师%s轨尚未就绪，请稍后重试", kind)
+		case <-ticker.C:
+		}
+	}
+}
+
+func requestLessonKeyframe(lessonID int64) {
+	raw, ok := global.WebRTCEngine.BroadcastRooms.Load(lessonID)
+	if !ok {
+		return
+	}
+	b, ok := raw.(*model.BroadcastBundle)
+	if !ok {
+		return
+	}
+	forwardViewerPLI(b, pliMinInterval())
+}
+
+func forwardViewerPLI(b *model.BroadcastBundle, interval time.Duration) {
+	forwarded, err := b.RequestVideoKeyframe(time.Now(), interval)
+	if err != nil {
+		log.Println("[Server][View] forward PLI error:", err)
+		return
+	}
+	if forwarded {
+		webrtcPLIForwarded.Inc()
+	} else {
+		webrtcPLISuppressed.Inc()
+	}
+}
+
+func consumeViewerRTCP(sender *webrtc.RTPSender, b *model.BroadcastBundle, video bool) {
+	for {
+		packets, _, err := sender.ReadRTCP()
+		if err != nil {
+			return
+		}
+		for _, packet := range packets {
+			switch feedback := packet.(type) {
+			case *rtcp.TransportLayerNack:
+				for _, pair := range feedback.Nacks {
+					webrtcNACKReceived.Add(float64(len(pair.PacketList())))
+				}
+			case *rtcp.PictureLossIndication, *rtcp.FullIntraRequest:
+				if video {
+					webrtcPLIReceived.Inc()
+					forwardViewerPLI(b, pliMinInterval())
+				}
+			}
+		}
+	}
 }
 
 // ChangeUserInLive implements the WebrtcLiveImpl interface.
