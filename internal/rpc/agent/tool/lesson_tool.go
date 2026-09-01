@@ -8,6 +8,7 @@ import (
 	"liveclass/idl/kitex_gen/common"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/idl/kitex_gen/webrtc_live/webrtclive"
+	"liveclass/internal/rpc/agent/dependency"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
@@ -61,9 +62,11 @@ func NewLessonInfoTool(cli webrtclive.Client) (tool.InvokableTool, error) {
 }
 
 func fetchLessonByName(ctx context.Context, cli webrtclive.Client, lessonName, teacherName string) (*common.Lesson, error) {
-	resp, err := cli.GetLessonInfo(ctx, &webrtc_live.GetLessonInfoReq{
-		LessonName: lessonName,
-		Teacher:    teacherName,
+	resp, err := dependency.Do(ctx, dependency.InternalRPC, "get_lesson_info", func(callCtx context.Context) (*webrtc_live.GetLessonInfoResp, error) {
+		return cli.GetLessonInfo(callCtx, &webrtc_live.GetLessonInfoReq{
+			LessonName: lessonName,
+			Teacher:    teacherName,
+		})
 	})
 	if err != nil {
 		return nil, err

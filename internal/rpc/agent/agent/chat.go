@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"errors"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/model"
@@ -74,6 +75,9 @@ func ChatWithAgent(
 	eg.Go(func() error {
 		facts, ferr := dbm.RetrieveRelevantFacts(egCtx, userID, msg, 5)
 		if ferr != nil || len(facts) == 0 {
+			if ferr != nil {
+				dependency.Fallback(dependency.LongTermMemory, "retrieve_facts")
+			}
 			return nil // 降级：无 facts 不影响主流程
 		}
 		if ranked, rerr := rerank.Facts(egCtx, msg, facts, 5); rerr == nil && len(ranked) > 0 {
@@ -92,11 +96,13 @@ func ChatWithAgent(
 		vector, embErr := embedder.EmbedText(egCtx, msg)
 		if embErr != nil {
 			log.Printf("doc embed error: %v", embErr)
+			dependency.Fallback(dependency.Embedding, "embed_docs")
 			return nil
 		}
 		chunks, retrErr := docRetriever.SearchHybrid(egCtx, lessonID, msg, vector, 6)
 		if retrErr != nil {
 			log.Printf("doc search error: %v", retrErr)
+			dependency.Fallback(dependency.Qdrant, "search_docs")
 			return nil
 		}
 		if reranked, rerr := rerank.Docs(egCtx, msg, chunks, 3); rerr == nil && len(reranked) > 0 {
@@ -126,6 +132,7 @@ func ChatWithAgent(
 		summary, perr := userprofile.EnsureUserProfile(egCtx, dbm, userID)
 		if perr != nil {
 			log.Printf("generate user profile failed: %v", perr)
+			dependency.Fallback(dependency.Profile, "load")
 			return nil
 		}
 		mu.Lock()
@@ -147,7 +154,9 @@ func ChatWithAgent(
 		Docs:    docText,
 	}
 
-	resp, err := agentRunner.Invoke(ctx, userMsg)
+	resp, err := dependency.Do(ctx, dependency.MainLLM, "generate", func(callCtx context.Context) (*schema.Message, error) {
+		return agentRunner.Invoke(callCtx, userMsg)
+	})
 	if err != nil {
 		return "", err
 	}
@@ -167,10 +176,12 @@ func ChatWithAgent(
 		bgCtx, cancel := context.WithTimeout(context.Background(), factExtractTimeout)
 		defer cancel()
 
-		facts, err := factRunner.Invoke(bgCtx, &model.FactExtractInput{
-			UserID:  userID,
-			ConvID:  convID,
-			Message: msg,
+		facts, err := dependency.Do(bgCtx, dependency.MainLLM, "extract_facts", func(callCtx context.Context) ([]*model.FactCandidate, error) {
+			return factRunner.Invoke(callCtx, &model.FactExtractInput{
+				UserID:  userID,
+				ConvID:  convID,
+				Message: msg,
+			})
 		})
 		if err != nil {
 			log.Printf("fact extract failed user=%d conv=%s: %v", userID, convID, err)

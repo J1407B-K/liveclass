@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/model"
 	my_prompt "liveclass/internal/rpc/agent/prompt"
@@ -17,10 +18,12 @@ func runAdvisor(ctx context.Context, input *model.UserMessage, _ ...any) (*model
 	index, err := my_prompt.LoadSkillIndex()
 	if err != nil || len(index) == 0 {
 		log.Printf("advisor: failed to load tool index: %v, falling back to general", err)
+		dependency.Fallback(dependency.AdvisorLLM, "select_skill")
 		return applySkills(input, []string{"general"})
 	}
 
 	if global.ChatModel == nil {
+		dependency.Fallback(dependency.AdvisorLLM, "select_skill")
 		return applySkills(input, []string{"general"})
 	}
 
@@ -40,15 +43,19 @@ func runAdvisor(ctx context.Context, input *model.UserMessage, _ ...any) (*model
 		schema.UserMessage(userContent),
 	}
 
-	resp, err := global.ChatModel.Generate(ctx, msgs)
+	resp, err := dependency.Do(ctx, dependency.AdvisorLLM, "select_skill", func(callCtx context.Context) (*schema.Message, error) {
+		return global.ChatModel.Generate(callCtx, msgs)
+	})
 	if err != nil {
 		log.Printf("advisor LLM call failed: %v, falling back to general", err)
+		dependency.Fallback(dependency.AdvisorLLM, "select_skill")
 		return applySkills(input, []string{"general"})
 	}
 
 	skills, err := parseAdvisorResponse(resp.Content)
 	if err != nil || len(skills) == 0 {
 		log.Printf("advisor parse failed: %v (raw: %q), falling back to general", err, resp.Content)
+		dependency.Fallback(dependency.AdvisorLLM, "select_skill")
 		return applySkills(input, []string{"general"})
 	}
 

@@ -39,7 +39,8 @@ func NewWebRTCLiveClient() (webrtclive.Client, error) {
 	}
 	return webrtclive.NewClient("webrtc_liveservice", client.WithResolver(r),
 		client.WithSuite(tracing.NewClientSuite()),
-		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(800*time.Millisecond))
 }
 
 func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (*chat.LiveChatResp, error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/memory"
 	"strings"
 
@@ -50,6 +51,7 @@ func (r *DocRetriever) SearchHybrid(ctx context.Context, lessonID int64, query s
 
 	bm25Chunks, err := r.es.SearchDocs(ctx, lessonID, query, limit)
 	if err != nil {
+		dependency.Fallback(dependency.Elasticsearch, "search_docs")
 		return vectorChunks, nil
 	}
 	return mergeDocChunks(vectorChunks, bm25Chunks), nil
@@ -76,12 +78,14 @@ func (r *DocRetriever) SearchVector(ctx context.Context, lessonID int64, vector 
 	}
 
 	limit64 := uint64(limit)
-	points, err := r.mgr.Client.Query(ctx, &qdrant.QueryPoints{
-		CollectionName: r.mgr.Collection,
-		Query:          qdrant.NewQuery(memory.Float64To32(vector)...),
-		Filter:         filter,
-		Limit:          &limit64,
-		WithPayload:    qdrant.NewWithPayload(true),
+	points, err := dependency.Do(ctx, dependency.Qdrant, "search_docs", func(callCtx context.Context) ([]*qdrant.ScoredPoint, error) {
+		return r.mgr.Client.Query(callCtx, &qdrant.QueryPoints{
+			CollectionName: r.mgr.Collection,
+			Query:          qdrant.NewQuery(memory.Float64To32(vector)...),
+			Filter:         filter,
+			Limit:          &limit64,
+			WithPayload:    qdrant.NewWithPayload(true),
+		})
 	})
 	if err != nil {
 		return nil, err

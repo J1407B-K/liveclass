@@ -28,7 +28,9 @@ func (m *DBManager) InsertFact(
 		IsActive:   true,
 	}
 
-	if err := m.DB.WithContext(ctx).Create(f).Error; err != nil {
+	if err := postgresWriteError(ctx, "insert_fact", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Create(f).Error
+	}); err != nil {
 		return nil, err
 	}
 	return f, nil
@@ -39,8 +41,12 @@ func (m *DBManager) GetFactByID(ctx context.Context, id int64) (*model.UserFact,
 		return nil, errors.New("nil db")
 	}
 
-	var f model.UserFact
-	if err := m.DB.WithContext(ctx).First(&f, id).Error; err != nil {
+	f, err := postgresRead(ctx, "get_fact_by_id", func(callCtx context.Context) (model.UserFact, error) {
+		var f model.UserFact
+		err := m.DB.WithContext(callCtx).First(&f, id).Error
+		return f, err
+	})
+	if err != nil {
 		return nil, err
 	}
 	return &f, nil
@@ -51,8 +57,8 @@ func (m *DBManager) UpdateFactIndexStatus(ctx context.Context, factID int64, sta
 		return errors.New("nil db")
 	}
 
-	return m.DB.WithContext(ctx).
-		Model(&model.UserFact{}).
-		Where("id = ?", factID).
-		Update("index_status", status).Error
+	return postgresWriteError(ctx, "update_fact_index_status", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Model(&model.UserFact{}).
+			Where("id = ?", factID).Update("index_status", status).Error
+	})
 }

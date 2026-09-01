@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"liveclass/internal/rpc/agent/dependency"
 	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
@@ -113,17 +114,22 @@ func (m *ElasticsearchManager) BulkUpsertDocChunks(ctx context.Context, chunks [
 		return nil
 	}
 
-	resp, err := m.Client.Bulk(
-		bytes.NewReader(body.Bytes()),
-		m.Client.Bulk.WithContext(ctx),
-	)
+	bodyBytes := append([]byte(nil), body.Bytes()...)
+	_, err := dependency.Do(ctx, dependency.Elasticsearch, "bulk_upsert_docs", func(callCtx context.Context) (struct{}, error) {
+		return struct{}{}, m.bulkUpsertOnce(callCtx, bodyBytes)
+	})
+	return err
+}
+
+func (m *ElasticsearchManager) bulkUpsertOnce(ctx context.Context, body []byte) error {
+	resp, err := m.Client.Bulk(bytes.NewReader(body), m.Client.Bulk.WithContext(ctx))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 	if resp.IsError() {
 		raw, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("bulk upsert elasticsearch docs failed: status=%d body=%s", resp.StatusCode, string(raw))
+		return &dependency.HTTPStatusError{StatusCode: resp.StatusCode, Body: string(raw)}
 	}
 
 	var parsed struct {
@@ -173,6 +179,12 @@ func (m *ElasticsearchManager) SearchDocs(ctx context.Context, lessonID int64, q
 		return nil, err
 	}
 
+	return dependency.Do(ctx, dependency.Elasticsearch, "search_docs", func(callCtx context.Context) ([]DocChunk, error) {
+		return m.searchDocsOnce(callCtx, body)
+	})
+}
+
+func (m *ElasticsearchManager) searchDocsOnce(ctx context.Context, body []byte) ([]DocChunk, error) {
 	resp, err := m.Client.Search(
 		m.Client.Search.WithContext(ctx),
 		m.Client.Search.WithIndex(m.Index),
@@ -184,7 +196,7 @@ func (m *ElasticsearchManager) SearchDocs(ctx context.Context, lessonID int64, q
 	defer resp.Body.Close()
 	if resp.IsError() {
 		raw, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("elasticsearch doc search failed: status=%d body=%s", resp.StatusCode, string(raw))
+		return nil, &dependency.HTTPStatusError{StatusCode: resp.StatusCode, Body: string(raw)}
 	}
 
 	var parsed struct {

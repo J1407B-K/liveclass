@@ -8,6 +8,7 @@ import (
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 	"liveclass/internal/api/global"
 	"liveclass/internal/api/utils"
+	"time"
 
 	"github.com/cloudwego/kitex/client"
 	"github.com/cloudwego/kitex/pkg/transmeta"
@@ -21,6 +22,7 @@ func InitNewClient() error {
 		client.WithResolver(*global.Resolver),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(800*time.Millisecond),
 	)
 	if err != nil {
 		panic(err)
@@ -33,6 +35,7 @@ func InitNewClient() error {
 		client.WithResolver(*global.Resolver),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(800*time.Millisecond),
 	)
 	if err != nil {
 		panic(err)
@@ -45,6 +48,7 @@ func InitNewClient() error {
 		client.WithResolver(*global.Resolver),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(45*time.Second),
 	)
 	if err != nil {
 		panic(err)
@@ -57,6 +61,7 @@ func InitNewClient() error {
 		client.WithResolver(*global.Resolver),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(2*time.Second),
 	)
 	if err != nil {
 		panic(err)
@@ -70,6 +75,7 @@ func InitNewClient() error {
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
 		client.WithLoadBalancer(utils.NewConsistentHashLoadBalancer()),
+		client.WithRPCTimeout(800*time.Millisecond),
 	)
 	if err != nil {
 		panic(err)

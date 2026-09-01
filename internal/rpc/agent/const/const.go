@@ -15,9 +15,6 @@ const (
 	RedisRetriever      = "RedisRetriever"
 	InputToHistory      = "InputToHistory"
 
-	//最大重试次数
-	MAXRETRY = 20
-
 	FactInputToVars  = "FactInputToVars"
 	FactChatTemplate = "FactChatTemplate"
 	FactChatModel    = "FactChatModel"

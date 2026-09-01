@@ -2,6 +2,7 @@ package rerank
 
 import (
 	"context"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/model"
 	"liveclass/internal/rpc/agent/rag"
@@ -44,6 +45,7 @@ func Facts(ctx context.Context, query string, facts []*model.UserFact, topK int)
 
 	scores, err := scoreDocuments(ctx, strings.TrimSpace(query), docs)
 	if err != nil {
+		dependency.Fallback(dependency.Reranker, "score_facts")
 		return facts, err
 	}
 
@@ -88,6 +90,7 @@ func Docs(ctx context.Context, query string, chunks []rag.DocChunk, topK int) ([
 
 	scores, err := scoreDocuments(ctx, strings.TrimSpace(query), docs)
 	if err != nil {
+		dependency.Fallback(dependency.Reranker, "score_docs")
 		return chunks, err
 	}
 

@@ -42,14 +42,15 @@ func (m *DBManager) EnsureConversation(ctx context.Context, userID int64, convID
 		ConvID: convID,
 	}
 
-	return m.DB.WithContext(ctx).
-		Clauses(clause.OnConflict{
+	return postgresWriteError(ctx, "ensure_conversation", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "conv_id"}},
 			DoUpdates: clause.Assignments(map[string]interface{}{
 				"updated_at": gorm.Expr("NOW()"),
 			}),
 		}).
-		Create(&conv).Error
+			Create(&conv).Error
+	})
 }
 
 // AppendMessage 幂等追加一条消息到短期记忆
@@ -73,41 +74,43 @@ func (m *DBManager) AppendMessage(
 		return errors.New("empty requestID")
 	}
 
-	return m.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		conv := model.Conversation{
-			UserID: userID,
-			ConvID: convID,
-		}
+	return postgresWriteError(ctx, "append_message", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Transaction(func(tx *gorm.DB) error {
+			conv := model.Conversation{
+				UserID: userID,
+				ConvID: convID,
+			}
 
-		if err := tx.
-			Clauses(clause.OnConflict{
-				Columns: []clause.Column{{Name: "conv_id"}},
-				DoUpdates: clause.Assignments(map[string]interface{}{
-					"updated_at": gorm.Expr("NOW()"),
-				}),
-			}).
-			Create(&conv).Error; err != nil {
-			return err
-		}
+			if err := tx.
+				Clauses(clause.OnConflict{
+					Columns: []clause.Column{{Name: "conv_id"}},
+					DoUpdates: clause.Assignments(map[string]interface{}{
+						"updated_at": gorm.Expr("NOW()"),
+					}),
+				}).
+				Create(&conv).Error; err != nil {
+				return err
+			}
 
-		record := model.Message{
-			UserID:    userID,
-			ConvID:    convID,
-			RequestID: requestID,
-			Role:      string(msg.Role),
-			Content:   msg.Content,
-		}
+			record := model.Message{
+				UserID:    userID,
+				ConvID:    convID,
+				RequestID: requestID,
+				Role:      string(msg.Role),
+				Content:   msg.Content,
+			}
 
-		return tx.
-			Clauses(clause.OnConflict{
-				Columns: []clause.Column{
-					{Name: "conv_id"},
-					{Name: "request_id"},
-					{Name: "role"},
-				},
-				DoNothing: true,
-			}).
-			Create(&record).Error
+			return tx.
+				Clauses(clause.OnConflict{
+					Columns: []clause.Column{
+						{Name: "conv_id"},
+						{Name: "request_id"},
+						{Name: "role"},
+					},
+					DoNothing: true,
+				}).
+				Create(&record).Error
+		})
 	})
 }
 
@@ -128,11 +131,13 @@ func (m *DBManager) ExistsMessage(
 		return false, errors.New("empty requestID")
 	}
 
-	var count int64
-	err := m.DB.WithContext(ctx).
-		Model(&model.Message{}).
-		Where("conv_id = ? AND request_id = ? AND role = ?", convID, requestID, string(role)).
-		Count(&count).Error
+	count, err := postgresRead(ctx, "exists_message", func(callCtx context.Context) (int64, error) {
+		var count int64
+		err := m.DB.WithContext(callCtx).Model(&model.Message{}).
+			Where("conv_id = ? AND request_id = ? AND role = ?", convID, requestID, string(role)).
+			Count(&count).Error
+		return count, err
+	})
 	if err != nil {
 		return false, err
 	}
@@ -156,12 +161,13 @@ func (m *DBManager) GetRecentMessages(
 		window = defaultWindow
 	}
 
-	var rows []model.Message
-	if err := m.DB.WithContext(ctx).
-		Where("conv_id = ?", convID).
-		Order("created_at desc, id desc").
-		Limit(window).
-		Find(&rows).Error; err != nil {
+	rows, err := postgresRead(ctx, "get_recent_messages", func(callCtx context.Context) ([]model.Message, error) {
+		var rows []model.Message
+		err := m.DB.WithContext(callCtx).Where("conv_id = ?", convID).
+			Order("created_at desc, id desc").Limit(window).Find(&rows).Error
+		return rows, err
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -188,11 +194,13 @@ func (m *DBManager) GetFullMessages(
 		return nil, errors.New("empty convID")
 	}
 
-	var rows []model.Message
-	if err := m.DB.WithContext(ctx).
-		Where("conv_id = ?", convID).
-		Order("created_at asc, id asc").
-		Find(&rows).Error; err != nil {
+	rows, err := postgresRead(ctx, "get_full_messages", func(callCtx context.Context) ([]model.Message, error) {
+		var rows []model.Message
+		err := m.DB.WithContext(callCtx).Where("conv_id = ?", convID).
+			Order("created_at asc, id asc").Find(&rows).Error
+		return rows, err
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -216,11 +224,13 @@ func (m *DBManager) ListConversations(
 		return nil, errors.New("nil db")
 	}
 
-	var rows []model.Conversation
-	if err := m.DB.WithContext(ctx).
-		Where("user_id = ?", userID).
-		Order("updated_at desc, id desc").
-		Find(&rows).Error; err != nil {
+	rows, err := postgresRead(ctx, "list_conversations", func(callCtx context.Context) ([]model.Conversation, error) {
+		var rows []model.Conversation
+		err := m.DB.WithContext(callCtx).Where("user_id = ?", userID).
+			Order("updated_at desc, id desc").Find(&rows).Error
+		return rows, err
+	})
+	if err != nil {
 		return nil, err
 	}
 
@@ -244,19 +254,21 @@ func (m *DBManager) DeleteConversation(
 		return errors.New("empty convID")
 	}
 
-	return m.DB.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.
-			Where("conv_id = ?", convID).
-			Delete(&model.Message{}).Error; err != nil {
-			return err
-		}
+	return postgresWriteError(ctx, "delete_conversation", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Transaction(func(tx *gorm.DB) error {
+			if err := tx.
+				Where("conv_id = ?", convID).
+				Delete(&model.Message{}).Error; err != nil {
+				return err
+			}
 
-		if err := tx.
-			Where("user_id = ? AND conv_id = ?", userID, convID).
-			Delete(&model.Conversation{}).Error; err != nil {
-			return err
-		}
+			if err := tx.
+				Where("user_id = ? AND conv_id = ?", userID, convID).
+				Delete(&model.Conversation{}).Error; err != nil {
+				return err
+			}
 
-		return nil
+			return nil
+		})
 	})
 }

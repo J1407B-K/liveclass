@@ -13,6 +13,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/qdrant/go-client/qdrant"
 
+	"liveclass/internal/rpc/agent/dependency"
+	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/initialize"
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/rag"
@@ -49,6 +51,9 @@ func main() {
 	}
 
 	initialize.SetupViper()
+	if err := dependency.Configure(global.Config.Resilience); err != nil {
+		panic(err)
+	}
 
 	ctx := context.Background()
 
@@ -136,9 +141,11 @@ func buildPoint(id string, vector []float32, payload map[string]any) *qdrant.Poi
 }
 
 func upsertPoints(ctx context.Context, mgr *memory.QdrantManager, points []*qdrant.PointStruct) error {
-	_, err := mgr.Client.Upsert(ctx, &qdrant.UpsertPoints{
-		CollectionName: mgr.Collection,
-		Points:         points,
+	_, err := dependency.Do(ctx, dependency.Qdrant, "bulk_upsert_docs", func(callCtx context.Context) (*qdrant.UpdateResult, error) {
+		return mgr.Client.Upsert(callCtx, &qdrant.UpsertPoints{
+			CollectionName: mgr.Collection,
+			Points:         points,
+		})
 	})
 	return err
 }

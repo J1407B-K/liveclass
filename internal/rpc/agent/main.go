@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	agent "liveclass/idl/kitex_gen/agent/agentservice"
+	"liveclass/internal/resilience"
 	"liveclass/internal/rpc/agent/cdc"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/flag"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/initialize"
@@ -14,6 +16,9 @@ import (
 	"liveclass/internal/rpc/agent/workflow/fact"
 	"log"
 	"net"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
@@ -22,10 +27,15 @@ import (
 	"github.com/kitex-contrib/obs-opentelemetry/provider"
 	"github.com/kitex-contrib/obs-opentelemetry/tracing"
 	etcd "github.com/kitex-contrib/registry-etcd"
+	clientprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 )
 
 func main() {
 	initialize.SetupViper()
+	if err := dependency.Configure(global.Config.Resilience); err != nil {
+		log.Fatalf("configure dependency resilience: %v", err)
+	}
 
 	db := initialize.InitPGDB()
 	option := flag.Parse()
@@ -34,7 +44,9 @@ func main() {
 		log.Println("未自动建表")
 	}
 
-	qdrantCli, err := initialize.InitQdrant(context.Background(), 2048)
+	initCtx, initCancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer initCancel()
+	qdrantCli, err := initialize.InitQdrant(initCtx, 2048)
 	if err != nil {
 		log.Println("qdrant init err:", err)
 		return
@@ -50,7 +62,8 @@ func main() {
 	//	panic(err.Error())
 	//}
 
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 
 	go func() {
 		if err := mcp.StartMCPServer(); err != nil {
@@ -58,32 +71,32 @@ func main() {
 		}
 	}()
 
-	global.ChatModel, err = initialize.InitChatModel(ctx)
+	global.ChatModel, err = initialize.InitChatModel(initCtx)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	global.MultiModalEmbedder, err = initialize.InitMultiModalEmbedder(ctx)
+	global.MultiModalEmbedder, err = initialize.InitMultiModalEmbedder(initCtx)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	global.AgentRunner, err = agent2.BuildAgent(ctx)
+	global.AgentRunner, err = agent2.BuildAgent(initCtx)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	global.FactExtractorRunner, err = fact.BuildFactExtractor(ctx)
+	global.FactExtractorRunner, err = fact.BuildFactExtractor(initCtx)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	docMgr, err := initialize.InitDocQdrant(ctx, 2048)
+	docMgr, err := initialize.InitDocQdrant(initCtx, 2048)
 	if err != nil {
 		panic(err.Error())
 	}
 	var docES *rag.ElasticsearchManager
-	if mgr, esErr := initialize.InitDocElasticsearch(ctx); esErr != nil {
+	if mgr, esErr := initialize.InitDocElasticsearch(initCtx); esErr != nil {
 		log.Printf("init doc elasticsearch failed, fallback to vector-only retrieval: %v", esErr)
 	} else {
 		docES = mgr
@@ -126,7 +139,11 @@ func main() {
 		provider.WithInsecure(),
 		provider.WithEnableMetrics(false),
 	)
-	defer p.Shutdown(context.Background())
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+		_ = p.Shutdown(shutdownCtx)
+	}()
 
 	r, err := etcd.NewEtcdRegistry([]string{global.Config.EtcdAddr})
 	if err != nil {
@@ -135,6 +152,9 @@ func main() {
 	}
 
 	addr, _ := net.ResolveTCPAddr("tcp", global.Config.ServiceAddr)
+	registry := clientprometheus.NewRegistry()
+	registry.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
+	registry.MustRegister(resilience.Collectors()...)
 	svr := agent.NewServer(&AgentServiceImpl{
 		DBManager:    dbm,
 		agentRunner:  global.AgentRunner,
@@ -146,7 +166,7 @@ func main() {
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "agentservice"}),
 		server.WithServiceAddr(addr),
 		server.WithRegistry(r),
-		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics")))
+		kServer.WithTracer(prometheus.NewServerTracer(global.Config.PrometheusPort, "/metrics", prometheus.WithRegistry(registry))))
 
 	err = svr.Run()
 

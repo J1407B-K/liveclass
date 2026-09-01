@@ -26,10 +26,13 @@ func (m *DBManager) GetMessageByRequestIDAndRole(
 		return nil, errors.New("empty requestID")
 	}
 
-	var msg model.Message
-	err := m.DB.WithContext(ctx).
-		Where("conv_id = ? AND request_id = ? AND role = ?", convID, requestID, role).
-		First(&msg).Error
+	msg, err := postgresRead(ctx, "get_message_by_request", func(callCtx context.Context) (model.Message, error) {
+		var msg model.Message
+		err := m.DB.WithContext(callCtx).
+			Where("conv_id = ? AND request_id = ? AND role = ?", convID, requestID, role).
+			First(&msg).Error
+		return msg, err
+	})
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil

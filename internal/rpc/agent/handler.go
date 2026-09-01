@@ -6,12 +6,10 @@ import (
 	agent "liveclass/idl/kitex_gen/agent"
 	"liveclass/idl/kitex_gen/common"
 	myagent "liveclass/internal/rpc/agent/agent"
-	_const "liveclass/internal/rpc/agent/const"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/rag"
 	"strings"
-	"time"
 
 	uuid2 "github.com/google/uuid"
 	"golang.org/x/sync/singleflight"
@@ -59,44 +57,10 @@ func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWit
 	sfKey := fmt.Sprintf("%d:%s:%s", req.Userid, convID, requestID)
 
 	v, err, _ := s.sfAgent.Do(sfKey, func() (interface{}, error) {
-		var (
-			agentResp string
-			err       error
+		return myagent.ChatWithAgent(
+			ctx, s.DBManager, s.agentRunner, s.factRunner, s.docRetriever, s.embedder,
+			req.Userid, convID, requestID, req.Message, req.LessonId,
 		)
-
-		for i := 0; i <= _const.MAXRETRY; i++ {
-			agentResp, err = myagent.ChatWithAgent(
-				ctx,
-				s.DBManager,
-				s.agentRunner,
-				s.factRunner,
-				s.docRetriever,
-				s.embedder,
-				req.Userid,
-				convID,
-				requestID,
-				req.Message,
-				req.LessonId,
-			)
-			if err == nil {
-				return agentResp, nil
-			}
-			if ctx.Err() != nil {
-				return "", ctx.Err()
-			}
-			// 指数退避：100ms, 200ms, 400ms...，最大 5s
-			wait := time.Duration(100<<uint(i)) * time.Millisecond
-			if wait > 5*time.Second {
-				wait = 5 * time.Second
-			}
-			select {
-			case <-ctx.Done():
-				return "", ctx.Err()
-			case <-time.After(wait):
-			}
-		}
-
-		return "", err
 	})
 
 	if err != nil {

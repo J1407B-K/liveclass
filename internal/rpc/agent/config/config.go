@@ -1,5 +1,7 @@
 package config
 
+import "time"
+
 type Config struct {
 	PostgresConfig
 	QdrantConfig
@@ -12,11 +14,44 @@ type Config struct {
 	RerankURL      string
 	RerankModel    string
 	RerankFormat   string
+	WebSearchURL   string
 	RedisAddr      string
 	EtcdAddr       string
 	JaegerEndpoint string
 	PrometheusPort string
 	ServiceAddr    string
+	Resilience     ResilienceConfig
+}
+
+type ResilienceConfig struct {
+	MainLLM       DependencyPolicyConfig
+	AdvisorLLM    DependencyPolicyConfig
+	ProfileLLM    DependencyPolicyConfig
+	Embedding     DependencyPolicyConfig
+	Qdrant        DependencyPolicyConfig
+	Elasticsearch DependencyPolicyConfig
+	Reranker      DependencyPolicyConfig
+	WebSearch     DependencyPolicyConfig
+	PostgresRead  DependencyPolicyConfig
+	PostgresWrite DependencyPolicyConfig
+	InternalRPC   DependencyPolicyConfig
+}
+
+type DependencyPolicyConfig struct {
+	Timeout    time.Duration
+	Attempts   int
+	Backoff    time.Duration
+	MaxBackoff time.Duration
+	Breaker    BreakerConfig
+}
+
+type BreakerConfig struct {
+	Enabled          bool
+	RollingWindow    time.Duration
+	MinimumRequests  int
+	FailureThreshold float64
+	OpenDuration     time.Duration
+	HalfOpenProbes   int
 }
 
 type PostgresConfig struct {

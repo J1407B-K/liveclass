@@ -7,6 +7,7 @@ import (
 	etcd "github.com/kitex-contrib/registry-etcd"
 	userservice "liveclass/idl/kitex_gen/user/userservice"
 	webrtclive "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
+	"liveclass/internal/rpc/agent/global"
 )
 
 func InitUserClient() (userservice.Client, error) {
@@ -18,6 +19,7 @@ func InitUserClient() (userservice.Client, error) {
 		client.WithResolver(r),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(global.Config.Resilience.InternalRPC.Timeout),
 	)
 }
 
@@ -30,5 +32,6 @@ func InitLessonClient() (webrtclive.Client, error) {
 		client.WithResolver(r),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(global.Config.Resilience.InternalRPC.Timeout),
 	)
 }

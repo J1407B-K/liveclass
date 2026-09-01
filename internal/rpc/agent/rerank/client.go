@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"net/http"
 	"strings"
@@ -57,6 +58,12 @@ func scoreDocuments(ctx context.Context, query string, docs []string) ([]float64
 		return nil, fmt.Errorf("marshal rerank request failed: %w", err)
 	}
 
+	return dependency.Do(ctx, dependency.Reranker, "score", func(callCtx context.Context) ([]float64, error) {
+		return scoreDocumentsOnce(callCtx, bodyBytes, len(docs))
+	})
+}
+
+func scoreDocumentsOnce(ctx context.Context, bodyBytes []byte, docCount int) ([]float64, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, rerankURL(), bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("build rerank request failed: %w", err)
@@ -75,15 +82,15 @@ func scoreDocuments(ctx context.Context, query string, docs []string) ([]float64
 	}
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return nil, fmt.Errorf("local bge rerank error: status=%d body=%s", resp.StatusCode, string(raw))
+		return nil, &dependency.HTTPStatusError{StatusCode: resp.StatusCode, Body: string(raw)}
 	}
 
-	scores, err := parseRerankScores(raw, len(docs))
+	scores, err := parseRerankScores(raw, docCount)
 	if err != nil {
 		return nil, err
 	}
-	if len(scores) != len(docs) {
-		return nil, fmt.Errorf("rerank scores length %d mismatch docs %d", len(scores), len(docs))
+	if len(scores) != docCount {
+		return nil, fmt.Errorf("rerank scores length %d mismatch docs %d", len(scores), docCount)
 	}
 
 	return scores, nil

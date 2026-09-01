@@ -26,5 +26,8 @@ func InitKafkaWriter() *kafka.Writer {
 		Topic:                  global.Config.KafkaTopic,
 		Balancer:               &kafka.LeastBytes{},
 		AllowAutoTopicCreation: true,
+		MaxAttempts:            1,
+		WriteTimeout:           2 * time.Second,
+		ReadTimeout:            2 * time.Second,
 	}
 }

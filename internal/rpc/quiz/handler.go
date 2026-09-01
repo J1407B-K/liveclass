@@ -41,7 +41,8 @@ func NewWebRTCLiveClient() (webrtclive.Client, error) {
 	}
 	return webrtclive.NewClient("webrtc_liveservice", client.WithResolver(r),
 		client.WithSuite(tracing.NewClientSuite()),
-		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(800*time.Millisecond))
 }
 
 func NewUserClient() (userservice.Client, error) {
@@ -51,7 +52,8 @@ func NewUserClient() (userservice.Client, error) {
 	}
 	return userservice.NewClient("userservice", client.WithResolver(r),
 		client.WithSuite(tracing.NewClientSuite()),
-		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(800*time.Millisecond))
 }
 
 // CreateQuestion implements the QuizServiceImpl interface.

@@ -58,7 +58,8 @@ func NewUserClient() (userservice.Client, error) {
 	}
 	return userservice.NewClient("userservice", client.WithResolver(r),
 		client.WithSuite(tracing.NewClientSuite()),
-		client.WithMetaHandler(transmeta.ClientTTHeaderHandler))
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(800*time.Millisecond))
 }
 
 func (s *WebrtcLiveImpl) Broadcast(ctx context.Context, req *webrtc_live.BroadcastReq) (*webrtc_live.BroadcastResp, error) {
@@ -798,7 +799,7 @@ func (s *WebrtcLiveImpl) RecordLesson(ctx context.Context, req *webrtc_live.Reco
 		if err := my_cos.UploadToCos(ctx, s.cosClient, localfile, strconv.FormatInt(req.Lessonid, 10), filename); err != nil {
 			log.Printf("上传到 COS 失败: %v", err)
 		} else {
-			log.Printf("上传到 COS 成功: lesson=%s file=%s", req.Lessonid, filename)
+			log.Printf("上传到 COS 成功: lesson=%d file=%s", req.Lessonid, filename)
 		}
 		if rmErr := os.Remove(localfile); rmErr != nil {
 			log.Printf("删除临时文件失败: %v", rmErr)

@@ -11,7 +11,7 @@ import (
 
 func InitPGDB() *gorm.DB {
 	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
+		"host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s connect_timeout=2",
 		global.Config.PostgresConfig.Host,
 		global.Config.PostgresConfig.User,
 		global.Config.PostgresConfig.Password,

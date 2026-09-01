@@ -8,7 +8,7 @@ import (
 )
 
 func InitGormDB() *gorm.DB {
-	dsn := global.Config.MysqlConfig.Username + ":" + global.Config.MysqlConfig.Password + "@tcp(" + global.Config.MysqlConfig.Addr + ")/" + global.Config.MysqlConfig.DB + "?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local"
+	dsn := global.Config.MysqlConfig.Username + ":" + global.Config.MysqlConfig.Password + "@tcp(" + global.Config.MysqlConfig.Addr + ")/" + global.Config.MysqlConfig.DB + "?charset=utf8mb4&collation=utf8mb4_unicode_ci&parseTime=True&loc=Local&timeout=2s&readTimeout=1s&writeTimeout=1s"
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

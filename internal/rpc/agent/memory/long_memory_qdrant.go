@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/model"
 
@@ -31,9 +32,11 @@ func (m *DBManager) UpsertFactVector(
 		}),
 	}
 
-	_, err := m.QdrantCli.Client.Upsert(ctx, &qdrant.UpsertPoints{
-		CollectionName: m.QdrantCli.Collection,
-		Points:         []*qdrant.PointStruct{point},
+	_, err := dependency.Do(ctx, dependency.Qdrant, "upsert_fact", func(callCtx context.Context) (*qdrant.UpdateResult, error) {
+		return m.QdrantCli.Client.Upsert(callCtx, &qdrant.UpsertPoints{
+			CollectionName: m.QdrantCli.Collection,
+			Points:         []*qdrant.PointStruct{point},
+		})
 	})
 	if err != nil {
 		return fmt.Errorf("qdrant upsert fact vector: %w", err)
@@ -58,12 +61,14 @@ func (m *DBManager) SearchRelevantFacts(
 		},
 	}
 
-	resp, err := m.QdrantCli.Client.Query(ctx, &qdrant.QueryPoints{
-		CollectionName: m.QdrantCli.Collection,
-		Query:          qdrant.NewQuery(queryVector...),
-		Filter:         filter,
-		Limit:          &limit,
-		WithPayload:    qdrant.NewWithPayload(true),
+	resp, err := dependency.Do(ctx, dependency.Qdrant, "search_facts", func(callCtx context.Context) ([]*qdrant.ScoredPoint, error) {
+		return m.QdrantCli.Client.Query(callCtx, &qdrant.QueryPoints{
+			CollectionName: m.QdrantCli.Collection,
+			Query:          qdrant.NewQuery(queryVector...),
+			Filter:         filter,
+			Limit:          &limit,
+			WithPayload:    qdrant.NewWithPayload(true),
+		})
 	})
 	if err != nil {
 		return nil, fmt.Errorf("qdrant search relevant facts: %w", err)

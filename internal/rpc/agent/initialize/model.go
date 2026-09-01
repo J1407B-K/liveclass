@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"net/http"
 	"time"
@@ -177,6 +178,12 @@ func (m *MultiModalEmbedder) embed(ctx context.Context, items []MultiModalInputI
 		return nil, fmt.Errorf("marshal multimodal embedding request failed: %w", err)
 	}
 
+	return dependency.Do(ctx, dependency.Embedding, "embed", func(callCtx context.Context) ([]float64, error) {
+		return m.embedOnce(callCtx, bodyBytes)
+	})
+}
+
+func (m *MultiModalEmbedder) embedOnce(ctx context.Context, bodyBytes []byte) ([]float64, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, m.BaseURL, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return nil, fmt.Errorf("build multimodal embedding request failed: %w", err)
@@ -198,10 +205,10 @@ func (m *MultiModalEmbedder) embed(ctx context.Context, items []MultiModalInputI
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		var arkErr arkErrorResponse
 		if err := json.Unmarshal(raw, &arkErr); err == nil && arkErr.Message != "" {
-			return nil, fmt.Errorf("[Ark] multimodal embedding error: status=%d code=%s message=%s request_id=%s",
-				resp.StatusCode, arkErr.Code, arkErr.Message, arkErr.RequestID)
+			return nil, &dependency.HTTPStatusError{StatusCode: resp.StatusCode, Body: fmt.Sprintf(
+				"code=%s message=%s request_id=%s", arkErr.Code, arkErr.Message, arkErr.RequestID)}
 		}
-		return nil, fmt.Errorf("[Ark] multimodal embedding error: status=%d body=%s", resp.StatusCode, string(raw))
+		return nil, &dependency.HTTPStatusError{StatusCode: resp.StatusCode, Body: string(raw)}
 	}
 
 	var parsed multiModalEmbeddingResponse

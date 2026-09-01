@@ -8,6 +8,7 @@ import (
 	"liveclass/idl/kitex_gen/common"
 	user "liveclass/idl/kitex_gen/user"
 	"liveclass/idl/kitex_gen/user/userservice"
+	"liveclass/internal/rpc/agent/dependency"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
@@ -54,7 +55,9 @@ func NewUserInfoTool(cli userservice.Client) (tool.InvokableTool, error) {
 }
 
 func fetchUserByID(ctx context.Context, cli userservice.Client, uid int64) (*common.User, error) {
-	resp, err := cli.GetUserInfo(ctx, &user.GetUserInfoReq{Userid: uid})
+	resp, err := dependency.Do(ctx, dependency.InternalRPC, "get_user_info", func(callCtx context.Context) (*user.GetUserInfoResp, error) {
+		return cli.GetUserInfo(callCtx, &user.GetUserInfoReq{Userid: uid})
+	})
 	if err != nil {
 		return nil, err
 	}

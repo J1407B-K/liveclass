@@ -3,6 +3,7 @@ package initialize
 import (
 	"context"
 	"os"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -28,15 +29,17 @@ func InitScript(rdb *redis.Client) (string, string, string) {
 	deletescript := string(deletescriptb)
 	selectscript := string(selectscriptb)
 
-	changesha, err := rdb.ScriptLoad(context.Background(), changescript).Result()
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	changesha, err := rdb.ScriptLoad(ctx, changescript).Result()
 	if err != nil {
 		panic(err)
 	}
-	deletesha, err := rdb.ScriptLoad(context.Background(), deletescript).Result()
+	deletesha, err := rdb.ScriptLoad(ctx, deletescript).Result()
 	if err != nil {
 		panic(err)
 	}
-	selectsha, err := rdb.ScriptLoad(context.Background(), selectscript).Result()
+	selectsha, err := rdb.ScriptLoad(ctx, selectscript).Result()
 	if err != nil {
 		panic(err)
 	}

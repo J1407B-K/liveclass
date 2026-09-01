@@ -3,8 +3,9 @@ package memory
 import (
 	"context"
 	"errors"
-	"liveclass/internal/rpc/agent/model"
 	"time"
+
+	"liveclass/internal/rpc/agent/model"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -18,8 +19,11 @@ func (m *DBManager) GetUserProfile(ctx context.Context, userID int64) (*model.Us
 		return nil, errors.New("nil db")
 	}
 
-	var profile model.UserProfile
-	err := m.DB.WithContext(ctx).Where("user_id = ?", userID).First(&profile).Error
+	profile, err := postgresRead(ctx, "get_user_profile", func(callCtx context.Context) (model.UserProfile, error) {
+		var profile model.UserProfile
+		err := m.DB.WithContext(callCtx).Where("user_id = ?", userID).First(&profile).Error
+		return profile, err
+	})
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
 	}
@@ -46,13 +50,15 @@ func (m *DBManager) UpsertUserProfile(ctx context.Context, userID int64, summary
 		CreatedAt: now,
 	}
 
-	return m.DB.WithContext(ctx).Clauses(clause.OnConflict{
-		Columns: []clause.Column{{Name: "user_id"}},
-		DoUpdates: clause.Assignments(map[string]any{
-			"summary":    summary,
-			"updated_at": gorm.Expr("NOW()"),
-		}),
-	}).Create(&profile).Error
+	return postgresWriteError(ctx, "upsert_user_profile", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "user_id"}},
+			DoUpdates: clause.Assignments(map[string]any{
+				"summary":    summary,
+				"updated_at": gorm.Expr("NOW()"),
+			}),
+		}).Create(&profile).Error
+	})
 }
 
 // ListFactsForProfile fetches recent high-confidence facts for building profile summary.
@@ -70,18 +76,16 @@ func (m *DBManager) ListFactsForProfile(
 		limit = defaultProfileLimit
 	}
 
-	query := m.DB.WithContext(ctx).
-		Where("user_id = ? AND is_active = ?", userID, true)
-
-	if minConfidence > 0 {
-		query = query.Where("confidence >= ?", minConfidence)
-	}
-
-	var facts []*model.UserFact
-	if err := query.
-		Order("updated_at DESC, confidence DESC").
-		Limit(limit).
-		Find(&facts).Error; err != nil {
+	facts, err := postgresRead(ctx, "list_facts_for_profile", func(callCtx context.Context) ([]*model.UserFact, error) {
+		query := m.DB.WithContext(callCtx).Where("user_id = ? AND is_active = ?", userID, true)
+		if minConfidence > 0 {
+			query = query.Where("confidence >= ?", minConfidence)
+		}
+		var facts []*model.UserFact
+		err := query.Order("updated_at DESC, confidence DESC").Limit(limit).Find(&facts).Error
+		return facts, err
+	})
+	if err != nil {
 		return nil, err
 	}
 

@@ -68,7 +68,8 @@ func dispatchBatch(ctx context.Context, dbm *memory.DBManager, writer *kafka.Wri
 				_ = dbm.MarkOutboxFailed(ctx, id, err.Error())
 			}
 			log.Printf("[outbox] batch write failed count=%d err=%v", len(msgs), err)
-			continue
+			// 退出本批次，交给外层 2s ticker 再调度，避免 Kafka 故障时形成紧密重试循环。
+			return err
 		}
 
 		for _, id := range sentIDs {

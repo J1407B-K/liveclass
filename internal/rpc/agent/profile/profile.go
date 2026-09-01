@@ -3,6 +3,7 @@ package profile
 import (
 	"context"
 	"fmt"
+	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/model"
@@ -101,7 +102,9 @@ func summarizeFacts(ctx context.Context, facts []*model.UserFact) (string, error
 		},
 	}
 
-	resp, err := global.ChatModel.Generate(ctx, messages)
+	resp, err := dependency.Do(ctx, dependency.ProfileLLM, "summarize", func(callCtx context.Context) (*schema.Message, error) {
+		return global.ChatModel.Generate(callCtx, messages)
+	})
 	if err != nil {
 		return "", err
 	}

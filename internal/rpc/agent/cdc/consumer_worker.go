@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 
@@ -91,7 +92,10 @@ func RunFactIndexerConsumer(ctx context.Context, r *kafka.Reader, dbm *memory.DB
 			continue
 		}
 
-		if err := r.CommitMessages(ctx, msg); err != nil {
+		commitCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+		err = r.CommitMessages(commitCtx, msg)
+		cancel()
+		if err != nil {
 			log.Printf("[fact-indexer] commit failed offset=%d fact_id=%d err=%v", msg.Offset, e.FactID, err)
 		}
 	}
