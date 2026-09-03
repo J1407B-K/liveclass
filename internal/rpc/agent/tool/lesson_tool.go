@@ -9,6 +9,7 @@ import (
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live"
 	"liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 	"liveclass/internal/rpc/agent/dependency"
+	"liveclass/internal/rpc/agent/toolruntime"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/components/tool/utils"
@@ -46,6 +47,10 @@ func NewLessonInfoTool(cli webrtclive.Client) (tool.InvokableTool, error) {
 		if err != nil {
 			return nil, err
 		}
+		principal, ok := toolruntime.PrincipalFromContext(ctx)
+		if !ok || principal.LessonID != lesson.GetLessonID() || (principal.UserID != lesson.GetTeacherID() && !containsUserID(lesson.GetStudentID(), principal.UserID)) {
+			return nil, errors.New("lesson permission denied")
+		}
 
 		return &LessonInfoResponse{
 			LessonID:    lesson.GetLessonID(),
@@ -59,6 +64,15 @@ func NewLessonInfoTool(cli webrtclive.Client) (tool.InvokableTool, error) {
 	}
 
 	return utils.InferTool("lesson_info_lookup", "根据课程名称与教师姓名查询课程信息", call)
+}
+
+func containsUserID(ids []int64, target int64) bool {
+	for _, id := range ids {
+		if id == target {
+			return true
+		}
+	}
+	return false
 }
 
 func fetchLessonByName(ctx context.Context, cli webrtclive.Client, lessonName, teacherName string) (*common.Lesson, error) {

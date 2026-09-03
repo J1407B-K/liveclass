@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/qdrant/go-client/qdrant"
@@ -21,20 +18,29 @@ import (
 )
 
 const (
-	defaultChunkSize = 800
-	batchSize        = 32
-	vectorSize       = 2048
+	batchSize  = 32
+	vectorSize = 2048
 )
 
 func main() {
 	var (
-		filePath string
-		lessonID int64
-		source   string
+		filePath   string
+		lessonID   int64
+		source     string
+		parentSize int
+		childSize  int
+		overlap    int
+		collection string
+		index      string
 	)
 	flag.StringVar(&filePath, "path", "", "markdown file path")
 	flag.Int64Var(&lessonID, "lesson", 0, "lesson id")
 	flag.StringVar(&source, "source", "", "document source identifier")
+	flag.IntVar(&parentSize, "parent-size", 0, "parent chunk characters (default from config)")
+	flag.IntVar(&childSize, "child-size", 0, "child chunk characters (default from config)")
+	flag.IntVar(&overlap, "overlap", -1, "child overlap characters (default from config)")
+	flag.StringVar(&collection, "collection", "", "Qdrant collection override")
+	flag.StringVar(&index, "index", "", "Elasticsearch index override")
 	flag.Parse()
 
 	if filePath == "" {
@@ -51,6 +57,12 @@ func main() {
 	}
 
 	initialize.SetupViper()
+	if collection != "" {
+		global.Config.DocCollection = collection
+	}
+	if index != "" {
+		global.Config.DocIndex = index
+	}
 	if err := dependency.Configure(global.Config.Resilience); err != nil {
 		panic(err)
 	}
@@ -76,46 +88,51 @@ func main() {
 		panic(err)
 	}
 
-	chunks := splitMarkdown(string(content), defaultChunkSize)
-	if len(chunks) == 0 {
+	if parentSize <= 0 {
+		parentSize = global.Config.RAG.ParentSize
+	}
+	if childSize <= 0 {
+		childSize = global.Config.RAG.ChildSize
+	}
+	if overlap < 0 {
+		overlap = global.Config.RAG.Overlap
+	}
+	parents, err := rag.ChunkMarkdown(string(content), rag.ChunkConfig{ParentSize: parentSize, ChildSize: childSize, Overlap: overlap})
+	if err != nil {
+		panic(err)
+	}
+	if len(parents) == 0 {
 		fmt.Println("no content chunks generated")
 		return
 	}
 
 	points := make([]*qdrant.PointStruct, 0, batchSize)
 	esChunks := make([]rag.DocChunk, 0, batchSize)
-	for idx, chunk := range chunks {
-		vector, err := multiEmbedder.EmbedText(ctx, chunk)
-		if err != nil {
-			panic(err)
-		}
-		chunkID := uuid.NewString()
-		payload := map[string]any{
-			"lesson_id": lessonID,
-			"source":    source,
-			"chunk_idx": idx,
-			"text":      chunk,
-		}
-
-		points = append(points, buildPoint(chunkID, memory.Float64To32(vector), payload))
-		esChunks = append(esChunks, rag.DocChunk{
-			ID:       chunkID,
-			Text:     chunk,
-			LessonID: lessonID,
-			Source:   source,
-			ChunkIdx: int32(idx),
-		})
-		if len(points) >= batchSize {
-			if err := upsertPoints(ctx, qdrantMgr, points); err != nil {
+	childCount := 0
+	for _, parent := range parents {
+		parentID := uuid.NewSHA1(uuid.NameSpaceURL, []byte(fmt.Sprintf("%s:%d:%s:parent:%d", qdrantMgr.Collection, lessonID, source, parent.Index))).String()
+		for _, child := range parent.Children {
+			vector, err := multiEmbedder.EmbedText(ctx, child.Text)
+			if err != nil {
 				panic(err)
 			}
-			if esMgr != nil {
-				if err := esMgr.BulkUpsertDocChunks(ctx, esChunks); err != nil {
+			chunkID := uuid.NewSHA1(uuid.NameSpaceURL, []byte(fmt.Sprintf("%s:%d:%s:parent:%d:child:%d", qdrantMgr.Collection, lessonID, source, parent.Index, child.Index))).String()
+			payload := map[string]any{"lesson_id": lessonID, "source": source, "parent_id": parentID, "parent_text": parent.Text, "heading": parent.Heading, "chunk_idx": parent.Index, "child_idx": child.Index, "text": child.Text}
+			points = append(points, buildPoint(chunkID, memory.Float64To32(vector), payload))
+			esChunks = append(esChunks, rag.DocChunk{ID: chunkID, ParentID: parentID, Text: child.Text, ParentText: parent.Text, Heading: parent.Heading, LessonID: lessonID, Source: source, ChunkIdx: int32(parent.Index), ChildIdx: int32(child.Index)})
+			childCount++
+			if len(points) >= batchSize {
+				if err := upsertPoints(ctx, qdrantMgr, points); err != nil {
 					panic(err)
 				}
+				if esMgr != nil {
+					if err := esMgr.BulkUpsertDocChunks(ctx, esChunks); err != nil {
+						panic(err)
+					}
+				}
+				points = points[:0]
+				esChunks = esChunks[:0]
 			}
-			points = points[:0]
-			esChunks = esChunks[:0]
 		}
 	}
 	if len(points) > 0 {
@@ -129,7 +146,7 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Indexed %d chunks into collection %s\n", len(chunks), qdrantMgr.Collection)
+	fmt.Printf("Indexed %d parent chunks and %d child chunks into collection %s\n", len(parents), childCount, qdrantMgr.Collection)
 }
 
 func buildPoint(id string, vector []float32, payload map[string]any) *qdrant.PointStruct {
@@ -148,56 +165,4 @@ func upsertPoints(ctx context.Context, mgr *memory.QdrantManager, points []*qdra
 		})
 	})
 	return err
-}
-
-func splitMarkdown(content string, maxChunkLen int) []string {
-	reader := bufio.NewReader(strings.NewReader(content))
-	var (
-		builder strings.Builder
-		chunks  []string
-	)
-
-	writeChunk := func() {
-		text := strings.TrimSpace(builder.String())
-		if text != "" {
-			chunks = append(chunks, text)
-		}
-		builder.Reset()
-	}
-
-	for {
-		line, err := reader.ReadString('\n')
-		if len(line) > 0 {
-			if builder.Len()+len(line) > maxChunkLen {
-				writeChunk()
-			}
-			builder.WriteString(line)
-		}
-		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			panic(err)
-		}
-	}
-	writeChunk()
-
-	merged := make([]string, 0, len(chunks))
-	var tmp strings.Builder
-	for _, chunk := range chunks {
-		if tmp.Len()+len(chunk) <= maxChunkLen {
-			if tmp.Len() > 0 {
-				tmp.WriteString("\n")
-			}
-			tmp.WriteString(chunk)
-			continue
-		}
-		merged = append(merged, tmp.String())
-		tmp.Reset()
-		tmp.WriteString(chunk)
-	}
-	if tmp.Len() > 0 {
-		merged = append(merged, tmp.String())
-	}
-	return merged
 }

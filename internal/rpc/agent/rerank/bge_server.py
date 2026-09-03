@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import threading
 from typing import List, Optional
 
 import uvicorn
@@ -24,6 +25,12 @@ class RerankRequest(BaseModel):
 app = FastAPI()
 model_name = os.getenv("BGE_RERANK_MODEL", "BAAI/bge-reranker-v2-m3")
 reranker = FlagReranker(model_name, use_fp16=os.getenv("BGE_RERANK_FP16", "true").lower() == "true")
+reranker_lock = threading.Lock()
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok", "model": model_name}
 
 
 @app.post("/rerank")
@@ -35,7 +42,10 @@ def rerank(req: RerankRequest):
         raise HTTPException(status_code=400, detail="documents or texts is required")
 
     pairs = [[req.query, doc] for doc in docs]
-    scores = reranker.compute_score(pairs, normalize=True)
+    # Hugging Face fast tokenizers cannot be borrowed concurrently. Serialize
+    # access so dependency retries or parallel requests do not crash the worker.
+    with reranker_lock:
+        scores = reranker.compute_score(pairs, normalize=True)
     if isinstance(scores, float):
         scores = [scores]
     return {"scores": [float(score) for score in scores]}

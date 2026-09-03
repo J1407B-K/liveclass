@@ -52,9 +52,13 @@ func (m *ElasticsearchManager) EnsureDocIndex(ctx context.Context) error {
 	mapping := map[string]any{
 		"mappings": map[string]any{
 			"properties": map[string]any{
-				"lesson_id": map[string]any{"type": "long"},
-				"source":    map[string]any{"type": "keyword"},
-				"chunk_idx": map[string]any{"type": "integer"},
+				"lesson_id":   map[string]any{"type": "long"},
+				"source":      map[string]any{"type": "keyword"},
+				"parent_id":   map[string]any{"type": "keyword"},
+				"chunk_idx":   map[string]any{"type": "integer"},
+				"child_idx":   map[string]any{"type": "integer"},
+				"heading":     map[string]any{"type": "text"},
+				"parent_text": map[string]any{"type": "text"},
 				"text": map[string]any{
 					"type":     "text",
 					"analyzer": "standard",
@@ -102,10 +106,14 @@ func (m *ElasticsearchManager) BulkUpsertDocChunks(ctx context.Context, chunks [
 			return err
 		}
 		if err := enc.Encode(map[string]any{
-			"lesson_id": chunk.LessonID,
-			"source":    chunk.Source,
-			"chunk_idx": chunk.ChunkIdx,
-			"text":      chunk.Text,
+			"lesson_id":   chunk.LessonID,
+			"source":      chunk.Source,
+			"parent_id":   chunk.ParentID,
+			"chunk_idx":   chunk.ChunkIdx,
+			"child_idx":   chunk.ChildIdx,
+			"heading":     chunk.Heading,
+			"parent_text": chunk.ParentText,
+			"text":        chunk.Text,
 		}); err != nil {
 			return err
 		}
@@ -205,10 +213,14 @@ func (m *ElasticsearchManager) searchDocsOnce(ctx context.Context, body []byte) 
 				ID     string  `json:"_id"`
 				Score  float64 `json:"_score"`
 				Source struct {
-					LessonID int64  `json:"lesson_id"`
-					Source   string `json:"source"`
-					ChunkIdx int32  `json:"chunk_idx"`
-					Text     string `json:"text"`
+					LessonID   int64  `json:"lesson_id"`
+					Source     string `json:"source"`
+					ParentID   string `json:"parent_id"`
+					ChunkIdx   int32  `json:"chunk_idx"`
+					ChildIdx   int32  `json:"child_idx"`
+					Heading    string `json:"heading"`
+					ParentText string `json:"parent_text"`
+					Text       string `json:"text"`
 				} `json:"_source"`
 			} `json:"hits"`
 		} `json:"hits"`
@@ -223,12 +235,16 @@ func (m *ElasticsearchManager) searchDocsOnce(ctx context.Context, body []byte) 
 			continue
 		}
 		chunks = append(chunks, DocChunk{
-			ID:       hit.ID,
-			Text:     hit.Source.Text,
-			LessonID: hit.Source.LessonID,
-			Source:   hit.Source.Source,
-			ChunkIdx: hit.Source.ChunkIdx,
-			Score:    hit.Score,
+			ID:         hit.ID,
+			Text:       hit.Source.Text,
+			LessonID:   hit.Source.LessonID,
+			Source:     hit.Source.Source,
+			ParentID:   hit.Source.ParentID,
+			ChunkIdx:   hit.Source.ChunkIdx,
+			ChildIdx:   hit.Source.ChildIdx,
+			Heading:    hit.Source.Heading,
+			ParentText: hit.Source.ParentText,
+			Score:      hit.Score,
 		})
 	}
 	return chunks, nil

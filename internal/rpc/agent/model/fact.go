@@ -7,7 +7,8 @@ type FactExtractInput struct {
 }
 
 type FactCandidate struct {
-	FactType   string  `json:"fact_type"`
-	Content    string  `json:"content"`
-	Confidence float64 `json:"confidence"`
+	FactType    string  `json:"fact_type"`
+	ConflictKey string  `json:"conflict_key,omitempty"`
+	Content     string  `json:"content"`
+	Confidence  float64 `json:"confidence"`
 }

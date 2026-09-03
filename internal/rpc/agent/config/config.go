@@ -20,7 +20,32 @@ type Config struct {
 	JaegerEndpoint string
 	PrometheusPort string
 	ServiceAddr    string
+	AgentRuntime   AgentRuntimeConfig
+	RAG            RAGConfig
 	Resilience     ResilienceConfig
+}
+
+type RAGConfig struct {
+	ParentSize          int
+	ChildSize           int
+	Overlap             int
+	ChildTopK           int
+	ParentTopK          int
+	ContextBudgetTokens int
+}
+
+type AgentRuntimeConfig struct {
+	ModelContextTokens       int
+	SystemReserveTokens      int
+	OutputReserveTokens      int
+	RAGBudgetTokens          int
+	MemoryBudgetTokens       int
+	ConversationBudgetTokens int
+	CompactionTriggerTokens  int
+	RecentTailTokens         int
+	MaxToolResultTokens      int
+	MaxSteps                 int
+	PlanReminderSteps        int
 }
 
 type ResilienceConfig struct {

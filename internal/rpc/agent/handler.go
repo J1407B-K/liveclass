@@ -6,11 +6,11 @@ import (
 	agent "liveclass/idl/kitex_gen/agent"
 	"liveclass/idl/kitex_gen/common"
 	myagent "liveclass/internal/rpc/agent/agent"
-	"liveclass/internal/rpc/agent/global"
 	"liveclass/internal/rpc/agent/memory"
-	"liveclass/internal/rpc/agent/rag"
+	"os"
 	"strings"
 
+	"github.com/bytedance/gopkg/cloud/metainfo"
 	uuid2 "github.com/google/uuid"
 	"golang.org/x/sync/singleflight"
 )
@@ -18,10 +18,7 @@ import (
 // AgentServiceImpl implements the last service interface defined in the IDL.
 type AgentServiceImpl struct {
 	DBManager    *memory.DBManager
-	agentRunner  myagent.AgentRunner
-	factRunner   myagent.FactRunner
-	docRetriever *rag.DocRetriever
-	embedder     global.TextMultiModalEmbedder
+	agentRuntime *myagent.AgentRuntime
 
 	//cozeloopClient cozeloop.Client
 
@@ -57,10 +54,14 @@ func (s *AgentServiceImpl) ChatWithAgent(ctx context.Context, req *agent.ChatWit
 	sfKey := fmt.Sprintf("%d:%s:%s", req.Userid, convID, requestID)
 
 	v, err, _ := s.sfAgent.Do(sfKey, func() (interface{}, error) {
-		return myagent.ChatWithAgent(
-			ctx, s.DBManager, s.agentRunner, s.factRunner, s.docRetriever, s.embedder,
-			req.Userid, convID, requestID, req.Message, req.LessonId,
-		)
+		if s.agentRuntime == nil {
+			return nil, fmt.Errorf("nil agent runtime")
+		}
+		variant, _ := metainfo.GetValue(ctx, "agent-eval-variant")
+		if variant == "v1" && os.Getenv("AGENT_EVAL_ALLOW_V1") == "true" {
+			return s.agentRuntime.RunVariant(ctx, "v1", req.Userid, convID, requestID, req.Message, req.LessonId)
+		}
+		return s.agentRuntime.Run(ctx, req.Userid, convID, requestID, req.Message, req.LessonId)
 	})
 
 	if err != nil {

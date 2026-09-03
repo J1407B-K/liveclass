@@ -21,7 +21,9 @@ const (
 	maxRerankBatch     = 50
 )
 
-var rerankHTTPClient = &http.Client{Timeout: 15 * time.Second}
+// Cross-encoder inference can take tens of seconds on a cold CPU-only worker.
+// Request cancellation still comes from the caller/dependency policy.
+var rerankHTTPClient = &http.Client{Timeout: 90 * time.Second}
 
 type rerankRequest struct {
 	Model     string   `json:"model,omitempty"`

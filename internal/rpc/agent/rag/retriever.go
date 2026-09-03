@@ -17,12 +17,16 @@ type DocRetriever struct {
 }
 
 type DocChunk struct {
-	ID       string
-	Text     string
-	LessonID int64
-	Source   string
-	ChunkIdx int32
-	Score    float64
+	ID         string
+	ParentID   string
+	Text       string
+	ParentText string
+	Heading    string
+	LessonID   int64
+	Source     string
+	ChunkIdx   int32
+	ChildIdx   int32
+	Score      float64
 }
 
 func NewDocRetriever(mgr *memory.QdrantManager, es ...*ElasticsearchManager) (*DocRetriever, error) {
@@ -41,6 +45,14 @@ func (r *DocRetriever) Search(ctx context.Context, lessonID int64, vector []floa
 }
 
 func (r *DocRetriever) SearchHybrid(ctx context.Context, lessonID int64, query string, vector []float64, limit int) ([]DocChunk, error) {
+	children, err := r.SearchHybridChildren(ctx, lessonID, query, vector, limit)
+	if err != nil {
+		return nil, err
+	}
+	return ExpandAndDeduplicateParents(children), nil
+}
+
+func (r *DocRetriever) SearchHybridChildren(ctx context.Context, lessonID int64, query string, vector []float64, limit int) ([]DocChunk, error) {
 	vectorChunks, err := r.SearchVector(ctx, lessonID, vector, limit)
 	if err != nil {
 		return nil, err
@@ -55,6 +67,14 @@ func (r *DocRetriever) SearchHybrid(ctx context.Context, lessonID int64, query s
 		return vectorChunks, nil
 	}
 	return mergeDocChunks(vectorChunks, bm25Chunks), nil
+}
+
+func CitationID(chunk DocChunk) string {
+	heading := strings.TrimSpace(strings.TrimLeft(chunk.Heading, "#"))
+	if heading != "" {
+		return chunk.Source + "#" + heading
+	}
+	return fmt.Sprintf("%s#%d", chunk.Source, chunk.ChunkIdx)
 }
 
 func (r *DocRetriever) SearchVector(ctx context.Context, lessonID int64, vector []float64, limit int) ([]DocChunk, error) {
@@ -111,6 +131,18 @@ func (r *DocRetriever) SearchVector(ctx context.Context, lessonID int64, vector 
 		if text := payload["text"]; text != nil {
 			chunk.Text = text.GetStringValue()
 		}
+		if value := payload["parent_id"]; value != nil {
+			chunk.ParentID = value.GetStringValue()
+		}
+		if value := payload["parent_text"]; value != nil {
+			chunk.ParentText = value.GetStringValue()
+		}
+		if value := payload["heading"]; value != nil {
+			chunk.Heading = value.GetStringValue()
+		}
+		if value := payload["child_idx"]; value != nil {
+			chunk.ChildIdx = int32(value.GetIntegerValue())
+		}
 		if source := payload["source"]; source != nil {
 			chunk.Source = source.GetStringValue()
 		}
@@ -123,6 +155,25 @@ func (r *DocRetriever) SearchVector(ctx context.Context, lessonID int64, vector 
 		results = append(results, chunk)
 	}
 	return results, nil
+}
+
+func ExpandAndDeduplicateParents(children []DocChunk) []DocChunk {
+	seen := make(map[string]struct{})
+	parents := make([]DocChunk, 0, len(children))
+	for _, child := range children {
+		if child.ParentID == "" || child.ParentText == "" {
+			parents = append(parents, child)
+			continue
+		}
+		if _, ok := seen[child.ParentID]; ok {
+			continue
+		}
+		seen[child.ParentID] = struct{}{}
+		child.ID = child.ParentID
+		child.Text = child.ParentText
+		parents = append(parents, child)
+	}
+	return parents
 }
 
 func mergeDocChunks(groups ...[]DocChunk) []DocChunk {

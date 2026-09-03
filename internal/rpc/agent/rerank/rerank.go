@@ -45,7 +45,7 @@ func Facts(ctx context.Context, query string, facts []*model.UserFact, topK int)
 
 	scores, err := scoreDocuments(ctx, strings.TrimSpace(query), docs)
 	if err != nil {
-		dependency.Fallback(dependency.Reranker, "score_facts")
+		dependency.FallbackContext(ctx, dependency.Reranker, "score_facts")
 		return facts, err
 	}
 
@@ -90,7 +90,7 @@ func Docs(ctx context.Context, query string, chunks []rag.DocChunk, topK int) ([
 
 	scores, err := scoreDocuments(ctx, strings.TrimSpace(query), docs)
 	if err != nil {
-		dependency.Fallback(dependency.Reranker, "score_docs")
+		dependency.FallbackContext(ctx, dependency.Reranker, "score_docs")
 		return chunks, err
 	}
 

@@ -2,17 +2,20 @@ package initialize
 
 import (
 	"liveclass/internal/rpc/agent/global"
+	"os"
 
 	"github.com/spf13/viper"
 )
 
 func SetupViper() {
 	setResilienceDefaults()
+	setAgentRuntimeDefaults()
+	setRAGDefaults()
 	viper.SetDefault("WebSearchURL", "http://openserp:7000/mega/search")
 	//先指定文件
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("agent")
-	viper.SetConfigFile("./rpc/manifest/agent.yaml")
+	viper.SetConfigFile(resolveAgentConfigPath())
 
 	//读取
 	err := viper.ReadInConfig()
@@ -28,15 +31,47 @@ func SetupViper() {
 
 }
 
+func resolveAgentConfigPath() string {
+	if configured := os.Getenv("AGENT_CONFIG_FILE"); configured != "" {
+		return configured
+	}
+	for _, candidate := range []string{"./rpc/manifest/agent.yaml", "./internal/rpc/manifest/agent.yaml"} {
+		if _, err := os.Stat(candidate); err == nil {
+			return candidate
+		}
+	}
+	return "./rpc/manifest/agent.yaml"
+}
+
+func setRAGDefaults() {
+	defaults := map[string]any{"ParentSize": 1600, "ChildSize": 400, "Overlap": 80, "ChildTopK": 8, "ParentTopK": 3, "ContextBudgetTokens": 7000}
+	for name, value := range defaults {
+		viper.SetDefault("RAG."+name, value)
+	}
+}
+
+func setAgentRuntimeDefaults() {
+	defaults := map[string]any{
+		"ModelContextTokens": 32768, "SystemReserveTokens": 5000,
+		"OutputReserveTokens": 4000, "RAGBudgetTokens": 7000,
+		"MemoryBudgetTokens": 3000, "ConversationBudgetTokens": 12000,
+		"CompactionTriggerTokens": 10500, "RecentTailTokens": 4000,
+		"MaxToolResultTokens": 1200, "MaxSteps": 25, "PlanReminderSteps": 5,
+	}
+	for name, value := range defaults {
+		viper.SetDefault("AgentRuntime."+name, value)
+	}
+}
+
 func setResilienceDefaults() {
 	defaults := map[string]any{
 		"MainLLM.Timeout": "45s", "MainLLM.Attempts": 1,
-		"AdvisorLLM.Timeout": "3s", "AdvisorLLM.Attempts": 1,
+		"AdvisorLLM.Timeout": "20s", "AdvisorLLM.Attempts": 1,
 		"ProfileLLM.Timeout": "8s", "ProfileLLM.Attempts": 1,
 		"Embedding.Timeout": "5s", "Embedding.Attempts": 2,
 		"Qdrant.Timeout": "800ms", "Qdrant.Attempts": 2,
 		"Elasticsearch.Timeout": "800ms", "Elasticsearch.Attempts": 2,
-		"Reranker.Timeout": "2s", "Reranker.Attempts": 2,
+		"Reranker.Timeout": "20s", "Reranker.Attempts": 2,
 		"WebSearch.Timeout": "2s", "WebSearch.Attempts": 2,
 		"PostgresRead.Timeout": "800ms", "PostgresRead.Attempts": 2,
 		"PostgresWrite.Timeout": "1500ms", "PostgresWrite.Attempts": 1,

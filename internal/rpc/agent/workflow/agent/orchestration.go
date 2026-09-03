@@ -3,13 +3,14 @@ package agent
 import (
 	"context"
 	_const "liveclass/internal/rpc/agent/const"
+	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/model"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 )
 
-func BuildAgent(ctx context.Context) (r compose.Runnable[*model.UserMessage, *schema.Message], err error) {
+func BuildAgent(ctx context.Context, managers ...*memory.DBManager) (r compose.Runnable[*model.UserMessage, *schema.Message], err error) {
 	g := compose.NewGraph[*model.UserMessage, *schema.Message]()
 
 	if err = g.AddLambdaNode(
@@ -41,7 +42,11 @@ func BuildAgent(ctx context.Context) (r compose.Runnable[*model.UserMessage, *sc
 		return nil, err
 	}
 
-	reactAgentKey, err := newReactAgent(ctx)
+	var dbm *memory.DBManager
+	if len(managers) > 0 {
+		dbm = managers[0]
+	}
+	reactAgentKey, err := newReactAgent(ctx, dbm)
 	if err != nil {
 		return nil, err
 	}

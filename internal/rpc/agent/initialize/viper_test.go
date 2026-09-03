@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	"os"
 	"testing"
 	"time"
 
@@ -8,6 +9,22 @@ import (
 
 	"github.com/spf13/viper"
 )
+
+func TestResolveAgentConfigPathSupportsRepositoryRoot(t *testing.T) {
+	old, had := os.LookupEnv("AGENT_CONFIG_FILE")
+	_ = os.Unsetenv("AGENT_CONFIG_FILE")
+	defer func() {
+		if had {
+			_ = os.Setenv("AGENT_CONFIG_FILE", old)
+		} else {
+			_ = os.Unsetenv("AGENT_CONFIG_FILE")
+		}
+	}()
+	path := resolveAgentConfigPath()
+	if path != "./internal/rpc/manifest/agent.yaml" && path != "./rpc/manifest/agent.yaml" {
+		t.Fatalf("unexpected config path: %s", path)
+	}
+}
 
 func TestResilienceDefaultsUnmarshal(t *testing.T) {
 	viper.Reset()

@@ -3,6 +3,7 @@ package tool
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"liveclass/internal/rpc/agent/dependency"
@@ -23,8 +24,17 @@ type SearchResult struct {
 	Engine      string `json:"engine"`
 }
 
+type SearchRequest struct {
+	Query string `json:"query" jsonschema_description:"需要检索的问题或关键词"`
+}
+
 func NewSearchTool() (tool.BaseTool, error) {
-	return utils.InferTool("query_on_internet", "在网络上搜索用户咨询相关问题", SearchWeb)
+	return utils.InferTool("query_on_internet", "在网络上搜索用户咨询相关问题", func(ctx context.Context, req *SearchRequest) ([]SearchResult, error) {
+		if req == nil || strings.TrimSpace(req.Query) == "" {
+			return nil, errors.New("query is required")
+		}
+		return SearchWeb(ctx, req.Query)
+	})
 }
 
 func SearchWeb(ctx context.Context, query string) ([]SearchResult, error) {

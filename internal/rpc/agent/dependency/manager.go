@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"liveclass/internal/resilience"
 	"liveclass/internal/rpc/agent/config"
+	agenttrace "liveclass/internal/rpc/agent/trace"
 	"net"
 	"net/http"
 	"sync"
@@ -101,6 +102,13 @@ func Do[T any](ctx context.Context, name, operation string, call func(context.Co
 
 func Fallback(name, operation string) {
 	resilience.RecordFallback(name, operation)
+}
+
+func FallbackContext(ctx context.Context, name, operation string) {
+	Fallback(name, operation)
+	if run := agenttrace.FromContext(ctx); run != nil {
+		run.Record(ctx, "fallback", name, "used", 0, map[string]any{"operation": operation})
+	}
 }
 
 func IsTransient(err error) bool {

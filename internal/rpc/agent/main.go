@@ -4,6 +4,8 @@ import (
 	"context"
 	agent "liveclass/idl/kitex_gen/agent/agentservice"
 	"liveclass/internal/resilience"
+	agentruntime "liveclass/internal/rpc/agent/agent"
+	"liveclass/internal/rpc/agent/agentmetrics"
 	"liveclass/internal/rpc/agent/cdc"
 	"liveclass/internal/rpc/agent/dependency"
 	"liveclass/internal/rpc/agent/flag"
@@ -12,6 +14,7 @@ import (
 	"liveclass/internal/rpc/agent/mcp"
 	"liveclass/internal/rpc/agent/memory"
 	"liveclass/internal/rpc/agent/rag"
+	agentsession "liveclass/internal/rpc/agent/session"
 	agent2 "liveclass/internal/rpc/agent/workflow/agent"
 	"liveclass/internal/rpc/agent/workflow/fact"
 	"log"
@@ -81,7 +84,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	global.AgentRunner, err = agent2.BuildAgent(initCtx)
+	global.AgentRunner, err = agent2.BuildAgent(initCtx, dbm)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -90,6 +93,19 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	runtimeCfg := global.Config.AgentRuntime
+	sessionBudget := agentsession.Budget{
+		ModelContext: runtimeCfg.ModelContextTokens, SystemReserve: runtimeCfg.SystemReserveTokens,
+		OutputReserve: runtimeCfg.OutputReserveTokens, RAG: runtimeCfg.RAGBudgetTokens,
+		Memory: runtimeCfg.MemoryBudgetTokens, Conversation: runtimeCfg.ConversationBudgetTokens,
+		CompactionTrigger: runtimeCfg.CompactionTriggerTokens, RecentTail: runtimeCfg.RecentTailTokens,
+		MaxToolResult: runtimeCfg.MaxToolResultTokens,
+	}
+	sessionManager := agentsession.NewManager(dbm, agentsession.NewBuilder(sessionBudget), &agentsession.ModelCompactor{
+		Model: global.ChatModel, RepairAttempts: 2,
+		Fallback: agentsession.DeterministicCompactor{MaxTokens: runtimeCfg.ConversationBudgetTokens / 3},
+	})
 
 	docMgr, err := initialize.InitDocQdrant(initCtx, 2048)
 	if err != nil {
@@ -105,6 +121,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+	agentRuntime := agentruntime.NewAgentRuntime(dbm, global.AgentRunner, global.FactExtractorRunner, docRetriever, global.MultiModalEmbedder, sessionManager)
 
 	if cli, err := initialize.InitUserClient(); err != nil {
 		log.Printf("init user client failed: %v", err)
@@ -155,12 +172,10 @@ func main() {
 	registry := clientprometheus.NewRegistry()
 	registry.MustRegister(collectors.NewGoCollector(), collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}))
 	registry.MustRegister(resilience.Collectors()...)
+	registry.MustRegister(agentmetrics.Collectors()...)
 	svr := agent.NewServer(&AgentServiceImpl{
 		DBManager:    dbm,
-		agentRunner:  global.AgentRunner,
-		factRunner:   global.FactExtractorRunner,
-		docRetriever: docRetriever,
-		embedder:     global.MultiModalEmbedder,
+		agentRuntime: agentRuntime,
 	},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "agentservice"}),

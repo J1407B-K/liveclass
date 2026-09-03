@@ -3,6 +3,9 @@ package prompt
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"io/fs"
+	"liveclass/internal/rpc/agent/skills"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,20 +17,21 @@ type SkillMeta struct {
 	Description string
 }
 
-// skillsDir is resolved once at init relative to this file's location.
-// Override via SKILLS_DIR env var for deployment flexibility.
-var skillsDir = func() string {
-	if d := os.Getenv("SKILLS_DIR"); d != "" {
-		return d
+func skillFS() (fs.FS, error) {
+	if dir := strings.TrimSpace(os.Getenv("SKILLS_DIR")); dir != "" {
+		return os.DirFS(filepath.Clean(dir)), nil
 	}
-	// default: <module_root>/internal/rpc/agent/skills
-	return filepath.Join(os.Getenv("PWD"), "internal/rpc/agent/skills")
-}()
+	return skills.Files, nil
+}
 
 // LoadSkillIndex scans skillsDir and returns name→description pairs.
 // Only the frontmatter is read, keeping token cost minimal.
 func LoadSkillIndex() ([]SkillMeta, error) {
-	entries, err := os.ReadDir(skillsDir)
+	assets, err := skillFS()
+	if err != nil {
+		return nil, fmt.Errorf("skills fs: %w", err)
+	}
+	entries, err := fs.ReadDir(assets, ".")
 	if err != nil {
 		return nil, fmt.Errorf("skills dir: %w", err)
 	}
@@ -36,8 +40,13 @@ func LoadSkillIndex() ([]SkillMeta, error) {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".md") {
 			continue
 		}
-		meta, err := parseFrontmatter(filepath.Join(skillsDir, e.Name()))
-		if err != nil || meta.Name == "" {
+		file, err := assets.Open(e.Name())
+		if err != nil {
+			continue
+		}
+		meta, parseErr := parseFrontmatter(file)
+		file.Close()
+		if parseErr != nil || meta.Name == "" {
 			continue
 		}
 		index = append(index, meta)
@@ -47,8 +56,11 @@ func LoadSkillIndex() ([]SkillMeta, error) {
 
 // LoadSkillContent returns the full body (below frontmatter) of a tool file.
 func LoadSkillContent(name string) (string, error) {
-	path := filepath.Join(skillsDir, name+".md")
-	data, err := os.ReadFile(path)
+	assets, err := skillFS()
+	if err != nil {
+		return "", fmt.Errorf("skills fs: %w", err)
+	}
+	data, err := fs.ReadFile(assets, name+".md")
 	if err != nil {
 		return "", fmt.Errorf("tool %q not found: %w", name, err)
 	}
@@ -70,15 +82,9 @@ func BuildAdvisorSystemPrompt(index []SkillMeta) string {
 }
 
 // parseFrontmatter reads only the YAML frontmatter block of a .md file.
-func parseFrontmatter(path string) (SkillMeta, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return SkillMeta{}, err
-	}
-	defer f.Close()
-
+func parseFrontmatter(r io.Reader) (SkillMeta, error) {
 	var meta SkillMeta
-	scanner := bufio.NewScanner(f)
+	scanner := bufio.NewScanner(r)
 	inFront := false
 	for scanner.Scan() {
 		line := scanner.Text()

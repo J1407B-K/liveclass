@@ -2,6 +2,7 @@ package memory
 
 import (
 	"context"
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"strings"
@@ -17,10 +18,22 @@ const defaultWindow = 6
 
 func BuildConvID(userID int64, convID string) string {
 	convID = strings.TrimSpace(convID)
-	if convID != "" {
+	if convID == "" {
+		return fmt.Sprintf("user_%d_default", userID)
+	}
+	if convID == fmt.Sprintf("user_%d_default", userID) {
 		return convID
 	}
-	return fmt.Sprintf("user_%d_default", userID)
+	prefix := fmt.Sprintf("user_%d:", userID)
+	if strings.HasPrefix(convID, prefix) {
+		return convID
+	}
+	namespaced := prefix + convID
+	if len(namespaced) <= 64 {
+		return namespaced
+	}
+	digest := sha256.Sum256([]byte(convID))
+	return fmt.Sprintf("%s%x", prefix, digest[:16])
 }
 
 func BuildRequestID(requestID string) string {
@@ -256,6 +269,27 @@ func (m *DBManager) DeleteConversation(
 
 	return postgresWriteError(ctx, "delete_conversation", func(callCtx context.Context) error {
 		return m.DB.WithContext(callCtx).Transaction(func(tx *gorm.DB) error {
+			var planIDs []int64
+			if err := tx.Model(&model.TaskPlan{}).Where("user_id = ? AND session_id = ?", userID, convID).Pluck("id", &planIDs).Error; err != nil {
+				return err
+			}
+			if len(planIDs) > 0 {
+				if err := tx.Where("plan_id IN ?", planIDs).Delete(&model.TaskStep{}).Error; err != nil {
+					return err
+				}
+			}
+			if err := tx.Where("user_id = ? AND session_id = ?", userID, convID).Delete(&model.TaskPlan{}).Error; err != nil {
+				return err
+			}
+			if err := tx.Where("user_id = ? AND session_id = ?", userID, convID).Delete(&model.SummaryCheckpoint{}).Error; err != nil {
+				return err
+			}
+			if err := tx.Where("user_id = ? AND session_id = ?", userID, convID).Delete(&model.TranscriptEvent{}).Error; err != nil {
+				return err
+			}
+			if err := tx.Where("session_id = ?", convID).Delete(&model.AgentTraceEvent{}).Error; err != nil {
+				return err
+			}
 			if err := tx.
 				Where("conv_id = ?", convID).
 				Delete(&model.Message{}).Error; err != nil {

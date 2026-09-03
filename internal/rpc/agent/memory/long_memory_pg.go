@@ -24,8 +24,10 @@ func (m *DBManager) InsertFact(
 		FactType:   factType,
 		Content:    content,
 		Confidence: confidence,
+		Source:     "conversation",
 		SourceConv: sourceConv,
 		IsActive:   true,
+		Metadata:   "{}",
 	}
 
 	if err := postgresWriteError(ctx, "insert_fact", func(callCtx context.Context) error {
