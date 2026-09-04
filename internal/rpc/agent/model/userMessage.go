@@ -21,4 +21,9 @@ type SkillAdvice struct {
 	Skills []string `json:"skills"`
 	// Guidance 注入给 React Agent 的流程指引（从 .md 文件加载并合并）
 	Guidance string `json:"guidance"`
+	// RequiresPlan 是 Advisor 的语义建议；最终是否规划由 Runtime 裁决。
+	RequiresPlan   bool   `json:"requires_plan"`
+	Complexity     string `json:"complexity"`
+	Reason         string `json:"reason"`
+	EstimatedSteps int    `json:"estimated_steps"`
 }

@@ -1,6 +1,31 @@
 package agent
 
-import "testing"
+import (
+	"context"
+	"testing"
+
+	"github.com/bytedance/gopkg/cloud/metainfo"
+)
+
+func TestShouldExtractFactsSkipsEvalReplay(t *testing.T) {
+	if !shouldExtractFacts(context.Background()) {
+		t.Fatal("normal requests must extract facts")
+	}
+	ctx := metainfo.WithPersistentValue(context.Background(), "agent-eval-variant", "v2")
+	if shouldExtractFacts(ctx) {
+		t.Fatal("eval replay must not write facts shared by later cases")
+	}
+}
+
+func TestIsEvalReplay(t *testing.T) {
+	if isEvalReplay(context.Background()) {
+		t.Fatal("normal request detected as eval")
+	}
+	ctx := metainfo.WithPersistentValue(context.Background(), "agent-eval-variant", "v1")
+	if !isEvalReplay(ctx) {
+		t.Fatal("eval metadata was not detected")
+	}
+}
 
 func TestIsComplexPlanningRequest(t *testing.T) {
 	tests := []struct {

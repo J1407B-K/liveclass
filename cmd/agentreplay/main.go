@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -32,6 +33,7 @@ func main() {
 	caseID := flag.String("case", "", "run only one case ID")
 	host := flag.String("host", "127.0.0.1:9006", "agent RPC address")
 	userID := flag.Int64("user", 0, "replay user ID")
+	maxConsecutiveErrors := flag.Int("max-consecutive-rpc-errors", 3, "abort after this many consecutive RPC errors (0 disables)")
 	flag.Parse()
 	if *output == "" || *userID <= 0 {
 		fatal("output and a positive user are required")
@@ -51,6 +53,9 @@ func main() {
 	if err != nil {
 		fatal(err.Error())
 	}
+	if err := agenteval.ValidateCases(cases); err != nil {
+		fatal(err.Error())
+	}
 	if err := os.MkdirAll(filepath.Dir(*output), 0o755); err != nil {
 		fatal(err.Error())
 	}
@@ -61,6 +66,7 @@ func main() {
 	defer out.Close()
 	w := bufio.NewWriter(out)
 	defer w.Flush()
+	consecutiveErrors := 0
 	for _, c := range cases {
 		if *caseID != "" && c.ID != *caseID {
 			continue
@@ -69,7 +75,9 @@ func main() {
 		if value := strings.TrimSpace(*runID); value != "" {
 			namespace += "-" + value
 		}
-		requestID := fmt.Sprintf("eval-%s-%s-%s", namespace, c.ID, uuid.NewString()[:8])
+		// Trace/request columns are varchar(64). Case identity already lives in
+		// Prediction.CaseID, so keep the transport id compact and collision-safe.
+		requestID := newEvalRequestID(*variant)
 		started := time.Now()
 		callCtx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 		callCtx = metainfo.WithPersistentValue(callCtx, "agent-eval-variant", *variant)
@@ -86,12 +94,46 @@ func main() {
 			p.Answer = resp.Resp.Msg
 		}
 		collectTrace(db, requestID, &p)
+		p.CitedDocs = extractCitations(p.Answer)
 		raw, _ := json.Marshal(p)
 		fmt.Fprintln(w, string(raw))
 		if err := w.Flush(); err != nil {
 			fatal(err.Error())
 		}
+		if callErr != nil {
+			consecutiveErrors++
+		} else {
+			consecutiveErrors = 0
+		}
+		if *maxConsecutiveErrors > 0 && consecutiveErrors >= *maxConsecutiveErrors {
+			fatal(fmt.Sprintf("aborting after %d consecutive RPC errors; predictions are incomplete", consecutiveErrors))
+		}
 	}
+}
+
+func newEvalRequestID(variant string) string {
+	variant = strings.TrimSpace(variant)
+	if len(variant) > 16 {
+		variant = variant[:16]
+	}
+	return fmt.Sprintf("eval-%s-%s", variant, uuid.NewString())
+}
+
+var citationPattern = regexp.MustCompile(`\[([^\[\]\n]+\.md#[^\[\]\n]+)\]`)
+
+func extractCitations(answer string) []string {
+	matches := citationPattern.FindAllStringSubmatch(answer, -1)
+	seen := make(map[string]struct{}, len(matches))
+	result := make([]string, 0, len(matches))
+	for _, match := range matches {
+		citation := strings.TrimSpace(match[1])
+		if _, ok := seen[citation]; ok {
+			continue
+		}
+		seen[citation] = struct{}{}
+		result = append(result, citation)
+	}
+	return result
 }
 
 func collectTrace(db *gorm.DB, requestID string, p *agenteval.Prediction) {

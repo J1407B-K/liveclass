@@ -10,6 +10,7 @@ import (
 	model2 "liveclass/internal/api/model"
 	"liveclass/internal/api/utils/jwt"
 	"liveclass/internal/api/utils/ratelimit"
+	"liveclass/internal/api/utils/wsauth"
 	"log"
 	"net/http"
 	"strconv"
@@ -22,7 +23,7 @@ import (
 )
 
 func QuizConnection(c context.Context, ctx *app.RequestContext) {
-	token := ctx.Query("token")
+	token := wsauth.Token(ctx, global2.Config.WebSocketSecurity.AllowQueryToken)
 	if token == "" {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"code": code.AuthError,

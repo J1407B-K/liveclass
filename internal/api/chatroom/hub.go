@@ -16,16 +16,20 @@ import (
 const slowConsumerCloseReason = "slow consumer"
 
 type Config struct {
-	SendQueueSize  int
-	WriteWait      time.Duration
-	PongWait       time.Duration
-	PingPeriod     time.Duration
-	MaxMessageSize int64
+	SendQueueSize    int
+	MessageDedupSize int
+	WriteWait        time.Duration
+	PongWait         time.Duration
+	PingPeriod       time.Duration
+	MaxMessageSize   int64
 }
 
 func (c Config) validate() error {
 	if c.SendQueueSize <= 0 {
 		return errors.New("chat send queue size must be positive")
+	}
+	if c.MessageDedupSize <= 0 {
+		return errors.New("chat message dedup size must be positive")
 	}
 	if c.WriteWait <= 0 || c.PongWait <= 0 || c.PingPeriod <= 0 {
 		return errors.New("chat websocket timeouts must be positive")
@@ -63,20 +67,31 @@ type Room struct {
 }
 
 type Client struct {
-	manager   *Manager
-	lessonID  int64
-	conn      Socket
-	send      chan []byte
-	alive     chan struct{}
-	ctx       context.Context
-	cancel    context.CancelFunc
-	closeOnce sync.Once
-	stateMu   sync.RWMutex
-	closed    bool
-	reason    string
+	manager        *Manager
+	lessonID       int64
+	conn           Socket
+	send           chan []byte
+	alive          chan struct{}
+	ctx            context.Context
+	cancel         context.CancelFunc
+	closeOnce      sync.Once
+	stateMu        sync.RWMutex
+	closed         bool
+	reason         string
+	deliveryMu     sync.Mutex
+	resuming       bool
+	pendingLive    []chatDelivery
+	seenMessageIDs map[string]struct{}
+	seenOrder      []string
+}
+
+type chatDelivery struct {
+	messageID string
+	payload   []byte
 }
 
 type MessageHandler func(ctx context.Context, messageType int, payload []byte) error
+type BootstrapHandler func(ctx context.Context, client *Client) error
 
 func NewManager(cfg Config) (*Manager, error) {
 	if err := cfg.validate(); err != nil {
@@ -86,10 +101,15 @@ func NewManager(cfg Config) (*Manager, error) {
 }
 
 func (m *Manager) NewClient(parent context.Context, lessonID int64, conn Socket) *Client {
+	return m.NewResumingClient(parent, lessonID, conn, false)
+}
+
+func (m *Manager) NewResumingClient(parent context.Context, lessonID int64, conn Socket, resuming bool) *Client {
 	ctx, cancel := context.WithCancel(parent)
 	return &Client{
 		manager: m, lessonID: lessonID, conn: conn,
 		send: make(chan []byte, m.cfg.SendQueueSize), alive: make(chan struct{}, 1), ctx: ctx, cancel: cancel,
+		resuming: resuming, seenMessageIDs: make(map[string]struct{}),
 	}
 }
 
@@ -99,6 +119,15 @@ func (m *Manager) BroadcastJSON(lessonID int64, message any) error {
 		return err
 	}
 	m.Broadcast(lessonID, payload)
+	return nil
+}
+
+func (m *Manager) BroadcastChat(lessonID int64, messageID string, message any) error {
+	payload, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+	m.broadcastChat(lessonID, messageID, payload)
 	return nil
 }
 
@@ -122,6 +151,33 @@ func (m *Manager) Broadcast(lessonID int64, payload []byte) {
 
 	for _, client := range clients {
 		if !client.Enqueue(payload) {
+			if client.close(slowConsumerCloseReason) {
+				observability.DroppedMessagesTotal.Inc()
+				observability.SlowConsumerTotal.Inc()
+				m.unregister(client)
+			}
+		}
+	}
+}
+
+func (m *Manager) broadcastChat(lessonID int64, messageID string, payload []byte) {
+	started := time.Now()
+	defer func() { observability.ChatFanoutLatency.Observe(time.Since(started).Seconds()) }()
+
+	m.mu.RLock()
+	room := m.rooms[lessonID]
+	m.mu.RUnlock()
+	if room == nil {
+		return
+	}
+	room.mu.RLock()
+	clients := make([]*Client, 0, len(room.clients))
+	for client := range room.clients {
+		clients = append(clients, client)
+	}
+	room.mu.RUnlock()
+	for _, client := range clients {
+		if !client.EnqueueChat(messageID, payload) {
 			if client.close(slowConsumerCloseReason) {
 				observability.DroppedMessagesTotal.Inc()
 				observability.SlowConsumerTotal.Inc()
@@ -213,6 +269,76 @@ func (c *Client) Enqueue(payload []byte) bool {
 	}
 }
 
+func (c *Client) EnqueueChat(messageID string, payload []byte) bool {
+	c.deliveryMu.Lock()
+	defer c.deliveryMu.Unlock()
+	if _, duplicate := c.seenMessageIDs[messageID]; messageID != "" && duplicate {
+		observability.DuplicateDeliveriesSuppressedTotal.Inc()
+		return true
+	}
+	if c.resuming {
+		if len(c.pendingLive) >= c.manager.cfg.SendQueueSize {
+			return false
+		}
+		c.pendingLive = append(c.pendingLive, chatDelivery{messageID: messageID, payload: payload})
+		c.rememberMessageLocked(messageID)
+		return true
+	}
+	if !c.Enqueue(payload) {
+		return false
+	}
+	c.rememberMessageLocked(messageID)
+	return true
+}
+
+func (c *Client) EnqueueReplay(messageID string, payload []byte) bool {
+	c.deliveryMu.Lock()
+	defer c.deliveryMu.Unlock()
+	if _, duplicate := c.seenMessageIDs[messageID]; messageID != "" && duplicate {
+		return true
+	}
+	select {
+	case c.send <- payload:
+		observability.ChatQueueDepth.Inc()
+		c.rememberMessageLocked(messageID)
+		return true
+	case <-c.ctx.Done():
+		return false
+	case <-time.After(c.manager.cfg.WriteWait):
+		return false
+	}
+}
+
+func (c *Client) FinishResume() bool {
+	c.deliveryMu.Lock()
+	defer c.deliveryMu.Unlock()
+	c.resuming = false
+	for _, delivery := range c.pendingLive {
+		if !c.Enqueue(delivery.payload) {
+			return false
+		}
+	}
+	c.pendingLive = nil
+	return true
+}
+
+func (c *Client) rememberMessageLocked(messageID string) {
+	if messageID == "" {
+		return
+	}
+	if _, exists := c.seenMessageIDs[messageID]; exists {
+		return
+	}
+	c.seenMessageIDs[messageID] = struct{}{}
+	c.seenOrder = append(c.seenOrder, messageID)
+	if overflow := len(c.seenOrder) - c.manager.cfg.MessageDedupSize; overflow > 0 {
+		for _, expired := range c.seenOrder[:overflow] {
+			delete(c.seenMessageIDs, expired)
+		}
+		c.seenOrder = append([]string(nil), c.seenOrder[overflow:]...)
+	}
+}
+
 func (c *Client) Close(reason string) {
 	c.close(reason)
 }
@@ -231,6 +357,10 @@ func (c *Client) close(reason string) bool {
 }
 
 func (c *Client) Serve(handler MessageHandler) error {
+	return c.ServeWithBootstrap(handler, nil)
+}
+
+func (c *Client) ServeWithBootstrap(handler MessageHandler, bootstrap BootstrapHandler) error {
 	c.manager.register(c)
 	defer c.manager.unregister(c)
 
@@ -245,6 +375,13 @@ func (c *Client) Serve(handler MessageHandler) error {
 		defer close(writerDone)
 		c.writePump()
 	}()
+	if bootstrap != nil {
+		if err := bootstrap(c.ctx, c); err != nil {
+			c.Close("resume failed")
+			<-writerDone
+			return err
+		}
+	}
 
 	err := c.readPump(handler)
 	c.Close("connection closed")

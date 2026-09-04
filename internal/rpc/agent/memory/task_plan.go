@@ -32,7 +32,7 @@ func (m *DBManager) ActiveTaskPlanContext(ctx context.Context, sessionID string)
 		return "", err
 	}
 	var out strings.Builder
-	fmt.Fprintf(&out, "计划 ID：%d\n目标：%s（%s）\n该计划已由运行时持久化；不要重复创建。只有实际执行某一步后才能更新其状态，当前仅制定方案时不要调用更新工具。", plan.ID, plan.Goal, plan.Status)
+	fmt.Fprintf(&out, "计划 ID：%d\n目标：%s（%s）\n该计划由 Planner 生成并由 Plan Executor 持久化和推进；ReAct 只执行 Runtime 指定的当前步骤，不自行创建或修改计划。", plan.ID, plan.Goal, plan.Status)
 	for _, step := range steps {
 		fmt.Fprintf(&out, "\n- [%s] %s: %s", step.Status, step.StepKey, step.Description)
 	}
@@ -136,12 +136,10 @@ func (m *DBManager) UpdateTaskStep(ctx context.Context, userID, planID int64, st
 				return err
 			}
 			planStatus := "running"
-			if remaining == 0 {
-				if failed > 0 {
-					planStatus = "failed"
-				} else {
-					planStatus = "done"
-				}
+			if failed > 0 {
+				planStatus = "failed"
+			} else if remaining == 0 {
+				planStatus = "done"
 			}
 			return tx.Model(&plan).Update("status", planStatus).Error
 		})
@@ -187,4 +185,92 @@ func (m *DBManager) GetTaskPlan(ctx context.Context, userID, planID int64) (*mod
 		return rows, err
 	})
 	return &plan, steps, err
+}
+
+func (m *DBManager) GetTaskPlanByRequest(ctx context.Context, userID int64, sessionID, requestID string) (*model.TaskPlan, []model.TaskStep, error) {
+	if m == nil || m.DB == nil {
+		return nil, nil, errors.New("nil db")
+	}
+	var plan model.TaskPlan
+	err := m.DB.WithContext(ctx).Where("user_id = ? AND session_id = ? AND request_id = ?", userID, sessionID, requestID).First(&plan).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil, nil
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	var steps []model.TaskStep
+	if err := m.DB.WithContext(ctx).Where("plan_id = ?", plan.ID).Order("id asc").Find(&steps).Error; err != nil {
+		return nil, nil, err
+	}
+	return &plan, steps, nil
+}
+
+// ReviseTaskPlan preserves completed steps and atomically replaces every
+// unfinished step with a validated proposal. It intentionally reuses the same
+// plan ID so recovery always has one authoritative plan per user request.
+func (m *DBManager) ReviseTaskPlan(ctx context.Context, userID, planID int64, steps []NewTaskStep) error {
+	if m == nil || m.DB == nil || len(steps) == 0 {
+		return errors.New("invalid task plan revision")
+	}
+	return postgresWriteError(ctx, "revise_task_plan", func(callCtx context.Context) error {
+		return m.DB.WithContext(callCtx).Transaction(func(tx *gorm.DB) error {
+			var plan model.TaskPlan
+			if err := tx.Where("id = ? AND user_id = ?", planID, userID).First(&plan).Error; err != nil {
+				return err
+			}
+			var completed []model.TaskStep
+			if err := tx.Where("plan_id = ? AND status = ?", planID, "done").Find(&completed).Error; err != nil {
+				return err
+			}
+			done := make(map[string]struct{}, len(completed))
+			for _, step := range completed {
+				done[step.StepKey] = struct{}{}
+			}
+			if err := tx.Where("plan_id = ? AND status <> ?", planID, "done").Delete(&model.TaskStep{}).Error; err != nil {
+				return err
+			}
+			inserted := 0
+			for _, input := range steps {
+				if _, exists := done[input.Key]; exists {
+					continue
+				}
+				if input.Key == "" || input.Description == "" {
+					return errors.New("task step key and description are required")
+				}
+				depends := input.DependsOn
+				if depends == "" {
+					depends = "[]"
+				}
+				if err := tx.Create(&model.TaskStep{PlanID: planID, StepKey: input.Key, Description: input.Description, Status: "pending", DependsOn: depends}).Error; err != nil {
+					return err
+				}
+				inserted++
+			}
+			if inserted == 0 {
+				return errors.New("task plan revision has no unfinished steps")
+			}
+			return tx.Model(&plan).Update("status", "pending").Error
+		})
+	})
+}
+
+func TaskStepResultEventKey(planID int64, stepKey string) string {
+	return fmt.Sprintf("plan_step:%d:%s", planID, stepKey)
+}
+
+func (m *DBManager) SaveTaskStepResult(ctx context.Context, userID int64, sessionID, requestID string, planID int64, stepKey, result string) error {
+	return m.AppendTranscriptEvent(ctx, &model.TranscriptEvent{
+		UserID: userID, SessionID: sessionID, RequestID: requestID,
+		EventKey: TaskStepResultEventKey(planID, stepKey), EventType: "plan_step_result",
+		Content: result, Payload: "{}",
+	})
+}
+
+func (m *DBManager) LoadTaskStepResult(ctx context.Context, sessionID, requestID string, planID int64, stepKey string) (string, error) {
+	event, err := m.GetTranscriptEvent(ctx, sessionID, requestID, TaskStepResultEventKey(planID, stepKey))
+	if err != nil || event == nil {
+		return "", err
+	}
+	return event.Content, nil
 }

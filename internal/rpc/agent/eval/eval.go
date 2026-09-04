@@ -24,6 +24,40 @@ type ExpectedResult struct {
 	Contains []string `json:"contains"`
 }
 
+func ValidateCases(cases []Case) error {
+	seen := make(map[string]struct{}, len(cases))
+	for i, c := range cases {
+		if strings.TrimSpace(c.ID) == "" || strings.TrimSpace(c.Question) == "" {
+			return fmt.Errorf("case %d requires id and question", i+1)
+		}
+		if _, ok := seen[c.ID]; ok {
+			return fmt.Errorf("duplicate case id %q", c.ID)
+		}
+		seen[c.ID] = struct{}{}
+		if len(c.GoldDocs) > 0 {
+			lesson, ok := c.Metadata["lesson_id"].(float64)
+			if !ok || lesson <= 0 {
+				return fmt.Errorf("RAG case %q requires positive metadata.lesson_id", c.ID)
+			}
+		}
+	}
+	return nil
+}
+
+func ValidatePredictions(predictions []Prediction) error {
+	seen := make(map[string]struct{}, len(predictions))
+	for i, p := range predictions {
+		if strings.TrimSpace(p.CaseID) == "" {
+			return fmt.Errorf("prediction %d requires case_id", i+1)
+		}
+		if _, ok := seen[p.CaseID]; ok {
+			return fmt.Errorf("duplicate prediction case_id %q", p.CaseID)
+		}
+		seen[p.CaseID] = struct{}{}
+	}
+	return nil
+}
+
 type Prediction struct {
 	CaseID        string   `json:"case_id"`
 	Skill         string   `json:"skill"`

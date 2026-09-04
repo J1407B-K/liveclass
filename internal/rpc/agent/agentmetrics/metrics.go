@@ -19,8 +19,12 @@ var (
 	TaskPlans              = prometheus.NewCounter(prometheus.CounterOpts{Name: "agent_task_plans_total", Help: "Complex task plans created."})
 	TaskStepUpdates        = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "agent_task_step_updates_total", Help: "Task step updates by bounded status."}, []string{"status"})
 	PlanUpdateInterval     = prometheus.NewHistogram(prometheus.HistogramOpts{Name: "agent_plan_update_interval_seconds", Help: "Seconds between observable task plan updates.", Buckets: prometheus.ExponentialBuckets(1, 2, 12)})
+	PlanningDecisions      = prometheus.NewCounterVec(prometheus.CounterOpts{Name: "agent_planning_decisions_total", Help: "Adaptive routing decisions by direct or planned path."}, []string{"route"})
+	PlannerLatency         = prometheus.NewHistogram(prometheus.HistogramOpts{Name: "agent_planner_latency_seconds", Help: "Structured planner model latency.", Buckets: prometheus.DefBuckets})
+	PlanStepLatency        = prometheus.NewHistogram(prometheus.HistogramOpts{Name: "agent_plan_step_latency_seconds", Help: "ReAct execution latency for one planned step.", Buckets: prometheus.DefBuckets})
+	PlanReplans            = prometheus.NewCounter(prometheus.CounterOpts{Name: "agent_plan_replans_total", Help: "Bounded plan revisions after a failed step."})
 )
 
 func Collectors() []prometheus.Collector {
-	return []prometheus.Collector{Requests, Success, Steps, Latency, Tokens, ToolCalls, DuplicateToolCalls, Fallbacks, Repairs, ContextTokens, Compactions, MemoryRetrievalLatency, SkillRoutes, TaskPlans, TaskStepUpdates, PlanUpdateInterval}
+	return []prometheus.Collector{Requests, Success, Steps, Latency, Tokens, ToolCalls, DuplicateToolCalls, Fallbacks, Repairs, ContextTokens, Compactions, MemoryRetrievalLatency, SkillRoutes, TaskPlans, TaskStepUpdates, PlanUpdateInterval, PlanningDecisions, PlannerLatency, PlanStepLatency, PlanReplans}
 }

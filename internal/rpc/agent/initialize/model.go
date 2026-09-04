@@ -74,8 +74,9 @@ type arkErrorResponse struct {
 func InitChatModel(ctx context.Context) (cm *ark.ChatModel, err error) {
 	//创建配置
 	config := &ark.ChatModelConfig{
-		Model:  global.Config.ChatModel,
-		APIKey: global.Config.APIKey,
+		Model:       global.Config.ChatModel,
+		APIKey:      global.Config.APIKey,
+		Temperature: &global.Config.ChatTemperature,
 	}
 
 	cm, err = ark.NewChatModel(ctx, config)

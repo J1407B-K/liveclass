@@ -84,6 +84,19 @@ func main() {
 		panic(err.Error())
 	}
 
+	// Tool registration snapshots the currently available dependency clients,
+	// so initialize RPC clients before building the ReAct executors.
+	if cli, clientErr := initialize.InitUserClient(); clientErr != nil {
+		log.Printf("init user client failed: %v", clientErr)
+	} else {
+		global.UserClient = cli
+	}
+	if cli, clientErr := initialize.InitLessonClient(); clientErr != nil {
+		log.Printf("init lesson client failed: %v", clientErr)
+	} else {
+		global.LessonClient = cli
+	}
+
 	global.AgentRunner, err = agent2.BuildAgent(initCtx, dbm)
 	if err != nil {
 		panic(err.Error())
@@ -122,18 +135,6 @@ func main() {
 		panic(err.Error())
 	}
 	agentRuntime := agentruntime.NewAgentRuntime(dbm, global.AgentRunner, global.FactExtractorRunner, docRetriever, global.MultiModalEmbedder, sessionManager)
-
-	if cli, err := initialize.InitUserClient(); err != nil {
-		log.Printf("init user client failed: %v", err)
-	} else {
-		global.UserClient = cli
-	}
-
-	if cli, err := initialize.InitLessonClient(); err != nil {
-		log.Printf("init lesson client failed: %v", err)
-	} else {
-		global.LessonClient = cli
-	}
 
 	reader := initialize.InitKafkaReader()
 	go func() {

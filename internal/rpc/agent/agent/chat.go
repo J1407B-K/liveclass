@@ -82,8 +82,9 @@ func ChatWithAgent(
 		agentmetrics.Steps.Observe(float64(run.Steps()))
 		run.Record(ctx, "run_finished", "agent", status, time.Since(started), map[string]any{"steps": run.Steps()})
 		if retErr != nil {
-			run.Record(ctx, "error", "agent", "error", time.Since(started), map[string]any{"error": retErr.Error()})
-			run.RecordTranscript(ctx, "error", "agent", retErr.Error(), map[string]any{"stage": "request"})
+			safeError := agenttrace.SafeError(retErr)
+			run.Record(ctx, "error", "agent", "error", time.Since(started), map[string]any{"error": safeError})
+			run.RecordTranscript(ctx, "error", "agent", safeError, map[string]any{"stage": "request"})
 		} else {
 			run.Record(ctx, "final_result", "agent", status, time.Since(started), map[string]any{"response_chars": len(answer)})
 		}
@@ -144,12 +145,6 @@ func ChatWithAgent(
 			return "", err
 		}
 	}
-	if sessionManager != nil && isComplexPlanningRequest(originalMsg) {
-		if err = ensureRequiredTaskPlan(ctx, dbm, run, userID, convID, requestID, originalMsg); err != nil {
-			return "", err
-		}
-	}
-
 	// 并行执行三个独立的 IO 操作：facts 检索、doc 检索、profile 生成
 	var (
 		factText       string
@@ -260,6 +255,12 @@ func ChatWithAgent(
 	})
 
 	eg.Go(func() error {
+		if isEvalReplay(egCtx) {
+			// Canonical cases use a fresh user and evaluate the request itself.
+			// Generating/caching a profile here would make later variants inherit
+			// state from the first run and consume an extra model call per case.
+			return nil
+		}
 		summary, perr := userprofile.EnsureUserProfile(egCtx, dbm, userID)
 		if perr != nil {
 			log.Printf("generate user profile failed: %v", perr)
@@ -308,9 +309,10 @@ func ChatWithAgent(
 		Docs:    docText,
 	}
 
-	resp, err := dependency.Do(ctx, dependency.MainLLM, "generate", func(callCtx context.Context) (*schema.Message, error) {
-		return agentRunner.Invoke(callCtx, userMsg)
-	})
+	// The adaptive runner applies dependency policy per model call. Wrapping the
+	// whole Plan-and-Execute loop in one LLM timeout would cancel valid multi-step
+	// tasks after the timeout intended for a single generation.
+	resp, err := agentRunner.Invoke(ctx, userMsg)
 	if err != nil {
 		return "", err
 	}
@@ -335,40 +337,57 @@ func ChatWithAgent(
 		return "", err
 	}
 
-	// 异步 fact 提取：使用独立超时，避免 goroutine 泄漏
-	go func(userID int64, convID, msg string) {
-		if factRunner == nil {
-			return
-		}
-		bgCtx, cancel := context.WithTimeout(context.Background(), factExtractTimeout)
-		defer cancel()
+	// Canonical replay cases must be independent. Writing facts from one case
+	// back into shared user memory would contaminate every later case and make
+	// v1/v2 results depend on execution order.
+	if shouldExtractFacts(ctx) {
+		// 异步 fact 提取：使用独立超时，避免 goroutine 泄漏
+		go func(userID int64, convID, msg string) {
+			if factRunner == nil {
+				return
+			}
+			bgCtx, cancel := context.WithTimeout(context.Background(), factExtractTimeout)
+			defer cancel()
 
-		facts, err := dependency.Do(bgCtx, dependency.MainLLM, "extract_facts", func(callCtx context.Context) ([]*model.FactCandidate, error) {
-			return factRunner.Invoke(callCtx, &model.FactExtractInput{
-				UserID:  userID,
-				ConvID:  convID,
-				Message: msg,
+			facts, err := dependency.Do(bgCtx, dependency.MainLLM, "extract_facts", func(callCtx context.Context) ([]*model.FactCandidate, error) {
+				return factRunner.Invoke(callCtx, &model.FactExtractInput{
+					UserID:  userID,
+					ConvID:  convID,
+					Message: msg,
+				})
 			})
-		})
-		if err != nil {
-			log.Printf("fact extract failed user=%d conv=%s: %v", userID, convID, err)
-			return
-		}
-		for _, f := range facts {
-			if f == nil || f.Confidence < 0.5 {
-				continue
+			if err != nil {
+				log.Printf("fact extract failed user=%d conv=%s: %v", userID, convID, err)
+				return
 			}
-			if _, err := dbm.ResolveFactWithOutbox(bgCtx, memory.FactWrite{
-				UserID: userID, FactType: f.FactType, ConflictKey: f.ConflictKey,
-				Content: f.Content, Confidence: f.Confidence, Source: "conversation", SourceConv: convID,
-			}); err != nil {
-				log.Printf("insert fact failed user=%d type=%s: %v", userID, f.FactType, err)
+			for _, f := range facts {
+				if f == nil || f.Confidence < 0.5 {
+					continue
+				}
+				if _, err := dbm.ResolveFactWithOutbox(bgCtx, memory.FactWrite{
+					UserID: userID, FactType: f.FactType, ConflictKey: f.ConflictKey,
+					Content: f.Content, Confidence: f.Confidence, Source: "conversation", SourceConv: convID,
+				}); err != nil {
+					log.Printf("insert fact failed user=%d type=%s: %v", userID, f.FactType, err)
+				}
 			}
-		}
-	}(userID, convID, originalMsg)
+		}(userID, convID, originalMsg)
+	}
 
 	succeeded = true
 	return resp.Content, nil
+}
+
+func shouldExtractFacts(ctx context.Context) bool {
+	return !isEvalReplay(ctx)
+}
+
+func isEvalReplay(ctx context.Context) bool {
+	evalVariant, _ := metainfo.GetValue(ctx, "agent-eval-variant")
+	if evalVariant == "" {
+		evalVariant, _ = metainfo.GetPersistentValue(ctx, "agent-eval-variant")
+	}
+	return strings.TrimSpace(evalVariant) != ""
 }
 
 func isComplexPlanningRequest(message string) bool {
@@ -379,30 +398,4 @@ func isComplexPlanningRequest(message string) bool {
 	planning := strings.Contains(text, "计划") || strings.Contains(text, "规划") || strings.Contains(text, "安排") || strings.Contains(text, "plan")
 	multiStep := strings.Contains(text, "分步骤") || strings.Contains(text, "多步骤") || strings.Contains(text, "本周") || strings.Contains(text, "下周") || strings.Contains(text, "课表") || strings.Contains(text, "薄弱") || strings.Contains(text, "next week") || strings.Contains(text, "multiple step") || strings.Contains(text, "multi-step")
 	return planning && multiStep
-}
-
-// ensureRequiredTaskPlan turns the complex-task planning rule into a runtime
-// invariant. The model may refine or advance the plan, but a stochastic model
-// decision can no longer silently skip durable progress tracking.
-func ensureRequiredTaskPlan(ctx context.Context, dbm *memory.DBManager, run *agenttrace.Run, userID int64, sessionID, requestID, goal string) error {
-	started := time.Now()
-	run.Record(ctx, "tool_call", "create_task_plan", "started", 0, map[string]any{"source": "runtime_policy"})
-	plan, err := dbm.CreateTaskPlan(ctx, userID, sessionID, requestID, goal, []memory.NewTaskStep{
-		{Key: "analyze_requirements", Description: "确认目标、约束与完成标准", DependsOn: "[]"},
-		{Key: "build_plan", Description: "根据目标拆分并安排可执行步骤", DependsOn: `["analyze_requirements"]`},
-		{Key: "verify_result", Description: "检查执行结果并根据反馈调整", DependsOn: `["build_plan"]`},
-	})
-	status := "ok"
-	metadata := map[string]any{"source": "runtime_policy"}
-	if err != nil {
-		status = "error"
-		metadata["error"] = err.Error()
-	} else {
-		metadata["plan_id"] = plan.ID
-	}
-	run.Record(ctx, "tool_result", "create_task_plan", status, time.Since(started), metadata)
-	if err == nil {
-		run.RecordTranscript(ctx, "tool_result", "create_task_plan", "complex task plan persisted", metadata)
-	}
-	return err
 }

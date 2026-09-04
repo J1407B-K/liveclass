@@ -36,3 +36,13 @@ func TestNormalizeSkillsUsesLessonScope(t *testing.T) {
 		t.Fatalf("unscoped general route changed: %v", got)
 	}
 }
+
+func TestParseAdvisorPlanningDecision(t *testing.T) {
+	got, err := parseAdvisorResponse(`{"skills":["lesson_plan"],"complexity":"complex","requires_plan":true,"reason":"dependent steps","estimated_steps":4}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Skills) != 1 || got.Skills[0] != "lesson_plan" || !got.RequiresPlan || got.EstimatedSteps != 4 {
+		t.Fatalf("unexpected advisor decision: %#v", got)
+	}
+}

@@ -14,6 +14,8 @@ import (
 	"liveclass/internal/rpc/chat/global"
 	"liveclass/internal/rpc/chat/model"
 	"log"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/kitex/client"
@@ -25,11 +27,13 @@ import (
 	"go.opentelemetry.io/otel"
 )
 
+var clientMessageIDPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$`)
+
 // ChatServiceImpl implements the last service interface defined in the IDL.
 type ChatServiceImpl struct {
-	mongoClient     *mongo.Client
-	webrtcCli       webrtclive.Client
-	kafkaDispatcher *KafkaDispatcher
+	mongoClient *mongo.Client
+	webrtcCli   webrtclive.Client
+	outboxRelay interface{ Notify() }
 }
 
 func NewWebRTCLiveClient() (webrtclive.Client, error) {
@@ -44,12 +48,19 @@ func NewWebRTCLiveClient() (webrtclive.Client, error) {
 }
 
 func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (*chat.LiveChatResp, error) {
+	if req == nil {
+		return nil, errors.New("nil chat request")
+	}
 	if err := s.requireStudentInLesson(ctx, req.Lessonid, req.Userid); err != nil {
 		log.Printf("[LiveChat] Permission denied: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, err)
 		return nil, err
 	}
 
 	cleanedMsg := filter.FilterSensitiveWords(filter.CleanMessage(req.Message))
+	clientMessageID := strings.TrimSpace(req.GetClientMessageId())
+	if clientMessageID != "" && !clientMessageIDPattern.MatchString(clientMessageID) {
+		return nil, errors.New("invalid client_message_id")
+	}
 	messageID, err := uuid.NewV7()
 	if err != nil {
 		return nil, fmt.Errorf("generate message id: %w", err)
@@ -57,11 +68,16 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 	createdAt := time.Now().UTC()
 
 	msg := model.Message{
-		MessageID: messageID.String(),
-		LessonID:  req.Lessonid,
-		SenderID:  req.Userid,
-		Content:   cleanedMsg,
-		CreatedAt: createdAt,
+		MessageID:       messageID.String(),
+		ClientMessageID: clientMessageID,
+		LessonID:        req.Lessonid,
+		SenderID:        req.Userid,
+		Content:         cleanedMsg,
+		CreatedAt:       createdAt,
+		Outbox: model.OutboxState{
+			Status:        model.OutboxPending,
+			NextAttemptAt: createdAt,
+		},
 	}
 
 	tracer := otel.Tracer("chatservice")
@@ -72,7 +88,7 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		span.End()
 		return nil, err
 	}
-	mongoErr := dao.InsertMongo(spanCtx, coll, msg)
+	persisted, inserted, mongoErr := dao.InsertMessageIdempotent(spanCtx, coll, msg)
 	chatMongoLatency.Observe(time.Since(mongoStarted).Seconds())
 	if mongoErr != nil {
 		log.Printf("[LiveChat] MongoDB write failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, mongoErr)
@@ -83,18 +99,23 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 		return nil, mongoErr
 	}
 
-	if err := s.kafkaDispatcher.Publish(ctx, msg); err != nil {
-		log.Printf("[LiveChat] Kafka dispatch failed: user=%d, lesson=%d, err=%v", req.Userid, req.Lessonid, err)
-		return nil, err
+	if s.outboxRelay != nil {
+		s.outboxRelay.Notify()
 	}
+	deliveryStatus := "duplicate"
+	if inserted {
+		deliveryStatus = "outbox_pending"
+	}
+	chatAcceptedTotal.WithLabelValues(deliveryStatus).Inc()
 
-	messageIDString := messageID.String()
+	messageIDString := persisted.MessageID
 	return &chat.LiveChatResp{
 		Resp: &common.Resp{
 			Code: 0,
-			Msg:  "success",
+			Msg:  "accepted",
 		},
-		MessageId: &messageIDString,
+		MessageId:      &messageIDString,
+		DeliveryStatus: &deliveryStatus,
 	}, nil
 }
 
@@ -114,6 +135,9 @@ func waitForDependency(ctx context.Context, delay time.Duration) error {
 
 // GetHistory implements the ChatServiceImpl interface.
 func (s *ChatServiceImpl) GetHistory(ctx context.Context, req *chat.GetHistoryReq) (*chat.GetHistoryResp, error) {
+	if req == nil {
+		return nil, errors.New("nil history request")
+	}
 	tracer := otel.Tracer("chatservice")
 	ctx, span := tracer.Start(ctx, "GetHistory")
 	defer span.End()
@@ -125,7 +149,20 @@ func (s *ChatServiceImpl) GetHistory(ctx context.Context, req *chat.GetHistoryRe
 
 	coll := dao.MessagesCollection(s.mongoClient)
 
-	messages, nextCursor, err := dao.SelectMongo(ctx, coll, req.LessonId, req.GetCursor(), req.GetLimit())
+	var (
+		messages   []model.Message
+		nextCursor string
+		hasMore    bool
+		err        error
+	)
+	if afterMessageID := strings.TrimSpace(req.GetAfterMessageId()); afterMessageID != "" {
+		messages, hasMore, err = dao.SelectMongoAfter(ctx, coll, req.LessonId, afterMessageID, req.GetLimit())
+		if len(messages) > 0 {
+			nextCursor = messages[len(messages)-1].MessageID
+		}
+	} else {
+		messages, nextCursor, err = dao.SelectMongo(ctx, coll, req.LessonId, req.GetCursor(), req.GetLimit())
+	}
 	if err != nil {
 		log.Printf("[GetHistory] Query failed: user=%d, lesson=%d, err=%v", req.Userid, req.LessonId, err)
 		return nil, err
@@ -142,6 +179,7 @@ func (s *ChatServiceImpl) GetHistory(ctx context.Context, req *chat.GetHistoryRe
 			Msg:  "success",
 			Data: &common.Data{ChatInfo: &common.Chat{Message: string(historyJSON)}},
 		},
+		HasMore: &hasMore,
 	}
 	if nextCursor != "" {
 		response.NextCursor = &nextCursor

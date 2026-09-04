@@ -63,25 +63,6 @@ func GetTools(ctx context.Context, managers ...*memory.DBManager) ([]einotool.Ba
 	} else {
 		register(formatTool, toolruntime.PermissionAuthenticated, toolruntime.RiskLow, 2*time.Second, 1, outputSchema[string]())
 	}
-	if len(managers) > 0 && managers[0] != nil {
-		if planTool, err := tool.NewCreateTaskPlanTool(managers[0]); err == nil {
-			err := registry.Register(ctx, planTool, toolruntime.ToolSpec{
-				Permission: toolruntime.PermissionAuthenticated, RiskLevel: toolruntime.RiskLow, Timeout: time.Second,
-				OutputSchema: outputSchema[tool.CreateTaskPlanResponse](), Retry: toolruntime.RetryPolicy{Attempts: 1},
-				Metadata: map[string]string{"complex_task": "required"},
-			})
-			if err != nil {
-				log.Printf("register tool failed: %v", err)
-			}
-		}
-		if stepTool, err := tool.NewUpdateTaskStepTool(managers[0]); err == nil {
-			register(stepTool, toolruntime.PermissionAuthenticated, toolruntime.RiskLow, time.Second, 1, outputSchema[tool.UpdateTaskStepResponse]())
-		}
-		if compatTool, err := tool.NewUpdateTaskPlanCompatTool(managers[0]); err == nil {
-			register(compatTool, toolruntime.PermissionAuthenticated, toolruntime.RiskLow, time.Second, 1, outputSchema[tool.UpdateTaskStepResponse]())
-		}
-	}
-
 	return registry.Tools(), nil
 }
 

@@ -4,11 +4,28 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"liveclass/internal/rpc/agent/model"
 )
+
+// SafeError keeps operational error categories useful without persisting
+// provider account IDs, request identifiers, or unbounded remote payloads.
+func SafeError(err error) string {
+	if err == nil {
+		return ""
+	}
+	message := err.Error()
+	if strings.Contains(message, "SetLimitExceeded") {
+		return "provider inference limit exceeded"
+	}
+	if len(message) > 512 {
+		message = message[:512] + "..."
+	}
+	return message
+}
 
 type Store interface {
 	AppendTraceEvent(context.Context, *model.AgentTraceEvent) error

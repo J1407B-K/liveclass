@@ -3,30 +3,35 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"liveclass/idl/kitex_gen/chat"
 	"liveclass/idl/kitex_gen/webrtc_live"
+	"liveclass/internal/api/chatroom"
 	"liveclass/internal/api/code"
 	global2 "liveclass/internal/api/global"
 	model2 "liveclass/internal/api/model"
 	"liveclass/internal/api/observability"
 	"liveclass/internal/api/utils/jwt"
 	"liveclass/internal/api/utils/ratelimit"
+	"liveclass/internal/api/utils/wsauth"
 	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
 	"github.com/go-redis/redis/v8"
+	"github.com/google/uuid"
 	"github.com/hertz-contrib/websocket"
 	"github.com/segmentio/kafka-go"
 )
 
 func ChatConnections(c context.Context, ctx *app.RequestContext) {
-	token := ctx.Query("token")
+	token := wsauth.Token(ctx, global2.Config.WebSocketSecurity.AllowQueryToken)
 	if token == "" {
 		ctx.JSON(http.StatusUnauthorized, utils.H{
 			"code": code.AuthError,
@@ -53,6 +58,13 @@ func ChatConnections(c context.Context, ctx *app.RequestContext) {
 		})
 		return
 	}
+	lastMessageID := strings.TrimSpace(ctx.Query("last_message_id"))
+	if lastMessageID != "" {
+		if _, parseErr := uuid.Parse(lastMessageID); parseErr != nil {
+			ctx.JSON(http.StatusBadRequest, utils.H{"code": code.BadRequest, "msg": "invalid last_message_id"})
+			return
+		}
+	}
 	resp, err := global2.Clients.Webrtc_liveClient.IsStudentInLesson(
 		c,
 		&webrtc_live.IsStudentInLessonReq{Lessonid: ilid, Studentid: uid},
@@ -72,7 +84,7 @@ func ChatConnections(c context.Context, ctx *app.RequestContext) {
 		return
 	}
 
-	if err = global2.Upgrader.Upgrade(ctx, chatHandler(c, uid, ilid)); err != nil {
+	if err = global2.Upgrader.Upgrade(ctx, chatHandler(c, uid, ilid, lastMessageID)); err != nil {
 		ctx.JSON(http.StatusInternalServerError, utils.H{
 			"code": code.UpgraderError,
 			"msg":  err.Error(),
@@ -123,8 +135,12 @@ func consumeChat(ctx context.Context, reader ChatReader) error {
 			_ = reader.CommitMessages(ctx, m)
 			continue
 		}
-
-		if err = global2.ChatRooms.BroadcastJSON(msg.LessonID, msg); err != nil {
+		if msg.MessageID == "" {
+			log.Printf("chat consumer missing message_id: offset=%d", m.Offset)
+			_ = reader.CommitMessages(ctx, m)
+			continue
+		}
+		if err = global2.ChatRooms.BroadcastChat(msg.LessonID, msg.MessageID, msg); err != nil {
 			log.Printf("chat consumer broadcast marshal failed: offset=%d err=%v", m.Offset, err)
 		}
 
@@ -170,12 +186,12 @@ func RunChatConsumer(ctx context.Context, newReader func() ChatReader) error {
 	}
 }
 
-func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandler {
+func chatHandler(c context.Context, userId, lessonId int64, lastMessageID string) websocket.HertzHandler {
 	return func(conn *websocket.Conn) {
 		// The HTTP request context has a short deadline. A successfully upgraded
 		// WebSocket is a long-lived session and must not inherit that deadline.
-		client := global2.ChatRooms.NewClient(context.WithoutCancel(c), lessonId, conn)
-		_ = client.Serve(func(clientCtx context.Context, messageType int, message []byte) error {
+		client := global2.ChatRooms.NewResumingClient(context.WithoutCancel(c), lessonId, conn, lastMessageID != "")
+		messageHandler := func(clientCtx context.Context, messageType int, message []byte) error {
 			if messageType != websocket.TextMessage {
 				return nil
 			}
@@ -211,19 +227,112 @@ func chatHandler(c context.Context, userId, lessonId int64) websocket.HertzHandl
 
 			observability.ChatMessagesTotal.Inc()
 			rpcStarted := time.Now()
-			_, err = global2.Clients.ChatClient.LiveChat(clientCtx, &chat.LiveChatReq{
-				Lessonid: lessonId,
-				Userid:   userId,
-				Message:  msgJson.Content,
+			resp, err := global2.Clients.ChatClient.LiveChat(clientCtx, &chat.LiveChatReq{
+				Lessonid:        lessonId,
+				Userid:          userId,
+				Message:         msgJson.Content,
+				ClientMessageId: optionalString(msgJson.ClientMessageID),
 			})
 			observability.ChatRPCLatency.Observe(time.Since(rpcStarted).Seconds())
 			if err != nil {
 				log.Println("chat rpc error:", err)
+				enqueueChatAck(client, model2.MessageAck{Type: "chat_ack", ClientMessageID: msgJson.ClientMessageID, Error: "message not accepted"})
 				return nil
 			}
+			ack := model2.MessageAck{Type: "chat_ack", ClientMessageID: msgJson.ClientMessageID}
+			if resp != nil {
+				ack.MessageID = resp.GetMessageId()
+				ack.DeliveryStatus = resp.GetDeliveryStatus()
+			}
+			enqueueChatAck(client, ack)
 			return nil
-		})
+		}
+		var bootstrap chatroom.BootstrapHandler
+		if lastMessageID != "" {
+			bootstrap = func(clientCtx context.Context, client *chatroom.Client) error {
+				status := replayMissedMessages(clientCtx, client, userId, lessonId, lastMessageID)
+				if !client.FinishResume() {
+					return errors.New("resume send queue full")
+				}
+				payload, err := json.Marshal(status)
+				if err != nil || !client.Enqueue(payload) {
+					return errors.New("enqueue resume status failed")
+				}
+				return nil
+			}
+		}
+		_ = client.ServeWithBootstrap(messageHandler, bootstrap)
 	}
+}
+
+func replayMissedMessages(ctx context.Context, client *chatroom.Client, userID, lessonID int64, afterMessageID string) model2.ResumeStatus {
+	const (
+		batchSize   int32 = 100
+		maxMessages       = 1000
+	)
+	status := model2.ResumeStatus{Type: "resume_complete", AfterMessageID: afterMessageID}
+	for status.Recovered < maxMessages {
+		cursor := afterMessageID
+		limit := batchSize
+		if remaining := maxMessages - status.Recovered; remaining < int(limit) {
+			limit = int32(remaining)
+		}
+		resp, err := global2.Clients.ChatClient.GetHistory(ctx, &chat.GetHistoryReq{
+			LessonId: lessonID, Userid: userID, AfterMessageId: &cursor, Limit: &limit,
+		})
+		if err != nil {
+			status.Type = "resume_error"
+			status.Error = err.Error()
+			return status
+		}
+		if resp == nil || resp.Resp == nil || resp.Resp.Data == nil || resp.Resp.Data.ChatInfo == nil {
+			status.Type = "resume_error"
+			status.Error = "empty history response"
+			return status
+		}
+		var messages []model2.ShowMessage
+		if err := json.Unmarshal([]byte(resp.Resp.Data.ChatInfo.Message), &messages); err != nil {
+			status.Type = "resume_error"
+			status.Error = "invalid history response"
+			return status
+		}
+		for _, message := range messages {
+			payload, err := json.Marshal(message)
+			if err != nil || !client.EnqueueReplay(message.MessageID, payload) {
+				status.Type = "resume_error"
+				status.Error = "resume send queue full"
+				return status
+			}
+			status.Recovered++
+			status.AfterMessageID = message.MessageID
+		}
+		if !resp.GetHasMore() {
+			return status
+		}
+		afterMessageID = resp.GetNextCursor()
+		if afterMessageID == "" {
+			status.Type = "resume_error"
+			status.Error = "missing resume cursor"
+			return status
+		}
+	}
+	status.Truncated = true
+	return status
+}
+
+func enqueueChatAck(client *chatroom.Client, ack model2.MessageAck) {
+	payload, err := json.Marshal(ack)
+	if err == nil {
+		client.Enqueue(payload)
+	}
+}
+
+func optionalString(value string) *string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return nil
+	}
+	return &value
 }
 
 func waitForDependency(ctx context.Context, delay time.Duration) error {

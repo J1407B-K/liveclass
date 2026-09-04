@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "name": "liveclass-agent-canonical-v1",
+  "dataset": {
+    "path": "eval/cases.jsonl",
+    "sha256": "09905ab101832e7bc0d329d8f0993747c7eb435bd52139f18f2285412ee87acc",
+    "cases": 50,
+    "categories": {
+      "rag": 36,
+      "planning": 4,
+      "routing": 3,
+      "tool": 3,
+      "permission": 4
+    }
+  },
+  "corpus": [
+    {
+      "path": "eval/corpus/LiveClass工程课程讲义.md",
+      "sha256": "3a9a62c01c65d6a2cb882edb52a049efee3d550bc8ae2da7d9894c11b0a7fd68"
+    },
+    {
+      "path": "internal/rpc/agent/rag/We重邮小程序介绍.md",
+      "sha256": "bcd0b1e7648aa33724275a81221e572c1e65a5b7b8244f425b020faf99f12665"
+    }
+  ],
+  "models": {
+    "chat": "doubao-seed-2-0-lite-260215",
+    "temperature": 0,
+    "embedding": "doubao-embedding-vision-251215",
+    "embedding_dimensions": 2048,
+    "reranker": "BAAI/bge-reranker-v2-m3",
+    "reranker_device": "cpu",
+    "reranker_fp16": false
+  },
+  "retrieval": {
+    "parent_size": 1600,
+    "child_size": 400,
+    "overlap": 80,
+    "baseline_overlap": 0,
+    "child_top_k": 8,
+    "parent_top_k": 3,
+    "lesson_id": 1,
+    "collections": {
+      "A": "lesson_docs_canonical_a_v4",
+      "B": "lesson_docs_canonical_b_v4",
+      "C_D": "lesson_docs_canonical_c_v4"
+    }
+  },
+  "runtime": {
+    "os": "darwin",
+    "arch": "arm64",
+    "go": "go1.27.0",
+    "source_revision": "workspace-20260904-adaptive-planning-no-git-inspection",
+    "timezone": "Asia/Shanghai"
+  },
+  "last_run": {
+    "date": "2026-09-04",
+    "rag_ablation": "complete",
+    "agent_v1_v2": "not_published_provider_set_limit_exceeded",
+    "failed_attempt": "eval/archive/reports/agent-v1-canonical-attempt-set-limit-20260903.json"
+  }
+}

@@ -15,6 +15,7 @@ import (
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/common/utils"
+	"github.com/cloudwego/hertz/pkg/protocol"
 	jwtt "github.com/golang-jwt/jwt/v4"
 	jwt "github.com/hertz-contrib/jwt"
 )
@@ -121,6 +122,7 @@ func NewJWTMiddle() (*jwt.HertzJWTMiddleware, error) {
 				return
 			}
 
+			c.SetCookie("access_token", token, int(time.Until(expire).Seconds()), "/", "", protocol.CookieSameSiteLaxMode, global.Config.WebSocketSecurity.SecureCookies, true)
 			c.JSON(http.StatusOK, utils.H{
 				"code":          http.StatusOK,
 				"message":       "success",

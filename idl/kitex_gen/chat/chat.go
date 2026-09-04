@@ -11,9 +11,10 @@ import (
 )
 
 type LiveChatReq struct {
-	Userid   int64  `thrift:"userid,1" frugal:"1,default,i64" json:"userid"`
-	Lessonid int64  `thrift:"lessonid,2" frugal:"2,default,i64" json:"lessonid"`
-	Message  string `thrift:"message,3" frugal:"3,default,string" json:"message"`
+	Userid          int64   `thrift:"userid,1" frugal:"1,default,i64" json:"userid"`
+	Lessonid        int64   `thrift:"lessonid,2" frugal:"2,default,i64" json:"lessonid"`
+	Message         string  `thrift:"message,3" frugal:"3,default,string" json:"message"`
+	ClientMessageId *string `thrift:"client_message_id,4,optional" frugal:"4,optional,string" json:"client_message_id,omitempty"`
 }
 
 func NewLiveChatReq() *LiveChatReq {
@@ -34,6 +35,15 @@ func (p *LiveChatReq) GetLessonid() (v int64) {
 func (p *LiveChatReq) GetMessage() (v string) {
 	return p.Message
 }
+
+var LiveChatReq_ClientMessageId_DEFAULT string
+
+func (p *LiveChatReq) GetClientMessageId() (v string) {
+	if !p.IsSetClientMessageId() {
+		return LiveChatReq_ClientMessageId_DEFAULT
+	}
+	return *p.ClientMessageId
+}
 func (p *LiveChatReq) SetUserid(val int64) {
 	p.Userid = val
 }
@@ -43,11 +53,19 @@ func (p *LiveChatReq) SetLessonid(val int64) {
 func (p *LiveChatReq) SetMessage(val string) {
 	p.Message = val
 }
+func (p *LiveChatReq) SetClientMessageId(val *string) {
+	p.ClientMessageId = val
+}
 
 var fieldIDToName_LiveChatReq = map[int16]string{
 	1: "userid",
 	2: "lessonid",
 	3: "message",
+	4: "client_message_id",
+}
+
+func (p *LiveChatReq) IsSetClientMessageId() bool {
+	return p.ClientMessageId != nil
 }
 
 func (p *LiveChatReq) Read(iprot thrift.TProtocol) (err error) {
@@ -87,6 +105,14 @@ func (p *LiveChatReq) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -154,6 +180,17 @@ func (p *LiveChatReq) ReadField3(iprot thrift.TProtocol) error {
 	p.Message = _field
 	return nil
 }
+func (p *LiveChatReq) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.ClientMessageId = _field
+	return nil
+}
 
 func (p *LiveChatReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -171,6 +208,10 @@ func (p *LiveChatReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -239,6 +280,24 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
 }
+func (p *LiveChatReq) writeField4(oprot thrift.TProtocol) (err error) {
+	if p.IsSetClientMessageId() {
+		if err = oprot.WriteFieldBegin("client_message_id", thrift.STRING, 4); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.ClientMessageId); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
 
 func (p *LiveChatReq) String() string {
 	if p == nil {
@@ -261,6 +320,9 @@ func (p *LiveChatReq) DeepEqual(ano *LiveChatReq) bool {
 		return false
 	}
 	if !p.Field3DeepEqual(ano.Message) {
+		return false
+	}
+	if !p.Field4DeepEqual(ano.ClientMessageId) {
 		return false
 	}
 	return true
@@ -287,10 +349,23 @@ func (p *LiveChatReq) Field3DeepEqual(src string) bool {
 	}
 	return true
 }
+func (p *LiveChatReq) Field4DeepEqual(src *string) bool {
+
+	if p.ClientMessageId == src {
+		return true
+	} else if p.ClientMessageId == nil || src == nil {
+		return false
+	}
+	if strings.Compare(*p.ClientMessageId, *src) != 0 {
+		return false
+	}
+	return true
+}
 
 type LiveChatResp struct {
-	Resp      *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
-	MessageId *string      `thrift:"message_id,2,optional" frugal:"2,optional,string" json:"message_id,omitempty"`
+	Resp           *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
+	MessageId      *string      `thrift:"message_id,2,optional" frugal:"2,optional,string" json:"message_id,omitempty"`
+	DeliveryStatus *string      `thrift:"delivery_status,3,optional" frugal:"3,optional,string" json:"delivery_status,omitempty"`
 }
 
 func NewLiveChatResp() *LiveChatResp {
@@ -317,16 +392,29 @@ func (p *LiveChatResp) GetMessageId() (v string) {
 	}
 	return *p.MessageId
 }
+
+var LiveChatResp_DeliveryStatus_DEFAULT string
+
+func (p *LiveChatResp) GetDeliveryStatus() (v string) {
+	if !p.IsSetDeliveryStatus() {
+		return LiveChatResp_DeliveryStatus_DEFAULT
+	}
+	return *p.DeliveryStatus
+}
 func (p *LiveChatResp) SetResp(val *common.Resp) {
 	p.Resp = val
 }
 func (p *LiveChatResp) SetMessageId(val *string) {
 	p.MessageId = val
 }
+func (p *LiveChatResp) SetDeliveryStatus(val *string) {
+	p.DeliveryStatus = val
+}
 
 var fieldIDToName_LiveChatResp = map[int16]string{
 	1: "resp",
 	2: "message_id",
+	3: "delivery_status",
 }
 
 func (p *LiveChatResp) IsSetResp() bool {
@@ -335,6 +423,10 @@ func (p *LiveChatResp) IsSetResp() bool {
 
 func (p *LiveChatResp) IsSetMessageId() bool {
 	return p.MessageId != nil
+}
+
+func (p *LiveChatResp) IsSetDeliveryStatus() bool {
+	return p.DeliveryStatus != nil
 }
 
 func (p *LiveChatResp) Read(iprot thrift.TProtocol) (err error) {
@@ -366,6 +458,14 @@ func (p *LiveChatResp) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -419,6 +519,17 @@ func (p *LiveChatResp) ReadField2(iprot thrift.TProtocol) error {
 	p.MessageId = _field
 	return nil
 }
+func (p *LiveChatResp) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.DeliveryStatus = _field
+	return nil
+}
 
 func (p *LiveChatResp) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -432,6 +543,10 @@ func (p *LiveChatResp) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -486,6 +601,24 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
+func (p *LiveChatResp) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetDeliveryStatus() {
+		if err = oprot.WriteFieldBegin("delivery_status", thrift.STRING, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.DeliveryStatus); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
 
 func (p *LiveChatResp) String() string {
 	if p == nil {
@@ -505,6 +638,9 @@ func (p *LiveChatResp) DeepEqual(ano *LiveChatResp) bool {
 		return false
 	}
 	if !p.Field2DeepEqual(ano.MessageId) {
+		return false
+	}
+	if !p.Field3DeepEqual(ano.DeliveryStatus) {
 		return false
 	}
 	return true
@@ -529,12 +665,25 @@ func (p *LiveChatResp) Field2DeepEqual(src *string) bool {
 	}
 	return true
 }
+func (p *LiveChatResp) Field3DeepEqual(src *string) bool {
+
+	if p.DeliveryStatus == src {
+		return true
+	} else if p.DeliveryStatus == nil || src == nil {
+		return false
+	}
+	if strings.Compare(*p.DeliveryStatus, *src) != 0 {
+		return false
+	}
+	return true
+}
 
 type GetHistoryReq struct {
-	LessonId int64   `thrift:"lesson_id,1" frugal:"1,default,i64" json:"lesson_id"`
-	Userid   int64   `thrift:"userid,2" frugal:"2,default,i64" json:"userid"`
-	Cursor   *string `thrift:"cursor,3,optional" frugal:"3,optional,string" json:"cursor,omitempty"`
-	Limit    *int32  `thrift:"limit,4,optional" frugal:"4,optional,i32" json:"limit,omitempty"`
+	LessonId       int64   `thrift:"lesson_id,1" frugal:"1,default,i64" json:"lesson_id"`
+	Userid         int64   `thrift:"userid,2" frugal:"2,default,i64" json:"userid"`
+	Cursor         *string `thrift:"cursor,3,optional" frugal:"3,optional,string" json:"cursor,omitempty"`
+	Limit          *int32  `thrift:"limit,4,optional" frugal:"4,optional,i32" json:"limit,omitempty"`
+	AfterMessageId *string `thrift:"after_message_id,5,optional" frugal:"5,optional,string" json:"after_message_id,omitempty"`
 }
 
 func NewGetHistoryReq() *GetHistoryReq {
@@ -569,6 +718,15 @@ func (p *GetHistoryReq) GetLimit() (v int32) {
 	}
 	return *p.Limit
 }
+
+var GetHistoryReq_AfterMessageId_DEFAULT string
+
+func (p *GetHistoryReq) GetAfterMessageId() (v string) {
+	if !p.IsSetAfterMessageId() {
+		return GetHistoryReq_AfterMessageId_DEFAULT
+	}
+	return *p.AfterMessageId
+}
 func (p *GetHistoryReq) SetLessonId(val int64) {
 	p.LessonId = val
 }
@@ -581,12 +739,16 @@ func (p *GetHistoryReq) SetCursor(val *string) {
 func (p *GetHistoryReq) SetLimit(val *int32) {
 	p.Limit = val
 }
+func (p *GetHistoryReq) SetAfterMessageId(val *string) {
+	p.AfterMessageId = val
+}
 
 var fieldIDToName_GetHistoryReq = map[int16]string{
 	1: "lesson_id",
 	2: "userid",
 	3: "cursor",
 	4: "limit",
+	5: "after_message_id",
 }
 
 func (p *GetHistoryReq) IsSetCursor() bool {
@@ -595,6 +757,10 @@ func (p *GetHistoryReq) IsSetCursor() bool {
 
 func (p *GetHistoryReq) IsSetLimit() bool {
 	return p.Limit != nil
+}
+
+func (p *GetHistoryReq) IsSetAfterMessageId() bool {
+	return p.AfterMessageId != nil
 }
 
 func (p *GetHistoryReq) Read(iprot thrift.TProtocol) (err error) {
@@ -642,6 +808,14 @@ func (p *GetHistoryReq) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.I32 {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -720,6 +894,17 @@ func (p *GetHistoryReq) ReadField4(iprot thrift.TProtocol) error {
 	p.Limit = _field
 	return nil
 }
+func (p *GetHistoryReq) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.AfterMessageId = _field
+	return nil
+}
 
 func (p *GetHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -741,6 +926,10 @@ func (p *GetHistoryReq) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
 			goto WriteFieldError
 		}
 	}
@@ -829,6 +1018,24 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
+func (p *GetHistoryReq) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetAfterMessageId() {
+		if err = oprot.WriteFieldBegin("after_message_id", thrift.STRING, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.AfterMessageId); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
 
 func (p *GetHistoryReq) String() string {
 	if p == nil {
@@ -854,6 +1061,9 @@ func (p *GetHistoryReq) DeepEqual(ano *GetHistoryReq) bool {
 		return false
 	}
 	if !p.Field4DeepEqual(ano.Limit) {
+		return false
+	}
+	if !p.Field5DeepEqual(ano.AfterMessageId) {
 		return false
 	}
 	return true
@@ -897,10 +1107,23 @@ func (p *GetHistoryReq) Field4DeepEqual(src *int32) bool {
 	}
 	return true
 }
+func (p *GetHistoryReq) Field5DeepEqual(src *string) bool {
+
+	if p.AfterMessageId == src {
+		return true
+	} else if p.AfterMessageId == nil || src == nil {
+		return false
+	}
+	if strings.Compare(*p.AfterMessageId, *src) != 0 {
+		return false
+	}
+	return true
+}
 
 type GetHistoryResp struct {
 	Resp       *common.Resp `thrift:"resp,1" frugal:"1,default,common.Resp" json:"resp"`
 	NextCursor *string      `thrift:"next_cursor,2,optional" frugal:"2,optional,string" json:"next_cursor,omitempty"`
+	HasMore    *bool        `thrift:"has_more,3,optional" frugal:"3,optional,bool" json:"has_more,omitempty"`
 }
 
 func NewGetHistoryResp() *GetHistoryResp {
@@ -927,16 +1150,29 @@ func (p *GetHistoryResp) GetNextCursor() (v string) {
 	}
 	return *p.NextCursor
 }
+
+var GetHistoryResp_HasMore_DEFAULT bool
+
+func (p *GetHistoryResp) GetHasMore() (v bool) {
+	if !p.IsSetHasMore() {
+		return GetHistoryResp_HasMore_DEFAULT
+	}
+	return *p.HasMore
+}
 func (p *GetHistoryResp) SetResp(val *common.Resp) {
 	p.Resp = val
 }
 func (p *GetHistoryResp) SetNextCursor(val *string) {
 	p.NextCursor = val
 }
+func (p *GetHistoryResp) SetHasMore(val *bool) {
+	p.HasMore = val
+}
 
 var fieldIDToName_GetHistoryResp = map[int16]string{
 	1: "resp",
 	2: "next_cursor",
+	3: "has_more",
 }
 
 func (p *GetHistoryResp) IsSetResp() bool {
@@ -945,6 +1181,10 @@ func (p *GetHistoryResp) IsSetResp() bool {
 
 func (p *GetHistoryResp) IsSetNextCursor() bool {
 	return p.NextCursor != nil
+}
+
+func (p *GetHistoryResp) IsSetHasMore() bool {
+	return p.HasMore != nil
 }
 
 func (p *GetHistoryResp) Read(iprot thrift.TProtocol) (err error) {
@@ -976,6 +1216,14 @@ func (p *GetHistoryResp) Read(iprot thrift.TProtocol) (err error) {
 		case 2:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.BOOL {
+				if err = p.ReadField3(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -1029,6 +1277,17 @@ func (p *GetHistoryResp) ReadField2(iprot thrift.TProtocol) error {
 	p.NextCursor = _field
 	return nil
 }
+func (p *GetHistoryResp) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field *bool
+	if v, err := iprot.ReadBool(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.HasMore = _field
+	return nil
+}
 
 func (p *GetHistoryResp) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -1042,6 +1301,10 @@ func (p *GetHistoryResp) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField2(oprot); err != nil {
 			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
 			goto WriteFieldError
 		}
 	}
@@ -1096,6 +1359,24 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
 }
+func (p *GetHistoryResp) writeField3(oprot thrift.TProtocol) (err error) {
+	if p.IsSetHasMore() {
+		if err = oprot.WriteFieldBegin("has_more", thrift.BOOL, 3); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteBool(*p.HasMore); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
 
 func (p *GetHistoryResp) String() string {
 	if p == nil {
@@ -1117,6 +1398,9 @@ func (p *GetHistoryResp) DeepEqual(ano *GetHistoryResp) bool {
 	if !p.Field2DeepEqual(ano.NextCursor) {
 		return false
 	}
+	if !p.Field3DeepEqual(ano.HasMore) {
+		return false
+	}
 	return true
 }
 
@@ -1135,6 +1419,18 @@ func (p *GetHistoryResp) Field2DeepEqual(src *string) bool {
 		return false
 	}
 	if strings.Compare(*p.NextCursor, *src) != 0 {
+		return false
+	}
+	return true
+}
+func (p *GetHistoryResp) Field3DeepEqual(src *bool) bool {
+
+	if p.HasMore == src {
+		return true
+	} else if p.HasMore == nil || src == nil {
+		return false
+	}
+	if *p.HasMore != *src {
 		return false
 	}
 	return true

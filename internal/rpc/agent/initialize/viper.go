@@ -8,6 +8,10 @@ import (
 )
 
 func SetupViper() {
+	viper.SetDefault("ChatTemperature", 0.0)
+	_ = viper.BindEnv("QdrantConfig.DocCollection", "LIVECLASS_AGENT_DOC_COLLECTION")
+	_ = viper.BindEnv("ElasticsearchConfig.DocIndex", "LIVECLASS_AGENT_DOC_INDEX")
+	_ = viper.BindEnv("ChatTemperature", "LIVECLASS_AGENT_CHAT_TEMPERATURE")
 	setResilienceDefaults()
 	setAgentRuntimeDefaults()
 	setRAGDefaults()
@@ -57,6 +61,8 @@ func setAgentRuntimeDefaults() {
 		"MemoryBudgetTokens": 3000, "ConversationBudgetTokens": 12000,
 		"CompactionTriggerTokens": 10500, "RecentTailTokens": 4000,
 		"MaxToolResultTokens": 1200, "MaxSteps": 25, "PlanReminderSteps": 5,
+		"PlanMaxSteps": 6, "PlanMaxReplans": 1, "PlanStepMaxReActSteps": 5,
+		"PlanExecutionTimeout": "120s",
 	}
 	for name, value := range defaults {
 		viper.SetDefault("AgentRuntime."+name, value)

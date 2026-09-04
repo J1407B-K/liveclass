@@ -37,6 +37,9 @@ func main() {
 	if err != nil {
 		fatal(err.Error())
 	}
+	if err := agenteval.ValidateCases(cases); err != nil {
+		fatal(err.Error())
+	}
 	if *category != "" {
 		filtered := cases[:0]
 		for _, c := range cases {
@@ -64,7 +67,14 @@ func main() {
 		if readErr != nil {
 			fatal(readErr.Error())
 		}
-		result.Reports = append(result.Reports, agenteval.Evaluate(parts[0], cases, predictions))
+		if err := agenteval.ValidatePredictions(predictions); err != nil {
+			fatal(parts[0] + ": " + err.Error())
+		}
+		report := agenteval.Evaluate(parts[0], cases, predictions)
+		if len(report.MissingPredictions) > 0 {
+			fatal(fmt.Sprintf("%s: missing %d predictions", parts[0], len(report.MissingPredictions)))
+		}
+		result.Reports = append(result.Reports, report)
 	}
 	raw, err := json.MarshalIndent(result, "", "  ")
 	if err != nil {

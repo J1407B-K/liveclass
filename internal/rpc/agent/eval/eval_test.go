@@ -19,3 +19,17 @@ func TestEvaluateDetectsForbiddenAndDuplicateTools(t *testing.T) {
 		t.Fatalf("unexpected report: %#v", r)
 	}
 }
+
+func TestValidateCasesRejectsDuplicateID(t *testing.T) {
+	err := ValidateCases([]Case{{ID: "same", Question: "a"}, {ID: "same", Question: "b"}})
+	if err == nil {
+		t.Fatal("expected duplicate case id error")
+	}
+}
+
+func TestValidatePredictionsRejectsDuplicateCaseID(t *testing.T) {
+	err := ValidatePredictions([]Prediction{{CaseID: "same"}, {CaseID: "same"}})
+	if err == nil {
+		t.Fatal("expected duplicate prediction case id error")
+	}
+}

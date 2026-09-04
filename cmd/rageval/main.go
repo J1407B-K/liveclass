@@ -66,6 +66,9 @@ func main() {
 	if err != nil {
 		fatal(err.Error())
 	}
+	if err := agenteval.ValidateCases(cases); err != nil {
+		fatal(err.Error())
+	}
 	if err := os.MkdirAll(filepath.Dir(*output), 0o755); err != nil {
 		fatal(err.Error())
 	}

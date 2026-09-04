@@ -30,12 +30,17 @@ go_goroutines 42
 go_memstats_heap_alloc_bytes 1024
 ignored_metric 7
 request_total{method="GET"} 10
+chat_accepted_total{delivery_status="queued"} 3
+chat_accepted_total{delivery_status="duplicate"} 2
 `
 	got, err := parseMetrics(strings.NewReader(input))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got) != 2 || got["go_goroutines"] != 42 || got["go_memstats_heap_alloc_bytes"] != 1024 {
+	if len(got) != 5 || got["go_goroutines"] != 42 || got["go_memstats_heap_alloc_bytes"] != 1024 ||
+		got["chat_accepted_total"] != 5 ||
+		got[`chat_accepted_total{delivery_status="queued"}`] != 3 ||
+		got[`chat_accepted_total{delivery_status="duplicate"}`] != 2 {
 		t.Fatalf("unexpected metrics: %#v", got)
 	}
 }

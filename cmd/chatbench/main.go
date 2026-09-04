@@ -30,34 +30,37 @@ import (
 )
 
 type config struct {
-	URL                  string
-	Token                string
-	LessonID             int64
-	LessonIDs            []int64
-	LessonIDsRaw         string
-	Connections          int
-	SlowConsumers        int
-	DisconnectBeforeLoad int
-	MessageBytes         int
-	Scenario             string
-	QPS                  float64
-	Duration             time.Duration
-	Warmup               time.Duration
-	Drain                time.Duration
-	ConnectTimeout       time.Duration
-	ConnectWorkers       int
-	MetricsEndpoints     string
-	Output               string
-	Environment          string
-	CPUModel             string
-	Memory               string
-	RedisDeployment      string
-	MongoDeployment      string
-	KafkaDeployment      string
+	URL                   string
+	Token                 string
+	LessonID              int64
+	LessonIDs             []int64
+	LessonIDsRaw          string
+	Connections           int
+	SlowConsumers         int
+	DisconnectBeforeLoad  int
+	MessageBytes          int
+	Scenario              string
+	QPS                   float64
+	Duration              time.Duration
+	Warmup                time.Duration
+	Drain                 time.Duration
+	ConnectTimeout        time.Duration
+	ConnectWorkers        int
+	MetricsEndpoints      string
+	Output                string
+	Environment           string
+	CPUModel              string
+	Memory                string
+	RedisDeployment       string
+	MongoDeployment       string
+	KafkaDeployment       string
+	RepeatClientMessageID bool
 }
 
 type receivedMessage struct {
-	Content string `json:"content"`
+	Type           string `json:"type"`
+	Content        string `json:"content"`
+	DeliveryStatus string `json:"delivery_status"`
 }
 
 type openedConnection struct {
@@ -84,6 +87,8 @@ type workloadResult struct {
 	ErrorRate              float64              `json:"delivery_error_rate_percent"`
 	Throughput             float64              `json:"fanout_deliveries_per_second"`
 	Latency                latencySummary       `json:"fanout_latency_ms"`
+	Acknowledgements       int64                `json:"acknowledgements"`
+	AckStatuses            map[string]int64     `json:"ack_statuses,omitempty"`
 	Metrics                map[string]metricRun `json:"prometheus_samples,omitempty"`
 }
 
@@ -102,19 +107,20 @@ type environment struct {
 }
 
 type workload struct {
-	URL                  string  `json:"url"`
-	LessonID             int64   `json:"lesson_id"`
-	LessonIDs            []int64 `json:"lesson_ids,omitempty"`
-	Connections          int     `json:"connections"`
-	Scenario             string  `json:"scenario"`
-	SlowConsumers        int     `json:"slow_consumers"`
-	DisconnectBeforeLoad int     `json:"disconnect_before_load"`
-	MessageBytes         int     `json:"message_bytes"`
-	ConnectWorkers       int     `json:"connect_workers"`
-	QPS                  float64 `json:"messages_per_second"`
-	Duration             string  `json:"duration"`
-	Warmup               string  `json:"warmup"`
-	Drain                string  `json:"drain"`
+	URL                   string  `json:"url"`
+	LessonID              int64   `json:"lesson_id"`
+	LessonIDs             []int64 `json:"lesson_ids,omitempty"`
+	Connections           int     `json:"connections"`
+	Scenario              string  `json:"scenario"`
+	SlowConsumers         int     `json:"slow_consumers"`
+	DisconnectBeforeLoad  int     `json:"disconnect_before_load"`
+	MessageBytes          int     `json:"message_bytes"`
+	ConnectWorkers        int     `json:"connect_workers"`
+	QPS                   float64 `json:"messages_per_second"`
+	Duration              string  `json:"duration"`
+	Warmup                string  `json:"warmup"`
+	Drain                 string  `json:"drain"`
+	RepeatClientMessageID bool    `json:"repeat_client_message_id"`
 }
 
 type latencySummary struct {
@@ -159,6 +165,12 @@ var selectedMetrics = map[string]struct{}{
 	"chat_subscriber_connected":                   {},
 	"chat_publish_queue_depth":                    {},
 	"chat_publish_queue_full_total":               {},
+	"chat_accepted_total":                         {},
+	"chat_outbox_pending":                         {},
+	"chat_outbox_claimed_total":                   {},
+	"chat_outbox_published_total":                 {},
+	"chat_outbox_retry_total":                     {},
+	"chat_duplicate_deliveries_suppressed_total":  {},
 	"chat_messages_total":                         {},
 	"websocket_write_errors_total":                {},
 	"chat_publish_errors_total":                   {},
@@ -228,6 +240,7 @@ func parseFlags() config {
 	flag.StringVar(&cfg.RedisDeployment, "redis", "", "Redis version and deployment description")
 	flag.StringVar(&cfg.MongoDeployment, "mongo", "", "MongoDB version and deployment description")
 	flag.StringVar(&cfg.KafkaDeployment, "kafka", "", "Kafka version and deployment description")
+	flag.BoolVar(&cfg.RepeatClientMessageID, "repeat-client-message-id", false, "reuse one client_message_id and payload to verify idempotency")
 	flag.Parse()
 	if cfg.Token == "" {
 		cfg.Token = os.Getenv("LIVECLASS_CHAT_TOKEN")
@@ -280,7 +293,7 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 			MongoDB: cfg.MongoDeployment, Kafka: cfg.KafkaDeployment},
 		Workload: workload{URL: cfg.URL, LessonID: cfg.LessonIDs[0], LessonIDs: cfg.LessonIDs, Connections: cfg.Connections, Scenario: cfg.Scenario,
 			SlowConsumers: cfg.SlowConsumers, DisconnectBeforeLoad: cfg.DisconnectBeforeLoad, MessageBytes: cfg.MessageBytes, ConnectWorkers: cfg.ConnectWorkers,
-			QPS: cfg.QPS, Duration: cfg.Duration.String(), Warmup: cfg.Warmup.String(), Drain: cfg.Drain.String()},
+			QPS: cfg.QPS, Duration: cfg.Duration.String(), Warmup: cfg.Warmup.String(), Drain: cfg.Drain.String(), RepeatClientMessageID: cfg.RepeatClientMessageID},
 	}
 
 	runCtx, cancelRun := context.WithCancel(ctx)
@@ -325,7 +338,9 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 	}
 
 	runID := strconv.FormatInt(time.Now().UnixNano(), 36)
-	var sent, received, expected, sendErrors, readErrors atomic.Int64
+	var sent, received, expected, sendErrors, readErrors, acknowledgements atomic.Int64
+	ackStatuses := make(map[string]int64)
+	var ackMu sync.Mutex
 	var latencyMu sync.Mutex
 	latencies := make([]float64, 0, len(conns)*int(cfg.QPS*cfg.Duration.Seconds()))
 	var readers sync.WaitGroup
@@ -340,6 +355,13 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 						readErrors.Add(1)
 					}
 					return
+				}
+				if msg.Type == "chat_ack" {
+					acknowledgements.Add(1)
+					ackMu.Lock()
+					ackStatuses[msg.DeliveryStatus]++
+					ackMu.Unlock()
+					continue
 				}
 				sentAt, ok := markerTimestamp(msg.Content, runID)
 				if !ok {
@@ -376,6 +398,7 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 	ticker := time.NewTicker(interval)
 	deadline := time.NewTimer(cfg.Duration)
 	seq := int64(0)
+	repeatedContent := makeContent(runID, 1, time.Now(), cfg.MessageBytes)
 sendLoop:
 	for {
 		select {
@@ -387,12 +410,19 @@ sendLoop:
 			seq++
 			lessonID := cfg.LessonIDs[(seq-1)%int64(len(cfg.LessonIDs))]
 			content := makeContent(runID, seq, now, cfg.MessageBytes)
-			if err := senders[lessonID].WriteJSON(map[string]string{"content": content}); err != nil {
+			clientMessageID := fmt.Sprintf("%s-%d", runID, seq)
+			if cfg.RepeatClientMessageID {
+				content = repeatedContent
+				clientMessageID = runID + "-idempotency"
+			}
+			if err := senders[lessonID].WriteJSON(map[string]string{"content": content, "client_message_id": clientMessageID}); err != nil {
 				sendErrors.Add(1)
 				continue
 			}
 			sent.Add(1)
-			expected.Add(healthyPerLesson[lessonID])
+			if !cfg.RepeatClientMessageID || seq == 1 {
+				expected.Add(healthyPerLesson[lessonID])
+			}
 		}
 	}
 	ticker.Stop()
@@ -418,6 +448,8 @@ sendLoop:
 	result.MessagesReceived = received.Load()
 	result.SendErrors = sendErrors.Load()
 	result.ReadErrors = readErrors.Load()
+	result.Acknowledgements = acknowledgements.Load()
+	result.AckStatuses = ackStatuses
 	result.ExpectedDeliveries = expected.Load()
 	if result.ExpectedDeliveries > 0 {
 		missing := result.ExpectedDeliveries - result.MessagesReceived
@@ -595,19 +627,27 @@ func parseMetrics(r io.Reader) (map[string]float64, error) {
 	scanner := bufio.NewScanner(r)
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		if line == "" || strings.HasPrefix(line, "#") || strings.Contains(line, "{") {
+		if line == "" || strings.HasPrefix(line, "#") {
 			continue
 		}
 		fields := strings.Fields(line)
 		if len(fields) < 2 {
 			continue
 		}
-		if _, ok := selectedMetrics[fields[0]]; !ok {
+		metricToken := fields[0]
+		metricName := metricToken
+		if labelStart := strings.IndexByte(metricToken, '{'); labelStart >= 0 {
+			metricName = metricToken[:labelStart]
+		}
+		if _, ok := selectedMetrics[metricName]; !ok {
 			continue
 		}
 		value, err := strconv.ParseFloat(fields[1], 64)
 		if err == nil {
-			values[fields[0]] = value
+			values[metricName] += value
+			if metricToken != metricName {
+				values[metricToken] = value
+			}
 		}
 	}
 	return values, scanner.Err()

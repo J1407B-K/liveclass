@@ -18,11 +18,12 @@ import (
 func main() {
 	initialize.SetupViper()
 	chatRooms, err := chatroom.NewManager(chatroom.Config{
-		SendQueueSize:  global.Config.ChatWebSocket.SendQueueSize,
-		WriteWait:      global.Config.ChatWebSocket.WriteWait,
-		PongWait:       global.Config.ChatWebSocket.PongWait,
-		PingPeriod:     global.Config.ChatWebSocket.PingPeriod,
-		MaxMessageSize: global.Config.ChatWebSocket.MaxMessageSize,
+		SendQueueSize:    global.Config.ChatWebSocket.SendQueueSize,
+		MessageDedupSize: global.Config.ChatWebSocket.MessageDedupSize,
+		WriteWait:        global.Config.ChatWebSocket.WriteWait,
+		PongWait:         global.Config.ChatWebSocket.PongWait,
+		PingPeriod:       global.Config.ChatWebSocket.PingPeriod,
+		MaxMessageSize:   global.Config.ChatWebSocket.MaxMessageSize,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -50,12 +51,13 @@ func main() {
 
 	backgroundCtx, cancelBackground := context.WithCancel(context.Background())
 	var background sync.WaitGroup
+	hostname, _ := os.Hostname()
+	chatGroupID := initialize.ChatConsumerGroupID(global.Config.ChatKafka, hostname)
 	background.Add(1)
 	go func() {
 		defer background.Done()
-		hostname, _ := os.Hostname()
 		if err := service.RunChatConsumer(backgroundCtx, func() service.ChatReader {
-			return initialize.InitChatKafkaReader("chat-api-" + hostname)
+			return initialize.InitChatKafkaReader(chatGroupID)
 		}); err != nil {
 			log.Printf("chat kafka consumer stopped: %v", err)
 		}

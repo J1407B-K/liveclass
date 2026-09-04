@@ -6,13 +6,16 @@ import (
 )
 
 func SetupViper() {
+	_ = viper.BindEnv("KafkaBroker", "LIVECLASS_CHAT_KAFKA_BROKER")
+	_ = viper.BindEnv("KafkaTopic", "LIVECLASS_CHAT_KAFKA_TOPIC")
 	viper.SetDefault("MongoConfig.MessagesCollection", "messages")
-	viper.SetDefault("KafkaDispatcher.QueueSize", 1024)
-	viper.SetDefault("KafkaDispatcher.Workers", 4)
-	viper.SetDefault("KafkaDispatcher.EnqueueTimeout", "50ms")
-	viper.SetDefault("KafkaDispatcher.WriteTimeout", "3s")
-	viper.SetDefault("KafkaDispatcher.RetryAttempts", 3)
-	viper.SetDefault("KafkaDispatcher.RetryBaseBackoff", "100ms")
+	viper.SetDefault("KafkaOutbox.Workers", 4)
+	viper.SetDefault("KafkaOutbox.PollInterval", "200ms")
+	viper.SetDefault("KafkaOutbox.LeaseDuration", "15s")
+	viper.SetDefault("KafkaOutbox.WriteTimeout", "3s")
+	viper.SetDefault("KafkaOutbox.RetryAttempts", 2)
+	viper.SetDefault("KafkaOutbox.RetryBaseBackoff", "100ms")
+	viper.SetDefault("KafkaOutbox.RetryMaxBackoff", "30s")
 	viper.SetDefault("FaultInjection.MongoDelay", "0s")
 	//先指定文件
 	viper.SetConfigType("yaml")
@@ -29,6 +32,9 @@ func SetupViper() {
 	err = viper.Unmarshal(&global.Config)
 	if err != nil {
 		panic("Unmarshal config file failed, err: " + err.Error())
+	}
+	if global.Config.KafkaBroker == "" || global.Config.KafkaTopic == "" {
+		panic("KafkaBroker and KafkaTopic are required")
 	}
 
 }

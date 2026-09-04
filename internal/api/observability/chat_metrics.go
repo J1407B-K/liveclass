@@ -36,6 +36,10 @@ var (
 		Name: "chat_subscriber_connected",
 		Help: "Whether the API Kafka chat consumer is currently fetching.",
 	})
+	DuplicateDeliveriesSuppressedTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "chat_duplicate_deliveries_suppressed_total",
+		Help: "Duplicate chat deliveries suppressed by per-WebSocket-client message_id deduplication.",
+	})
 	ChatMessagesTotal = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "chat_messages_total",
 		Help: "Chat messages accepted from WebSocket clients.",
@@ -72,6 +76,7 @@ func init() {
 		DroppedMessagesTotal,
 		SubscriberReconnectTotal,
 		SubscriberConnected,
+		DuplicateDeliveriesSuppressedTotal,
 		ChatMessagesTotal,
 		ChatRedisRateLimitLatency,
 		ChatRPCLatency,

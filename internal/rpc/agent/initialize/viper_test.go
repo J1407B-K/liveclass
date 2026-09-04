@@ -50,3 +50,22 @@ func TestResilienceDefaultsUnmarshal(t *testing.T) {
 		t.Fatalf("qdrant breaker=%+v", got.Resilience.Qdrant.Breaker)
 	}
 }
+
+func TestAgentRuntimePlanningDefaultsUnmarshal(t *testing.T) {
+	viper.Reset()
+	t.Cleanup(viper.Reset)
+	setAgentRuntimeDefaults()
+
+	var got struct {
+		AgentRuntime config.AgentRuntimeConfig
+	}
+	if err := viper.Unmarshal(&got); err != nil {
+		t.Fatal(err)
+	}
+	if got.AgentRuntime.PlanMaxSteps != 6 || got.AgentRuntime.PlanMaxReplans != 1 || got.AgentRuntime.PlanStepMaxReActSteps != 5 {
+		t.Fatalf("planning limits=%+v", got.AgentRuntime)
+	}
+	if got.AgentRuntime.PlanExecutionTimeout != 120*time.Second {
+		t.Fatalf("plan execution timeout=%s", got.AgentRuntime.PlanExecutionTimeout)
+	}
+}

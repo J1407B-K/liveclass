@@ -71,13 +71,13 @@ func LoadSkillContent(name string) (string, error) {
 func BuildAdvisorSystemPrompt(index []SkillMeta) string {
 	var sb strings.Builder
 	sb.WriteString("你是教学助手的意图分析模块。\n")
-	sb.WriteString("根据用户消息，从以下技能中选择一个或多个最匹配的，输出技能名称列表。\n\n")
+	sb.WriteString("根据用户消息选择技能，并判断是否需要多步骤计划。单次问答、总结、改写或单工具查询不需要计划；只有多个相互依赖步骤、跨工具协作或明确要求制定并执行计划时才需要。\n\n")
 	sb.WriteString("可用技能：\n")
 	for _, m := range index {
 		fmt.Fprintf(&sb, "- %s：%s\n", m.Name, m.Description)
 	}
 	sb.WriteString("\n严格输出以下 JSON，不要有任何多余内容：\n")
-	sb.WriteString(`{"skills": ["<技能名>", ...]}`)
+	sb.WriteString(`{"skills":["<技能名>",...],"complexity":"simple|complex","requires_plan":false,"reason":"简短原因","estimated_steps":1}`)
 	return sb.String()
 }
 

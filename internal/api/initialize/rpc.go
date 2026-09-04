@@ -48,7 +48,9 @@ func InitNewClient() error {
 		client.WithResolver(*global.Resolver),
 		client.WithSuite(tracing.NewClientSuite()),
 		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
-		client.WithRPCTimeout(45*time.Second),
+		// Complex Agent requests have their own 120s Plan Executor deadline.
+		// Keep transport timeout higher so Runtime, not the API client, owns it.
+		client.WithRPCTimeout(180*time.Second),
 	)
 	if err != nil {
 		panic(err)

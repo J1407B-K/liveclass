@@ -52,15 +52,17 @@ func runAdvisor(ctx context.Context, input *model.UserMessage, _ ...any) (*model
 		dependency.FallbackContext(ctx, dependency.AdvisorLLM, "select_skill")
 		return applySkills(input, fallbackSkills(input))
 	}
+	recordModelUsage(ctx, "advisor", resp)
 
-	skills, err := parseAdvisorResponse(resp.Content)
-	if err != nil || len(skills) == 0 {
+	advice, err := parseAdvisorResponse(resp.Content)
+	if err != nil || len(advice.Skills) == 0 {
 		log.Printf("advisor parse failed: %v (raw: %q), falling back to general", err, resp.Content)
 		dependency.FallbackContext(ctx, dependency.AdvisorLLM, "select_skill")
 		return applySkills(input, fallbackSkills(input))
 	}
 
-	return applySkills(input, normalizeSkills(input, skills))
+	advice.Skills = normalizeSkills(input, advice.Skills)
+	return applyAdvice(input, advice)
 }
 
 func normalizeSkills(input *model.UserMessage, skills []string) []string {
@@ -74,10 +76,7 @@ func fallbackSkills(input *model.UserMessage) []string {
 	if input == nil {
 		return []string{"general"}
 	}
-	query := strings.ToLower(strings.TrimSpace(input.Query))
-	planning := strings.Contains(query, "计划") || strings.Contains(query, "规划") || strings.Contains(query, "安排") || strings.Contains(query, "plan")
-	complex := strings.Contains(query, "分步骤") || strings.Contains(query, "多步骤") || strings.Contains(query, "下周") || strings.Contains(query, "课表") || strings.Contains(query, "薄弱")
-	if planning && complex {
+	if runtimeRequiresPlan(input) {
 		return []string{"lesson_plan"}
 	}
 	if input.Lesson > 0 {
@@ -87,8 +86,12 @@ func fallbackSkills(input *model.UserMessage) []string {
 }
 
 func applySkills(input *model.UserMessage, skills []string) (*model.UserMessage, error) {
+	return applyAdvice(input, advisorDecision{Skills: skills})
+}
+
+func applyAdvice(input *model.UserMessage, advice advisorDecision) (*model.UserMessage, error) {
 	var parts []string
-	for _, name := range skills {
+	for _, name := range advice.Skills {
 		content, err := my_prompt.LoadSkillContent(name)
 		if err != nil {
 			log.Printf("advisor: tool %q not found, skipping: %v", name, err)
@@ -99,13 +102,17 @@ func applySkills(input *model.UserMessage, skills []string) (*model.UserMessage,
 	if len(parts) == 0 {
 		content, _ := my_prompt.LoadSkillContent("general")
 		parts = []string{content}
-		skills = []string{"general"}
+		advice.Skills = []string{"general"}
 	}
 	input.SkillAdvice = &model.SkillAdvice{
-		Skills:   skills,
-		Guidance: strings.Join(parts, "\n\n---\n\n"),
+		Skills:         advice.Skills,
+		Guidance:       strings.Join(parts, "\n\n---\n\n"),
+		RequiresPlan:   advice.RequiresPlan,
+		Complexity:     advice.Complexity,
+		Reason:         advice.Reason,
+		EstimatedSteps: advice.EstimatedSteps,
 	}
-	for _, skill := range skills {
+	for _, skill := range advice.Skills {
 		agentmetrics.SkillRoutes.WithLabelValues(boundedSkillLabel(skill), "selected").Inc()
 	}
 	return input, nil
@@ -120,18 +127,24 @@ func boundedSkillLabel(skill string) string {
 	}
 }
 
-func parseAdvisorResponse(raw string) ([]string, error) {
+type advisorDecision struct {
+	Skills         []string `json:"skills"`
+	Complexity     string   `json:"complexity"`
+	RequiresPlan   bool     `json:"requires_plan"`
+	Reason         string   `json:"reason"`
+	EstimatedSteps int      `json:"estimated_steps"`
+}
+
+func parseAdvisorResponse(raw string) (advisorDecision, error) {
 	raw = strings.TrimSpace(raw)
 	start := strings.Index(raw, "{")
 	end := strings.LastIndex(raw, "}")
 	if start == -1 || end == -1 || end <= start {
-		return nil, fmt.Errorf("no JSON found in: %q", raw)
+		return advisorDecision{}, fmt.Errorf("no JSON found in: %q", raw)
 	}
-	var result struct {
-		Skills []string `json:"skills"`
-	}
+	var result advisorDecision
 	if err := json.Unmarshal([]byte(raw[start:end+1]), &result); err != nil {
-		return nil, err
+		return advisorDecision{}, err
 	}
-	return result.Skills, nil
+	return result, nil
 }

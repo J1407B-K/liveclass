@@ -1,0 +1,10 @@
+{
+  "status": "invalid_infrastructure_failure",
+  "variant": "v1",
+  "dataset_cases": 50,
+  "completed_predictions": 50,
+  "successful_rpc_predictions": 19,
+  "rpc_error_predictions": 31,
+  "primary_error_code": "SetLimitExceeded",
+  "note": "The provider paused inference after its configured safe-experience limit was reached. This run is excluded from canonical quality metrics. Raw provider errors were not retained because they contained account and request identifiers."
+}

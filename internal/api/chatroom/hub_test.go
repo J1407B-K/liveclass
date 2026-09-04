@@ -2,6 +2,7 @@ package chatroom
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"sync"
 	"testing"
@@ -17,6 +18,55 @@ type fakeSocket struct {
 	writeGate    chan struct{}
 	closed       chan struct{}
 	closeOnce    sync.Once
+}
+
+func TestResumeBuffersLiveMessagesAndDeduplicatesHistory(t *testing.T) {
+	manager, err := NewManager(testConfig(8))
+	if err != nil {
+		t.Fatal(err)
+	}
+	socket := newFakeSocket()
+	client := manager.NewResumingClient(context.Background(), 21, socket, true)
+	done := make(chan error, 1)
+	go func() {
+		done <- client.ServeWithBootstrap(func(context.Context, int, []byte) error { return nil }, func(_ context.Context, c *Client) error {
+			if err := manager.BroadcastChat(21, "m2", map[string]string{"message_id": "m2", "content": "live"}); err != nil {
+				return err
+			}
+			for _, message := range []map[string]string{
+				{"message_id": "m1", "content": "missed"},
+				{"message_id": "m2", "content": "live"},
+			} {
+				payload, _ := json.Marshal(message)
+				if !c.EnqueueReplay(message["message_id"], payload) {
+					return errors.New("replay enqueue failed")
+				}
+			}
+			if !c.FinishResume() {
+				return errors.New("resume flush failed")
+			}
+			return nil
+		})
+	}()
+
+	for _, want := range []string{"m1", "m2"} {
+		select {
+		case payload := <-socket.writes:
+			var message map[string]string
+			if err := json.Unmarshal(payload, &message); err != nil || message["message_id"] != want {
+				t.Fatalf("got %s, want message_id=%s", payload, want)
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("timed out waiting for %s", want)
+		}
+	}
+	select {
+	case duplicate := <-socket.writes:
+		t.Fatalf("duplicate resume delivery: %s", duplicate)
+	case <-time.After(20 * time.Millisecond):
+	}
+	client.Close("test complete")
+	<-done
 }
 
 type fakeRead struct {
@@ -66,7 +116,7 @@ func (f *fakeSocket) Close() error {
 
 func testConfig(queueSize int) Config {
 	return Config{
-		SendQueueSize: queueSize, WriteWait: time.Second,
+		SendQueueSize: queueSize, MessageDedupSize: 16, WriteWait: time.Second,
 		PongWait: time.Minute, PingPeriod: 30 * time.Second, MaxMessageSize: 4096,
 	}
 }
@@ -102,6 +152,44 @@ func TestBroadcastPreservesOrder(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("client did not stop")
 	}
+}
+
+func TestBroadcastChatDeduplicatesPerClient(t *testing.T) {
+	manager, err := NewManager(testConfig(4))
+	if err != nil {
+		t.Fatal(err)
+	}
+	socket := newFakeSocket()
+	client := manager.NewClient(context.Background(), 8, socket)
+	done := make(chan error, 1)
+	go func() { done <- client.Serve(func(context.Context, int, []byte) error { return nil }) }()
+	waitFor(t, func() bool { return manager.ConnectionCount(8) == 1 })
+
+	message := map[string]string{"message_id": "m1", "content": "once"}
+	if err := manager.BroadcastChat(8, "m1", message); err != nil {
+		t.Fatal(err)
+	}
+	if err := manager.BroadcastChat(8, "m1", message); err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case payload := <-socket.writes:
+		var got map[string]string
+		if err := json.Unmarshal(payload, &got); err != nil || got["message_id"] != "m1" {
+			t.Fatalf("unexpected delivery: %s", payload)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for first delivery")
+	}
+	select {
+	case duplicate := <-socket.writes:
+		t.Fatalf("duplicate live delivery: %s", duplicate)
+	case <-time.After(20 * time.Millisecond):
+	}
+
+	client.Close("test complete")
+	<-done
 }
 
 func TestSlowConsumerDoesNotBlockBroadcast(t *testing.T) {

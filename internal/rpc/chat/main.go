@@ -41,23 +41,24 @@ func main() {
 
 	global.KafkaWriter = initialize.InitKafkaWriter()
 	defer global.KafkaWriter.Close()
-	kafkaDispatcher, err := NewKafkaDispatcher(global.KafkaWriter, DispatcherConfig{
-		QueueSize:        global.Config.KafkaDispatcher.QueueSize,
-		Workers:          global.Config.KafkaDispatcher.Workers,
-		EnqueueTimeout:   global.Config.KafkaDispatcher.EnqueueTimeout,
-		WriteTimeout:     global.Config.KafkaDispatcher.WriteTimeout,
-		RetryAttempts:    global.Config.KafkaDispatcher.RetryAttempts,
-		RetryBaseBackoff: global.Config.KafkaDispatcher.RetryBaseBackoff,
+	outboxRelay, err := NewOutboxRelay(global.KafkaWriter, mongoOutboxStore{collection: dao.MessagesCollection(client)}, OutboxConfig{
+		Workers:          global.Config.KafkaOutbox.Workers,
+		PollInterval:     global.Config.KafkaOutbox.PollInterval,
+		LeaseDuration:    global.Config.KafkaOutbox.LeaseDuration,
+		WriteTimeout:     global.Config.KafkaOutbox.WriteTimeout,
+		RetryAttempts:    global.Config.KafkaOutbox.RetryAttempts,
+		RetryBaseBackoff: global.Config.KafkaOutbox.RetryBaseBackoff,
+		RetryMaxBackoff:  global.Config.KafkaOutbox.RetryMaxBackoff,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	kafkaDispatcher.Start()
+	outboxRelay.Start(context.Background())
 	defer func() {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		if err := kafkaDispatcher.Stop(ctx); err != nil {
-			log.Printf("Kafka dispatcher shutdown: %v", err)
+		if err := outboxRelay.Stop(ctx); err != nil {
+			log.Printf("Kafka outbox relay shutdown: %v", err)
 		}
 	}()
 
@@ -89,11 +90,14 @@ func main() {
 		chatMongoLatency,
 		chatPublishLatency,
 		chatPublishErrorsTotal,
-		chatPublishQueueDepth,
-		chatPublishQueueFullTotal,
+		chatOutboxPending,
+		chatOutboxClaimedTotal,
+		chatOutboxPublishedTotal,
+		chatOutboxRetryTotal,
+		chatAcceptedTotal,
 	)
 
-	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli, kafkaDispatcher: kafkaDispatcher},
+	svr := chat.NewServer(&ChatServiceImpl{mongoClient: client, webrtcCli: webrtcliveCli, outboxRelay: outboxRelay},
 		server.WithSuite(tracing.NewServerSuite()),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "chatservice"}),
 		server.WithServiceAddr(addr),
