@@ -63,7 +63,11 @@ func ChatWithAgent(
 	if role != "student" && role != "teacher" && role != "admin" {
 		role = "student"
 	}
-	ctx = toolruntime.WithPrincipal(ctx, toolruntime.Principal{UserID: userID, Role: role, LessonID: lessonID, SessionID: convID, RequestID: requestID, AllowPlanning: isComplexPlanningRequest(msg)})
+	approvedTools := map[string]bool{}
+	if confirmsMallExchange(msg) {
+		approvedTools["exchange_mall_product"] = true
+	}
+	ctx = toolruntime.WithPrincipal(ctx, toolruntime.Principal{UserID: userID, Role: role, LessonID: lessonID, SessionID: convID, RequestID: requestID, ApprovedTools: approvedTools, AllowPlanning: isComplexPlanningRequest(msg)})
 	reminderSteps := 5
 	if global.Config != nil && global.Config.AgentRuntime.PlanReminderSteps > 0 {
 		reminderSteps = global.Config.AgentRuntime.PlanReminderSteps

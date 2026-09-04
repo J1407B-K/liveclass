@@ -11,5 +11,21 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
 
+  dtm:
+    image: yedf/dtm:1.19.0
+    container_name: liveclass-dtm
+    restart: unless-stopped
+    environment:
+      STORE_DRIVER: boltdb
+      LOG_LEVEL: info
+      HTTP_PORT: 36789
+      GRPC_PORT: 36790
+    ports:
+      - "36789:36789"
+      - "36790:36790"
+    volumes:
+      - dtmdata:/app
+
 volumes:
   esdata:
+  dtmdata:

@@ -6,24 +6,25 @@ type Config struct {
 	PostgresConfig
 	QdrantConfig
 	ElasticsearchConfig
-	KafkaBroker     string
-	KafkaTopic      string
-	APIKey          string
-	ChatModel       string
-	ChatTemperature float32
-	EmbeddingModel  string
-	RerankURL       string
-	RerankModel     string
-	RerankFormat    string
-	WebSearchURL    string
-	RedisAddr       string
-	EtcdAddr        string
-	JaegerEndpoint  string
-	PrometheusPort  string
-	ServiceAddr     string
-	AgentRuntime    AgentRuntimeConfig
-	RAG             RAGConfig
-	Resilience      ResilienceConfig
+	KafkaBroker       string
+	KafkaTopic        string
+	APIKey            string
+	ChatModel         string
+	ChatTemperature   float32
+	EmbeddingModel    string
+	RerankURL         string
+	RerankModel       string
+	RerankFormat      string
+	WebSearchURL      string
+	RedisAddr         string
+	EtcdAddr          string
+	JaegerEndpoint    string
+	PrometheusPort    string
+	ServiceAddr       string
+	MallConfirmSecret string
+	AgentRuntime      AgentRuntimeConfig
+	RAG               RAGConfig
+	Resilience        ResilienceConfig
 }
 
 type RAGConfig struct {

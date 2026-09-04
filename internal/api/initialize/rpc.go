@@ -3,6 +3,7 @@ package initialize
 import (
 	"liveclass/idl/kitex_gen/agent/agentservice"
 	"liveclass/idl/kitex_gen/chat/chatservice"
+	"liveclass/idl/kitex_gen/mall/mallservice"
 	"liveclass/idl/kitex_gen/quiz/quizservice"
 	"liveclass/idl/kitex_gen/user/userservice"
 	webrtc_live "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
@@ -69,6 +70,18 @@ func InitNewClient() error {
 		panic(err)
 	}
 	global.Clients.ChatClient = cc
+
+	mc, err := mallservice.NewClient(
+		"mallservice",
+		client.WithResolver(*global.Resolver),
+		client.WithSuite(tracing.NewClientSuite()),
+		client.WithMetaHandler(transmeta.ClientTTHeaderHandler),
+		client.WithRPCTimeout(20*time.Second),
+	)
+	if err != nil {
+		panic(err)
+	}
+	global.Clients.MallClient = mc
 
 	// WebrtcLiveService 客户端，附带 OpenTelemetry 链路追踪和一致性哈希负载均衡
 	wc, err := webrtc_live.NewClient(

@@ -9,8 +9,8 @@ func TestEmbeddedSkillsLoadWithoutWorkingDirectory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("LoadSkillIndex() error = %v", err)
 	}
-	if len(index) != 5 {
-		t.Fatalf("LoadSkillIndex() count = %d, want 5", len(index))
+	if len(index) != 6 {
+		t.Fatalf("LoadSkillIndex() count = %d, want 6", len(index))
 	}
 	content, err := LoadSkillContent("lesson_plan")
 	if err != nil {

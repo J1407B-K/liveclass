@@ -52,6 +52,17 @@ func GetTools(ctx context.Context, managers ...*memory.DBManager) ([]einotool.Ba
 		}
 	}
 
+	if global.MallClient != nil {
+		catalogTool, prepareTool, exchangeTool, mallErr := tool.NewMallTools(global.MallClient, []byte(global.Config.MallConfirmSecret))
+		if mallErr != nil {
+			log.Printf("init mall tools failed: %v", mallErr)
+		} else {
+			register(catalogTool, toolruntime.PermissionAuthenticated, toolruntime.RiskReadOnly, 800*time.Millisecond, 1, outputSchema[tool.MallCatalogResponse]())
+			register(prepareTool, toolruntime.PermissionAuthenticated, toolruntime.RiskLow, 800*time.Millisecond, 1, outputSchema[tool.MallPrepareResponse]())
+			register(exchangeTool, toolruntime.PermissionAuthenticated, toolruntime.RiskHigh, 20*time.Second, 1, outputSchema[tool.MallExchangeResponse]())
+		}
+	}
+
 	if searchTool, err := tool.NewSearchTool(); err != nil {
 		log.Printf("init search tool failed: %v", err)
 	} else {

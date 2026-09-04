@@ -10,6 +10,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	mallservice "liveclass/idl/kitex_gen/mall/mallservice"
 	userservice "liveclass/idl/kitex_gen/user/userservice"
 	webrtclive "liveclass/idl/kitex_gen/webrtc_live/webrtclive"
 )
@@ -22,6 +23,7 @@ var (
 	ChatModel           *ark.ChatModel
 	UserClient          userservice.Client
 	LessonClient        webrtclive.Client
+	MallClient          mallservice.Client
 
 	SkriptsDir = func() string {
 		if d := os.Getenv("SCRIPTS_DIR"); d != "" {

@@ -96,6 +96,11 @@ func main() {
 	} else {
 		global.LessonClient = cli
 	}
+	if cli, clientErr := initialize.InitMallClient(); clientErr != nil {
+		log.Printf("init mall client failed: %v", clientErr)
+	} else {
+		global.MallClient = cli
+	}
 
 	global.AgentRunner, err = agent2.BuildAgent(initCtx, dbm)
 	if err != nil {

@@ -12,6 +12,7 @@ func SetupViper() {
 	_ = viper.BindEnv("QdrantConfig.DocCollection", "LIVECLASS_AGENT_DOC_COLLECTION")
 	_ = viper.BindEnv("ElasticsearchConfig.DocIndex", "LIVECLASS_AGENT_DOC_INDEX")
 	_ = viper.BindEnv("ChatTemperature", "LIVECLASS_AGENT_CHAT_TEMPERATURE")
+	_ = viper.BindEnv("MallConfirmSecret", "LIVECLASS_MALL_CONFIRM_SECRET")
 	setResilienceDefaults()
 	setAgentRuntimeDefaults()
 	setRAGDefaults()

@@ -86,6 +86,10 @@ func InitRouter() {
 		v2.GET("/list_user_conv", service2.ListAllUserConv)
 		v2.DELETE("/del_user_conv", service2.DelAllUserConv)
 
+		v2.GET("/mall/products", service2.ListMallProducts)
+		v2.POST("/mall/exchanges", service2.ExchangeMallProduct)
+		v2.GET("/mall/orders/:order_id", service2.GetMallOrder)
+
 		v2.GET("/get_his", service2.GetHistory)
 		v2.DELETE("/del_his", service2.DelHistory)
 
