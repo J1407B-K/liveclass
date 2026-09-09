@@ -17,10 +17,11 @@ type WebSocketSecurityConfig struct {
 }
 
 type ChatKafkaConfig struct {
-	Broker      string
-	Topic       string
-	GroupPrefix string
-	FanoutMode  string
+	Broker         string
+	Topic          string
+	GroupPrefix    string
+	FanoutMode     string
+	CommitInterval time.Duration
 }
 
 type FaultInjectionConfig struct {

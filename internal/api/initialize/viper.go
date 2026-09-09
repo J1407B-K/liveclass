@@ -10,6 +10,7 @@ func SetupViper() {
 	_ = viper.BindEnv("ChatKafka.Broker", "LIVECLASS_CHAT_KAFKA_BROKER")
 	_ = viper.BindEnv("ChatKafka.Topic", "LIVECLASS_CHAT_KAFKA_TOPIC")
 	_ = viper.BindEnv("ChatKafka.FanoutMode", "LIVECLASS_CHAT_FANOUT_MODE")
+	_ = viper.BindEnv("ChatKafka.CommitInterval", "LIVECLASS_CHAT_KAFKA_COMMIT_INTERVAL")
 	_ = viper.BindEnv("WebSocketSecurity.AllowQueryToken", "LIVECLASS_WS_ALLOW_QUERY_TOKEN")
 	_ = viper.BindEnv("WebSocketSecurity.SecureCookies", "LIVECLASS_WS_SECURE_COOKIES")
 	viper.SetDefault("ChatWebSocket.SendQueueSize", 256)
@@ -24,6 +25,7 @@ func SetupViper() {
 	viper.SetDefault("ChatKafka.Topic", "liveclass-chat")
 	viper.SetDefault("ChatKafka.GroupPrefix", "chat-api")
 	viper.SetDefault("ChatKafka.FanoutMode", "durable_replay")
+	viper.SetDefault("ChatKafka.CommitInterval", "100ms")
 	viper.SetDefault("FaultInjection.RedisDelay", "0s")
 	viper.SetConfigType("yaml")
 	viper.SetConfigName("api")
@@ -44,6 +46,9 @@ func SetupViper() {
 	}
 	if global.Config.ChatKafka.Broker == "" || global.Config.ChatKafka.Topic == "" {
 		panic("ChatKafka.Broker and ChatKafka.Topic are required")
+	}
+	if global.Config.ChatKafka.CommitInterval < 0 {
+		panic("ChatKafka.CommitInterval must be non-negative")
 	}
 	global.ConfigureWebSocketUpgrader(global.Config.WebSocketSecurity.AllowedOrigins)
 
