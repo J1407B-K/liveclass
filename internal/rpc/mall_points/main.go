@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	db, raw, err := domain.OpenMySQL()
+	db, raw, err := domain.OpenMySQL(domain.PointsDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	svr := pointsservice.NewServer(&pointsServiceImpl{db: db}, server.WithServiceAddr(rpcAddr), server.WithRegistry(r), server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "pointsservice"}))
+	svr := pointsservice.NewServer(&pointsServiceImpl{db: db, raw: raw}, server.WithServiceAddr(rpcAddr), server.WithRegistry(r), server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "pointsservice"}))
 	go func() { <-ctx.Done(); _ = svr.Stop() }()
 	if err = svr.Run(); err != nil {
 		log.Fatal(err)

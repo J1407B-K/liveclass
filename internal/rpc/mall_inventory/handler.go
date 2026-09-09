@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	"liveclass/idl/kitex_gen/common"
 	inventory "liveclass/idl/kitex_gen/mall_inventory"
@@ -10,7 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
-type inventoryServiceImpl struct{ db *gorm.DB }
+type inventoryServiceImpl struct {
+	db  *gorm.DB
+	raw *sql.DB
+}
 
 func inventoryResp(item *domain.Inventory) *inventory.Inventory {
 	if item == nil {
@@ -23,85 +28,75 @@ func (s *inventoryServiceImpl) GetInventory(ctx context.Context, req *inventory.
 	if req == nil || req.ProductId <= 0 {
 		return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 400, Msg: "invalid product_id"}}, nil
 	}
-	if s == nil || s.db == nil {
-		return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 500, Msg: "inventory service is not initialized"}}, nil
+	item, err := s.load(ctx, req.ProductId)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 404, Msg: "inventory not found"}}, nil
 	}
-	var item domain.Inventory
-	if err := s.db.WithContext(ctx).First(&item, "product_id = ?", req.ProductId).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 404, Msg: "inventory not found"}}, nil
-		}
+	if err != nil {
 		return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 500, Msg: "failed to query inventory"}}, nil
 	}
-	return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 0, Msg: "success"}, Inventory: inventoryResp(&item)}, nil
+	return &inventory.GetInventoryResp{Resp: &common.Resp{Code: 0, Msg: "success"}, Inventory: inventoryResp(item)}, nil
 }
 
 func (s *inventoryServiceImpl) CheckSaleable(ctx context.Context, req *inventory.CheckSaleableReq) (*inventory.CheckSaleableResp, error) {
 	if req == nil || req.ProductId <= 0 || req.Quantity <= 0 {
 		return &inventory.CheckSaleableResp{Resp: &common.Resp{Code: 400, Msg: "invalid request"}}, nil
 	}
-	var item domain.Inventory
-	if err := s.db.WithContext(ctx).First(&item, "product_id = ?", req.ProductId).Error; err != nil {
+	item, err := s.load(ctx, req.ProductId)
+	if err != nil {
 		return &inventory.CheckSaleableResp{Resp: &common.Resp{Code: 404, Msg: "inventory not found"}}, nil
 	}
+	// This is only a hint for UI display. Correctness remains in Reserve's
+	// conditional UPDATE because availability can change immediately afterward.
 	return &inventory.CheckSaleableResp{Resp: &common.Resp{Code: 0, Msg: "success"}, Saleable: item.Available >= req.Quantity, Available: item.Available}, nil
 }
 
 func (s *inventoryServiceImpl) Reserve(ctx context.Context, req *inventory.InventoryMutationReq) (*inventory.InventoryMutationResp, error) {
-	return s.mutate(ctx, req, "reserve")
+	return s.mutate(ctx, req, domain.InventoryReserve)
 }
+
 func (s *inventoryServiceImpl) Release(ctx context.Context, req *inventory.InventoryMutationReq) (*inventory.InventoryMutationResp, error) {
-	return s.mutate(ctx, req, "release")
+	return s.mutate(ctx, req, domain.InventoryRelease)
 }
+
 func (s *inventoryServiceImpl) Confirm(ctx context.Context, req *inventory.InventoryMutationReq) (*inventory.InventoryMutationResp, error) {
-	return s.mutate(ctx, req, "confirm")
+	return s.mutate(ctx, req, domain.InventoryConfirm)
 }
-func (s *inventoryServiceImpl) mutate(ctx context.Context, req *inventory.InventoryMutationReq, op string) (*inventory.InventoryMutationResp, error) {
+
+func (s *inventoryServiceImpl) mutate(ctx context.Context, req *inventory.InventoryMutationReq, operation domain.InventoryOperation) (*inventory.InventoryMutationResp, error) {
 	if req == nil || req.OrderId == "" || req.ProductId <= 0 || req.Quantity <= 0 {
 		return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: 400, Msg: "invalid request"}}, nil
 	}
-	if s == nil || s.db == nil {
+	if s == nil || s.raw == nil || s.db == nil {
 		return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: 500, Msg: "service not initialized"}}, nil
 	}
-	var item domain.Inventory
-	err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.First(&item, "product_id = ?", req.ProductId).Error; err != nil {
-			return err
-		}
-		var r domain.InventoryReservation
-		found := tx.First(&r, "order_id = ?", req.OrderId).Error == nil
-		if op == "reserve" && !found {
-			if item.Available < req.Quantity {
-				return domain.ErrInsufficientStock
-			}
-			item.Available -= req.Quantity
-			item.Reserved += req.Quantity
-			r = domain.InventoryReservation{OrderID: req.OrderId, ProductID: req.ProductId, Quantity: req.Quantity, Status: domain.ReservationReserved}
-			if err := tx.Save(&item).Error; err != nil {
-				return err
-			}
-			return tx.Create(&r).Error
-		}
-		if !found {
-			return gorm.ErrRecordNotFound
-		}
-		if op == "release" && r.Status == domain.ReservationReserved {
-			item.Available += r.Quantity
-			item.Reserved -= r.Quantity
-			r.Status = domain.ReservationReleased
-		}
-		if op == "confirm" && r.Status == domain.ReservationReserved {
-			item.Reserved -= r.Quantity
-			item.Sold += r.Quantity
-			r.Status = domain.ReservationConfirmed
-		}
-		if err := tx.Save(&item).Error; err != nil {
-			return err
-		}
-		return tx.Save(&r).Error
-	})
-	if err != nil {
-		return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: 409, Msg: err.Error()}}, nil
+	payload := domain.SagaPayload{OrderID: req.OrderId, ProductID: req.ProductId, Quantity: req.Quantity}
+	if err := domain.RunLocalMutation(ctx, s.raw, func(tx *sql.Tx) error {
+		return domain.ApplyInventoryMutation(tx, payload, operation)
+	}); err != nil {
+		return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: mutationCode(err), Msg: err.Error()}}, nil
 	}
-	return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: 0, Msg: "success"}, Inventory: inventoryResp(&item)}, nil
+	item, err := s.load(ctx, req.ProductId)
+	if err != nil {
+		return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: 500, Msg: "mutation committed but reload failed"}}, nil
+	}
+	return &inventory.InventoryMutationResp{Resp: &common.Resp{Code: 0, Msg: "success"}, Inventory: inventoryResp(item)}, nil
+}
+
+func (s *inventoryServiceImpl) load(ctx context.Context, productID int64) (*domain.Inventory, error) {
+	if s == nil || s.db == nil {
+		return nil, errors.New("inventory service is not initialized")
+	}
+	var item domain.Inventory
+	if err := s.db.WithContext(ctx).First(&item, "product_id = ?", productID).Error; err != nil {
+		return nil, err
+	}
+	return &item, nil
+}
+
+func mutationCode(err error) int16 {
+	if errors.Is(err, domain.ErrInsufficientStock) || errors.Is(err, domain.ErrIdempotencyConflict) || errors.Is(err, gorm.ErrRecordNotFound) {
+		return 409
+	}
+	return 500
 }

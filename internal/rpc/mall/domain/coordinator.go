@@ -26,14 +26,15 @@ type SagaSubmitter interface {
 }
 
 type Coordinator struct {
-	DB       *gorm.DB
-	Saga     SagaSubmitter
-	requests singleflight.Group
+	CatalogDB *gorm.DB
+	OrderDB   *gorm.DB
+	Saga      SagaSubmitter
+	requests  singleflight.Group
 }
 
 func (c *Coordinator) Exchange(ctx context.Context, input ExchangeInput) (*Order, error) {
 	input.RequestID = strings.TrimSpace(input.RequestID)
-	if c == nil || c.DB == nil || c.Saga == nil {
+	if c == nil || c.CatalogDB == nil || c.OrderDB == nil || c.Saga == nil {
 		return nil, errors.New("mall coordinator is not initialized")
 	}
 	if input.UserID <= 0 || input.ProductID <= 0 || input.Quantity <= 0 || input.RequestID == "" || len(input.RequestID) > 64 {
@@ -56,7 +57,7 @@ func (c *Coordinator) Exchange(ctx context.Context, input ExchangeInput) (*Order
 func (c *Coordinator) exchange(ctx context.Context, input ExchangeInput) (*Order, error) {
 
 	var existing Order
-	err := c.DB.WithContext(ctx).Where("user_id = ? AND request_id = ?", input.UserID, input.RequestID).First(&existing).Error
+	err := c.OrderDB.WithContext(ctx).Where("user_id = ? AND request_id = ?", input.UserID, input.RequestID).First(&existing).Error
 	if err == nil {
 		if existing.ProductID != input.ProductID || int64(existing.Quantity) != input.Quantity {
 			return nil, ErrIdempotencyConflict
@@ -68,7 +69,7 @@ func (c *Coordinator) exchange(ctx context.Context, input ExchangeInput) (*Order
 	}
 
 	var product Product
-	if err = c.DB.WithContext(ctx).Where("id = ? AND active = ?", input.ProductID, true).First(&product).Error; err != nil {
+	if err = c.CatalogDB.WithContext(ctx).Where("id = ? AND active = ?", input.ProductID, true).First(&product).Error; err != nil {
 		return nil, err
 	}
 	if product.PointsPrice <= 0 || input.Quantity > 100 || product.PointsPrice > (1<<62)/input.Quantity {
@@ -82,7 +83,7 @@ func (c *Coordinator) exchange(ctx context.Context, input ExchangeInput) (*Order
 	}
 	if err = c.Saga.Submit(ctx, payload); err != nil {
 		var afterFailure Order
-		if queryErr := c.DB.WithContext(ctx).Where("id = ?", orderID).First(&afterFailure).Error; queryErr == nil {
+		if queryErr := c.OrderDB.WithContext(ctx).Where("id = ?", orderID).First(&afterFailure).Error; queryErr == nil {
 			if afterFailure.Status == OrderConfirmed {
 				return &afterFailure, nil
 			}
@@ -91,7 +92,7 @@ func (c *Coordinator) exchange(ctx context.Context, input ExchangeInput) (*Order
 		return nil, err
 	}
 	var order Order
-	if err = c.DB.WithContext(ctx).Where("id = ?", orderID).First(&order).Error; err != nil {
+	if err = c.OrderDB.WithContext(ctx).Where("id = ?", orderID).First(&order).Error; err != nil {
 		return nil, err
 	}
 	return &order, nil

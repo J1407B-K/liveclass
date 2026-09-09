@@ -33,6 +33,10 @@ var (
 		Name: "chat_outbox_retry_total",
 		Help: "MongoDB outbox records returned to pending after Kafka failure.",
 	})
+	chatOutboxOrderingDeferredTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "chat_outbox_ordering_deferred_total",
+		Help: "Claimed outbox records deferred behind an earlier message in the same lesson.",
+	})
 	chatAcceptedTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "chat_accepted_total",
 		Help: "Persisted chat messages by realtime delivery status.",

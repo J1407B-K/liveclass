@@ -35,6 +35,8 @@ type KafkaWriter interface {
 
 type outboxStore interface {
 	ClaimNext(context.Context, string, time.Time, time.Duration) (model.Message, error)
+	HasEarlierUnpublished(context.Context, int64, time.Time, string) (bool, error)
+	DeferForOrdering(context.Context, string, string, time.Time) error
 	MarkPublished(context.Context, string, string, time.Time) error
 	MarkRetry(context.Context, string, string, string, time.Time) error
 	CountPending(context.Context) (int64, error)
@@ -44,6 +46,14 @@ type mongoOutboxStore struct{ collection *mongo.Collection }
 
 func (s mongoOutboxStore) ClaimNext(ctx context.Context, owner string, now time.Time, lease time.Duration) (model.Message, error) {
 	return dao.ClaimNextOutbox(ctx, s.collection, owner, now, lease)
+}
+
+func (s mongoOutboxStore) HasEarlierUnpublished(ctx context.Context, lessonID int64, createdAt time.Time, messageID string) (bool, error) {
+	return dao.HasEarlierUnpublishedOutbox(ctx, s.collection, lessonID, createdAt, messageID)
+}
+
+func (s mongoOutboxStore) DeferForOrdering(ctx context.Context, messageID, owner string, next time.Time) error {
+	return dao.DeferOutboxForOrdering(ctx, s.collection, messageID, owner, next)
 }
 
 func (s mongoOutboxStore) MarkPublished(ctx context.Context, messageID, owner string, at time.Time) error {
@@ -162,6 +172,24 @@ func (r *OutboxRelay) drain(ctx context.Context, owner string) {
 			return
 		}
 		chatOutboxClaimedTotal.Inc()
+
+		orderCtx, orderCancel := context.WithTimeout(ctx, r.cfg.WriteTimeout)
+		blocked, orderErr := r.store.HasEarlierUnpublished(orderCtx, message.LessonID, message.CreatedAt, message.MessageID)
+		orderCancel()
+		if orderErr != nil || blocked {
+			next := time.Now().UTC().Add(r.cfg.PollInterval)
+			deferCtx, deferCancel := context.WithTimeout(context.Background(), r.cfg.WriteTimeout)
+			deferErr := r.store.DeferForOrdering(deferCtx, message.MessageID, owner, next)
+			deferCancel()
+			if orderErr != nil {
+				log.Printf("[ChatOutbox] ordering check failed: message_id=%s err=%v", message.MessageID, orderErr)
+			}
+			if deferErr != nil {
+				log.Printf("[ChatOutbox] ordering defer failed: message_id=%s err=%v", message.MessageID, deferErr)
+			}
+			chatOutboxOrderingDeferredTotal.Inc()
+			continue
+		}
 		if err := r.writeWithRetry(ctx, message); err != nil {
 			next := time.Now().UTC().Add(r.retryDelay(message.Outbox.Attempts + 1))
 			markCtx, markCancel := context.WithTimeout(context.Background(), r.cfg.WriteTimeout)

@@ -85,6 +85,7 @@ func (s *BranchServer) branch(name string, operation branchOperation) http.Handl
 				break
 			}
 			barrier.DBType = dtmcli.DBTypeMysql
+			barrier.BarrierTableName = "dtm_barrier"
 			err = barrier.CallWithDB(s.DB, func(tx *sql.Tx) error { return operation(tx, payload) })
 			if !isMySQLDeadlock(err) {
 				break
@@ -182,141 +183,27 @@ func (s *BranchServer) confirmOrder(tx *sql.Tx, p SagaPayload) error {
 }
 
 func (s *BranchServer) reserveInventory(tx *sql.Tx, p SagaPayload) error {
-	if err := validatePayload(p); err != nil {
-		return err
-	}
-	var productID, quantity int64
-	var status string
-	err := tx.QueryRow(`SELECT product_id,quantity,status FROM mall_inventory_reservations WHERE order_id=? FOR UPDATE`, p.OrderID).Scan(&productID, &quantity, &status)
-	if err == nil {
-		if productID != p.ProductID || quantity != p.Quantity {
-			return ErrIdempotencyConflict
-		}
-		if status == ReservationReserved || status == ReservationConfirmed {
-			return nil
-		}
-		return fmt.Errorf("reservation already %s", status)
-	}
-	if !errors.Is(err, sql.ErrNoRows) {
-		return err
-	}
-	result, err := tx.Exec(`UPDATE mall_inventories SET available=available-?,reserved=reserved+?,version=version+1,updated_at=NOW() WHERE product_id=? AND available>=?`, p.Quantity, p.Quantity, p.ProductID, p.Quantity)
-	if err != nil {
-		return err
-	}
-	if affected, _ := result.RowsAffected(); affected != 1 {
-		return ErrInsufficientStock
-	}
-	_, err = tx.Exec(`INSERT INTO mall_inventory_reservations(order_id,product_id,quantity,status,created_at,updated_at) VALUES(?,?,?,?,NOW(),NOW())`, p.OrderID, p.ProductID, p.Quantity, ReservationReserved)
-	return err
+	return ApplyInventoryMutation(tx, p, InventoryReserve)
 }
 
 func (s *BranchServer) releaseInventory(tx *sql.Tx, p SagaPayload) error {
-	var productID, quantity int64
-	var status string
-	err := tx.QueryRow(`SELECT product_id,quantity,status FROM mall_inventory_reservations WHERE order_id=? FOR UPDATE`, p.OrderID).Scan(&productID, &quantity, &status)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil
-	}
-	if err != nil || status == ReservationReleased {
-		return err
-	}
-	if status != ReservationReserved {
-		return fmt.Errorf("cannot release reservation in status %s", status)
-	}
-	if _, err = tx.Exec(`UPDATE mall_inventories SET available=available+?,reserved=reserved-?,version=version+1,updated_at=NOW() WHERE product_id=? AND reserved>=?`, quantity, quantity, productID, quantity); err != nil {
-		return err
-	}
-	_, err = tx.Exec(`UPDATE mall_inventory_reservations SET status=?,updated_at=NOW() WHERE order_id=?`, ReservationReleased, p.OrderID)
-	return err
+	return ApplyInventoryMutation(tx, p, InventoryRelease)
 }
 
 func (s *BranchServer) confirmInventory(tx *sql.Tx, p SagaPayload) error {
-	var productID, quantity int64
-	var status string
-	if err := tx.QueryRow(`SELECT product_id,quantity,status FROM mall_inventory_reservations WHERE order_id=? FOR UPDATE`, p.OrderID).Scan(&productID, &quantity, &status); err != nil {
-		return err
-	}
-	if status == ReservationConfirmed {
-		return nil
-	}
-	if status != ReservationReserved {
-		return fmt.Errorf("cannot confirm reservation in status %s", status)
-	}
-	if _, err := tx.Exec(`UPDATE mall_inventories SET reserved=reserved-?,sold=sold+?,version=version+1,updated_at=NOW() WHERE product_id=? AND reserved>=?`, quantity, quantity, productID, quantity); err != nil {
-		return err
-	}
-	_, err := tx.Exec(`UPDATE mall_inventory_reservations SET status=?,updated_at=NOW() WHERE order_id=?`, ReservationConfirmed, p.OrderID)
-	return err
+	return ApplyInventoryMutation(tx, p, InventoryConfirm)
 }
 
 func (s *BranchServer) unconfirmInventory(tx *sql.Tx, p SagaPayload) error {
-	var productID, quantity int64
-	var status string
-	err := tx.QueryRow(`SELECT product_id,quantity,status FROM mall_inventory_reservations WHERE order_id=? FOR UPDATE`, p.OrderID).Scan(&productID, &quantity, &status)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil
-	}
-	if err != nil || status == ReservationReserved || status == ReservationReleased {
-		return err
-	}
-	if status != ReservationConfirmed {
-		return fmt.Errorf("cannot unconfirm reservation in status %s", status)
-	}
-	if _, err = tx.Exec(`UPDATE mall_inventories SET reserved=reserved+?,sold=sold-?,version=version+1,updated_at=NOW() WHERE product_id=? AND sold>=?`, quantity, quantity, productID, quantity); err != nil {
-		return err
-	}
-	_, err = tx.Exec(`UPDATE mall_inventory_reservations SET status=?,updated_at=NOW() WHERE order_id=?`, ReservationReserved, p.OrderID)
-	return err
+	return ApplyInventoryMutation(tx, p, InventoryUnconfirm)
 }
 
 func (s *BranchServer) debitPoints(tx *sql.Tx, p SagaPayload) error {
-	if err := validatePayload(p); err != nil {
-		return err
-	}
-	var delta int64
-	err := tx.QueryRow(`SELECT delta FROM mall_points_ledgers WHERE order_id=? AND operation='debit' FOR UPDATE`, p.OrderID).Scan(&delta)
-	if err == nil {
-		if delta != -p.TotalPoints {
-			return ErrIdempotencyConflict
-		}
-		return nil
-	}
-	if !errors.Is(err, sql.ErrNoRows) {
-		return err
-	}
-	result, err := tx.Exec(`UPDATE mall_points_accounts SET balance=balance-?,version=version+1,updated_at=NOW() WHERE user_id=? AND balance>=?`, p.TotalPoints, p.UserID, p.TotalPoints)
-	if err != nil {
-		return err
-	}
-	if affected, _ := result.RowsAffected(); affected != 1 {
-		return ErrInsufficientPoints
-	}
-	_, err = tx.Exec(`INSERT INTO mall_points_ledgers(order_id,operation,user_id,delta,created_at) VALUES(?,'debit',?,?,NOW())`, p.OrderID, p.UserID, -p.TotalPoints)
-	return err
+	return ApplyPointsMutation(tx, p, PointsDebit)
 }
 
 func (s *BranchServer) refundPoints(tx *sql.Tx, p SagaPayload) error {
-	var debit int64
-	if err := tx.QueryRow(`SELECT delta FROM mall_points_ledgers WHERE order_id=? AND operation='debit' FOR UPDATE`, p.OrderID).Scan(&debit); errors.Is(err, sql.ErrNoRows) {
-		return nil
-	} else if err != nil {
-		return err
-	}
-	var refund int64
-	err := tx.QueryRow(`SELECT delta FROM mall_points_ledgers WHERE order_id=? AND operation='refund' FOR UPDATE`, p.OrderID).Scan(&refund)
-	if err == nil {
-		return nil
-	}
-	if !errors.Is(err, sql.ErrNoRows) {
-		return err
-	}
-	amount := -debit
-	if _, err = tx.Exec(`UPDATE mall_points_accounts SET balance=balance+?,version=version+1,updated_at=NOW() WHERE user_id=?`, amount, p.UserID); err != nil {
-		return err
-	}
-	_, err = tx.Exec(`INSERT INTO mall_points_ledgers(order_id,operation,user_id,delta,created_at) VALUES(?,'refund',?,?,NOW())`, p.OrderID, p.UserID, amount)
-	return err
+	return ApplyPointsMutation(tx, p, PointsRefund)
 }
 
 func validatePayload(p SagaPayload) error {

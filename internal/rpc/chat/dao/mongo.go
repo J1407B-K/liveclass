@@ -64,6 +64,15 @@ func EnsureMessageIndexes(ctx context.Context, client *mongo.Client) error {
 			},
 			Options: options.Index().SetName("outbox_lease_created"),
 		},
+		{
+			Keys: bson.D{
+				{Key: "lesson_id", Value: 1},
+				{Key: "outbox.status", Value: 1},
+				{Key: "created_at", Value: 1},
+				{Key: "message_id", Value: 1},
+			},
+			Options: options.Index().SetName("outbox_lesson_order"),
+		},
 	})
 	return err
 }
@@ -90,6 +99,40 @@ func ClaimNextOutbox(ctx context.Context, collection *mongo.Collection, owner st
 		SetSort(bson.D{{Key: "created_at", Value: 1}, {Key: "message_id", Value: 1}}).
 		SetReturnDocument(options.After)).Decode(&message)
 	return message, err
+}
+
+// HasEarlierUnpublishedOutbox is the per-lesson ordering fence. A claimed
+// message may be published only after every earlier message in the same lesson
+// has reached the published state, including messages leased by other workers.
+func HasEarlierUnpublishedOutbox(ctx context.Context, collection *mongo.Collection, lessonID int64, createdAt time.Time, messageID string) (bool, error) {
+	filter := bson.D{
+		{Key: "lesson_id", Value: lessonID},
+		{Key: "outbox.status", Value: bson.D{{Key: "$in", Value: bson.A{model.OutboxPending, model.OutboxPublishing}}}},
+		{Key: "$or", Value: bson.A{
+			bson.D{{Key: "created_at", Value: bson.D{{Key: "$lt", Value: createdAt}}}},
+			bson.D{{Key: "created_at", Value: createdAt}, {Key: "message_id", Value: bson.D{{Key: "$lt", Value: messageID}}}},
+		}},
+	}
+	count, err := collection.CountDocuments(ctx, filter, options.Count().SetLimit(1))
+	return count > 0, err
+}
+
+// DeferOutboxForOrdering releases a lease without counting a delivery retry.
+// The record was not sent to Kafka; it merely waited for an earlier room message.
+func DeferOutboxForOrdering(ctx context.Context, collection *mongo.Collection, messageID, owner string, nextAttempt time.Time) error {
+	result, err := collection.UpdateOne(ctx,
+		bson.D{{Key: "message_id", Value: messageID}, {Key: "outbox.status", Value: model.OutboxPublishing}, {Key: "outbox.lease_owner", Value: owner}},
+		bson.D{
+			{Key: "$set", Value: bson.D{{Key: "outbox.status", Value: model.OutboxPending}, {Key: "outbox.next_attempt_at", Value: nextAttempt}}},
+			{Key: "$unset", Value: bson.D{{Key: "outbox.lease_owner", Value: ""}, {Key: "outbox.lease_until", Value: ""}}},
+		})
+	if err != nil {
+		return err
+	}
+	if result.MatchedCount != 1 {
+		return errors.New("outbox ordering lease lost")
+	}
+	return nil
 }
 
 func MarkOutboxPublished(ctx context.Context, collection *mongo.Collection, messageID, owner string, publishedAt time.Time) error {

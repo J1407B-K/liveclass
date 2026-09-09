@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -52,18 +53,41 @@ func main() {
 		panic("invalid benchmark arguments")
 	}
 
-	db, rawDB, err := domain.OpenMySQL()
+	catalogDB, catalogRaw, err := domain.OpenMySQL(domain.MallDatabase)
 	must(err)
-	must(domain.EnsureBarrierTable(rawDB))
-	must(domain.MigrateOrder(db))
-	must(domain.MigrateInventory(db))
-	must(domain.MigratePoints(db))
+	orderDB, orderRaw, err := domain.OpenMySQL(domain.OrderDatabase)
+	must(err)
+	inventoryDB, inventoryRaw, err := domain.OpenMySQL(domain.InventoryDatabase)
+	must(err)
+	pointsDB, pointsRaw, err := domain.OpenMySQL(domain.PointsDatabase)
+	must(err)
+	for _, raw := range []*sql.DB{orderRaw, inventoryRaw, pointsRaw} {
+		must(domain.EnsureBarrierTable(raw))
+	}
+	must(domain.MigrateMall(catalogDB))
+	must(domain.MigrateOrder(orderDB))
+	must(domain.MigrateInventory(inventoryDB))
+	must(domain.MigratePoints(pointsDB))
+	databaseNames := map[string]string{
+		"mall":      currentDatabase(catalogRaw),
+		"order":     currentDatabase(orderRaw),
+		"inventory": currentDatabase(inventoryRaw),
+		"points":    currentDatabase(pointsRaw),
+	}
+	databasesDistinct := distinctStrings(databaseNames) == len(databaseNames)
+	resourceTablesIsolated :=
+		tableExists(catalogRaw, "mall_products") && !anyTableExists(catalogRaw, "mall_orders", "mall_inventories", "mall_inventory_reservations", "mall_points_accounts", "mall_points_ledgers") &&
+			tableExists(orderRaw, "mall_orders") && !anyTableExists(orderRaw, "mall_products", "mall_inventories", "mall_inventory_reservations", "mall_points_accounts", "mall_points_ledgers") &&
+			tableExists(inventoryRaw, "mall_inventories") && tableExists(inventoryRaw, "mall_inventory_reservations") && !anyTableExists(inventoryRaw, "mall_products", "mall_orders", "mall_points_accounts", "mall_points_ledgers") &&
+			tableExists(pointsRaw, "mall_points_accounts") && tableExists(pointsRaw, "mall_points_ledgers") && !anyTableExists(pointsRaw, "mall_products", "mall_orders", "mall_inventories", "mall_inventory_reservations")
+	serviceLocalBarriers := !tableExists(catalogRaw, "dtm_barrier") && tableExists(orderRaw, "dtm_barrier") &&
+		tableExists(inventoryRaw, "dtm_barrier") && tableExists(pointsRaw, "dtm_barrier")
 
 	productID := int64(9_900_000_000) + time.Now().UnixNano()%1_000_000
 	baseUserID := int64(8_000_000_000) + time.Now().UnixNano()%1_000_000
 	product := domain.Product{ID: productID, Name: "Mall Benchmark Product", Description: scenario, PointsPrice: price, Active: true}
-	must(db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&product).Error)
-	must(db.Create(&domain.Inventory{ProductID: productID, Available: stock, Version: 1}).Error)
+	must(catalogDB.Clauses(clause.OnConflict{UpdateAll: true}).Create(&product).Error)
+	must(inventoryDB.Create(&domain.Inventory{ProductID: productID, Available: stock, Version: 1}).Error)
 	users := requests
 	if scenario == "dedup" {
 		users = 1
@@ -72,9 +96,9 @@ func main() {
 	for i := 0; i < users; i++ {
 		accounts = append(accounts, domain.PointsAccount{UserID: baseUserID + int64(i), Balance: initialPoints, Version: 1})
 	}
-	must(db.CreateInBatches(accounts, 500).Error)
+	must(pointsDB.CreateInBatches(accounts, 500).Error)
 
-	coordinator := &domain.Coordinator{DB: db, Saga: domain.DTMSagaSubmitter{
+	coordinator := &domain.Coordinator{CatalogDB: catalogDB, OrderDB: orderDB, Saga: domain.DTMSagaSubmitter{
 		ServerURL:    dtmServer,
 		OrderURL:     "http://host.docker.internal:19100",
 		InventoryURL: "http://host.docker.internal:19101",
@@ -122,15 +146,15 @@ func main() {
 	runtime.ReadMemStats(&after)
 
 	var confirmed, compensated, reservations, sold, available, reserved, debitTotal, refundTotal, finalBalance int64
-	db.Model(&domain.Order{}).Where("product_id = ? AND status = ?", productID, domain.OrderConfirmed).Count(&confirmed)
-	db.Model(&domain.Order{}).Where("product_id = ? AND status = ?", productID, domain.OrderCompensated).Count(&compensated)
-	db.Model(&domain.InventoryReservation{}).Where("product_id = ?", productID).Count(&reservations)
-	db.Model(&domain.Inventory{}).Select("available").Where("product_id = ?", productID).Scan(&available)
-	db.Model(&domain.Inventory{}).Select("reserved").Where("product_id = ?", productID).Scan(&reserved)
-	db.Model(&domain.Inventory{}).Select("sold").Where("product_id = ?", productID).Scan(&sold)
-	db.Model(&domain.PointsLedger{}).Where("user_id >= ? AND user_id < ? AND operation = 'debit'", baseUserID, baseUserID+int64(users)).Select("COALESCE(-SUM(delta),0)").Scan(&debitTotal)
-	db.Model(&domain.PointsLedger{}).Where("user_id >= ? AND user_id < ? AND operation = 'refund'", baseUserID, baseUserID+int64(users)).Select("COALESCE(SUM(delta),0)").Scan(&refundTotal)
-	db.Model(&domain.PointsAccount{}).Where("user_id >= ? AND user_id < ?", baseUserID, baseUserID+int64(users)).Select("COALESCE(SUM(balance),0)").Scan(&finalBalance)
+	orderDB.Model(&domain.Order{}).Where("product_id = ? AND status = ?", productID, domain.OrderConfirmed).Count(&confirmed)
+	orderDB.Model(&domain.Order{}).Where("product_id = ? AND status = ?", productID, domain.OrderCompensated).Count(&compensated)
+	inventoryDB.Model(&domain.InventoryReservation{}).Where("product_id = ?", productID).Count(&reservations)
+	inventoryDB.Model(&domain.Inventory{}).Select("available").Where("product_id = ?", productID).Scan(&available)
+	inventoryDB.Model(&domain.Inventory{}).Select("reserved").Where("product_id = ?", productID).Scan(&reserved)
+	inventoryDB.Model(&domain.Inventory{}).Select("sold").Where("product_id = ?", productID).Scan(&sold)
+	pointsDB.Model(&domain.PointsLedger{}).Where("user_id >= ? AND user_id < ? AND operation = 'debit'", baseUserID, baseUserID+int64(users)).Select("COALESCE(-SUM(delta),0)").Scan(&debitTotal)
+	pointsDB.Model(&domain.PointsLedger{}).Where("user_id >= ? AND user_id < ? AND operation = 'refund'", baseUserID, baseUserID+int64(users)).Select("COALESCE(SUM(delta),0)").Scan(&refundTotal)
+	pointsDB.Model(&domain.PointsAccount{}).Where("user_id >= ? AND user_id < ?", baseUserID, baseUserID+int64(users)).Select("COALESCE(SUM(balance),0)").Scan(&finalBalance)
 
 	expectedConfirmed := int64(requests)
 	if scenario == "oversell" && stock < expectedConfirmed {
@@ -152,12 +176,12 @@ func main() {
 	}
 	result := benchmarkResult{
 		GeneratedAt: time.Now().UTC().Format(time.RFC3339Nano), Scenario: scenario,
-		Environment: map[string]any{"go": runtime.Version(), "os": runtime.GOOS, "arch": runtime.GOARCH, "database": "MySQL 8 Docker", "coordinator": "DTM 1.19.0 boltdb Docker"},
+		Environment: map[string]any{"go": runtime.Version(), "os": runtime.GOOS, "arch": runtime.GOARCH, "database": "four resource-owned MySQL databases", "database_names": databaseNames, "coordinator": "DTM 1.19.0 boltdb Docker"},
 		Workload:    map[string]any{"requests": requests, "concurrency": concurrency, "initial_stock": stock, "initial_points_per_user": initialPoints, "points_price": price},
 		LatencyMS:   percentiles(latencies), ThroughputQPS: float64(requests) / duration.Seconds(), DurationMS: float64(duration.Microseconds()) / 1000,
 		Calls: requests, Confirmed: confirmed, Compensated: compensated, CallErrors: callErrors.Load(),
 		FinalState:    map[string]int64{"available": available, "reserved": reserved, "sold": sold, "reservations": reservations, "debited_points": debitTotal, "refunded_points": refundTotal, "total_user_balance": finalBalance},
-		Assertions:    map[string]bool{"confirmed_matches_expected": confirmed == expectedConfirmed, "compensated_matches_expected": compensated == expectedCompensated, "no_oversell": sold <= stock && sold == confirmed, "no_reserved_leak": reserved == 0, "inventory_conserved": available+reserved+sold == stock, "points_conserved": finalBalance == expectedBalance, "compensation_refunds_match": debitTotal-refundTotal == confirmed*price},
+		Assertions:    map[string]bool{"four_databases_distinct": databasesDistinct, "resource_tables_isolated": resourceTablesIsolated, "service_local_barriers": serviceLocalBarriers, "confirmed_matches_expected": confirmed == expectedConfirmed, "compensated_matches_expected": compensated == expectedCompensated, "no_oversell": sold <= stock && sold == confirmed, "no_reserved_leak": reserved == 0, "inventory_conserved": available+reserved+sold == stock, "points_conserved": finalBalance == expectedBalance, "compensation_refunds_match": debitTotal-refundTotal == confirmed*price},
 		ClientRuntime: map[string]int64{"heap_alloc_delta_bytes": int64(after.HeapAlloc) - int64(before.HeapAlloc), "goroutines_before": int64(beforeGoroutines), "goroutines_after": int64(runtime.NumGoroutine())},
 	}
 	raw, err := json.MarshalIndent(result, "", "  ")
@@ -187,4 +211,33 @@ func must(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func currentDatabase(db *sql.DB) string {
+	var name string
+	must(db.QueryRow("SELECT DATABASE()").Scan(&name))
+	return name
+}
+
+func distinctStrings(values map[string]string) int {
+	unique := make(map[string]struct{}, len(values))
+	for _, value := range values {
+		unique[value] = struct{}{}
+	}
+	return len(unique)
+}
+
+func tableExists(db *sql.DB, table string) bool {
+	var count int
+	must(db.QueryRow(`SELECT COUNT(*) FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?`, table).Scan(&count))
+	return count == 1
+}
+
+func anyTableExists(db *sql.DB, tables ...string) bool {
+	for _, table := range tables {
+		if tableExists(db, table) {
+			return true
+		}
+	}
+	return false
 }

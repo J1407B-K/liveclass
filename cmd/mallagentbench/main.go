@@ -38,17 +38,24 @@ func main() {
 	initialize.SetupViper()
 	must(dependency.Configure(global.Config.Resilience))
 
-	db, _, err := domain.OpenMySQL()
+	catalogDB, _, err := domain.OpenMySQL(domain.MallDatabase)
 	must(err)
-	must(domain.MigrateOrder(db))
-	must(domain.MigrateInventory(db))
-	must(domain.MigratePoints(db))
+	orderDB, _, err := domain.OpenMySQL(domain.OrderDatabase)
+	must(err)
+	inventoryDB, _, err := domain.OpenMySQL(domain.InventoryDatabase)
+	must(err)
+	pointsDB, _, err := domain.OpenMySQL(domain.PointsDatabase)
+	must(err)
+	must(domain.MigrateMall(catalogDB))
+	must(domain.MigrateOrder(orderDB))
+	must(domain.MigrateInventory(inventoryDB))
+	must(domain.MigratePoints(pointsDB))
 	now := time.Now().UnixNano()
 	userID := int64(7_700_000_000) + now%1_000_000
 	productID := int64(9_700_000_000) + now%1_000_000
-	must(db.Create(&domain.Product{ID: productID, Name: "Agent Security Benchmark", Description: "two-turn confirmation", PointsPrice: 100, Active: true}).Error)
-	must(db.Create(&domain.Inventory{ProductID: productID, Available: 2, Version: 1}).Error)
-	must(db.Clauses(clause.OnConflict{UpdateAll: true}).Create(&domain.PointsAccount{UserID: userID, Balance: 1000, Version: 1}).Error)
+	must(catalogDB.Create(&domain.Product{ID: productID, Name: "Agent Security Benchmark", Description: "two-turn confirmation", PointsPrice: 100, Active: true}).Error)
+	must(inventoryDB.Create(&domain.Inventory{ProductID: productID, Available: 2, Version: 1}).Error)
+	must(pointsDB.Clauses(clause.OnConflict{UpdateAll: true}).Create(&domain.PointsAccount{UserID: userID, Balance: 1000, Version: 1}).Error)
 
 	cli, err := mallservice.NewClient("mallservice", client.WithHostPorts(address))
 	must(err)
@@ -85,8 +92,8 @@ func main() {
 
 	var inventory domain.Inventory
 	var account domain.PointsAccount
-	must(db.First(&inventory, "product_id = ?", productID).Error)
-	must(db.First(&account, "user_id = ?", userID).Error)
+	must(inventoryDB.First(&inventory, "product_id = ?", productID).Error)
+	must(pointsDB.First(&account, "user_id = ?", userID).Error)
 	out := result{GeneratedAt: time.Now().UTC().Format(time.RFC3339Nano), Scenario: "agent_two_turn_confirmation", OrderID: exchanged.OrderID, ReplayID: replayed.OrderID,
 		Assertions: map[string]bool{"same_turn_rejected": sameTurnErr != nil, "missing_explicit_approval_rejected": noApprovalErr != nil, "tampered_token_rejected": tamperedErr != nil, "approved_next_turn_confirmed": exchanged.Status == domain.OrderConfirmed, "replay_returns_same_order": exchanged.OrderID != "" && exchanged.OrderID == replayed.OrderID},
 		FinalState: map[string]int64{"available": inventory.Available, "reserved": inventory.Reserved, "sold": inventory.Sold, "points_balance": account.Balance}}

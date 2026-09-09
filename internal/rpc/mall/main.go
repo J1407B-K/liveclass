@@ -18,14 +18,21 @@ import (
 )
 
 func main() {
-	db, raw, err := domain.OpenMySQL()
+	catalogDB, _, err := domain.OpenMySQL(domain.MallDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = domain.MigrateOrder(db); err != nil {
+	orderDB, orderRaw, err := domain.OpenMySQL(domain.OrderDatabase)
+	if err != nil {
 		log.Fatal(err)
 	}
-	if err = domain.EnsureBarrierTable(raw); err != nil {
+	if err = domain.MigrateMall(catalogDB); err != nil {
+		log.Fatal(err)
+	}
+	if err = domain.MigrateOrder(orderDB); err != nil {
+		log.Fatal(err)
+	}
+	if err = domain.EnsureBarrierTable(orderRaw); err != nil {
 		log.Fatal(err)
 	}
 
@@ -33,13 +40,13 @@ func main() {
 	defer cancel()
 	callbackAddr := env("LIVECLASS_MALL_ORDER_CALLBACK_ADDR", "0.0.0.0:19100")
 	go func() {
-		if runErr := domain.RunHTTP(ctx, callbackAddr, (&domain.BranchServer{DB: raw, Role: "order"}).Handler()); runErr != nil {
+		if runErr := domain.RunHTTP(ctx, callbackAddr, (&domain.BranchServer{DB: orderRaw, Role: "order"}).Handler()); runErr != nil {
 			log.Printf("order DTM callback server: %v", runErr)
 			cancel()
 		}
 	}()
 
-	coordinator := &domain.Coordinator{DB: db, Saga: domain.DTMSagaSubmitter{
+	coordinator := &domain.Coordinator{CatalogDB: catalogDB, OrderDB: orderDB, Saga: domain.DTMSagaSubmitter{
 		ServerURL:    env("LIVECLASS_DTM_SERVER", "http://127.0.0.1:36789/api/dtmsvr"),
 		OrderURL:     env("LIVECLASS_MALL_ORDER_CALLBACK_URL", "http://host.docker.internal:19100"),
 		InventoryURL: env("LIVECLASS_MALL_INVENTORY_CALLBACK_URL", "http://host.docker.internal:19101"),
@@ -55,7 +62,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	svr := mallservice.NewServer(&MallServiceImpl{coordinator: coordinator, db: db},
+	svr := mallservice.NewServer(&MallServiceImpl{coordinator: coordinator, catalogDB: catalogDB, orderDB: orderDB},
 		server.WithServiceAddr(addr),
 		server.WithRegistry(etcdRegistry),
 		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "mallservice"}),

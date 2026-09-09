@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	db, raw, err := domain.OpenMySQL()
+	db, raw, err := domain.OpenMySQL(domain.InventoryDatabase)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	svr := inventoryservice.NewServer(&inventoryServiceImpl{db: db}, server.WithServiceAddr(rpcAddr), server.WithRegistry(r), server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "inventoryservice"}))
+	svr := inventoryservice.NewServer(&inventoryServiceImpl{db: db, raw: raw}, server.WithServiceAddr(rpcAddr), server.WithRegistry(r), server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: "inventoryservice"}))
 	go func() { <-ctx.Done(); _ = svr.Stop() }()
 	if err = svr.Run(); err != nil {
 		log.Fatal(err)

@@ -94,6 +94,7 @@ func main() {
 		chatOutboxClaimedTotal,
 		chatOutboxPublishedTotal,
 		chatOutboxRetryTotal,
+		chatOutboxOrderingDeferredTotal,
 		chatAcceptedTotal,
 	)
 
