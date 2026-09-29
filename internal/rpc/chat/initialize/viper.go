@@ -9,8 +9,11 @@ func SetupViper() {
 	_ = viper.BindEnv("KafkaBroker", "LIVECLASS_CHAT_KAFKA_BROKER")
 	_ = viper.BindEnv("KafkaTopic", "LIVECLASS_CHAT_KAFKA_TOPIC")
 	viper.SetDefault("MongoConfig.MessagesCollection", "messages")
+	// Workers are lesson-affine: one lesson always maps to one local worker,
+	// while different lessons can publish concurrently.
 	viper.SetDefault("KafkaOutbox.Workers", 4)
 	viper.SetDefault("KafkaOutbox.PollInterval", "200ms")
+	viper.SetDefault("KafkaOutbox.OrderingRetryInterval", "10ms")
 	viper.SetDefault("KafkaOutbox.LeaseDuration", "15s")
 	viper.SetDefault("KafkaOutbox.WriteTimeout", "3s")
 	viper.SetDefault("KafkaOutbox.RetryAttempts", 2)

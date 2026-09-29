@@ -11,6 +11,7 @@ type ShowMessage struct {
 	MessageID       string    `json:"message_id"`
 	ClientMessageID string    `json:"client_message_id,omitempty"`
 	LessonID        int64     `json:"lesson_id"`
+	LessonSeq       int64     `json:"lesson_seq,omitempty"`
 	SenderID        int64     `json:"sender_id"`
 	Content         string    `json:"content"`
 	CreatedAt       time.Time `json:"created_at"`
@@ -27,6 +28,7 @@ type MessageAck struct {
 type ResumeStatus struct {
 	Type           string `json:"type"`
 	AfterMessageID string `json:"after_message_id,omitempty"`
+	LastLessonSeq  int64  `json:"last_lesson_seq,omitempty"`
 	Recovered      int    `json:"recovered"`
 	Truncated      bool   `json:"truncated,omitempty"`
 	Error          string `json:"error,omitempty"`

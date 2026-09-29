@@ -20,13 +20,14 @@ import (
 )
 
 type OutboxConfig struct {
-	Workers          int
-	PollInterval     time.Duration
-	LeaseDuration    time.Duration
-	WriteTimeout     time.Duration
-	RetryAttempts    int
-	RetryBaseBackoff time.Duration
-	RetryMaxBackoff  time.Duration
+	Workers               int
+	PollInterval          time.Duration
+	OrderingRetryInterval time.Duration
+	LeaseDuration         time.Duration
+	WriteTimeout          time.Duration
+	RetryAttempts         int
+	RetryBaseBackoff      time.Duration
+	RetryMaxBackoff       time.Duration
 }
 
 type KafkaWriter interface {
@@ -42,10 +43,18 @@ type outboxStore interface {
 	CountPending(context.Context) (int64, error)
 }
 
+type affinityOutboxStore interface {
+	ClaimNextForWorker(context.Context, string, time.Time, time.Duration, int, int) (model.Message, error)
+}
+
 type mongoOutboxStore struct{ collection *mongo.Collection }
 
 func (s mongoOutboxStore) ClaimNext(ctx context.Context, owner string, now time.Time, lease time.Duration) (model.Message, error) {
 	return dao.ClaimNextOutbox(ctx, s.collection, owner, now, lease)
+}
+
+func (s mongoOutboxStore) ClaimNextForWorker(ctx context.Context, owner string, now time.Time, lease time.Duration, workerID, workerCount int) (model.Message, error) {
+	return dao.ClaimNextOutboxForWorker(ctx, s.collection, owner, now, lease, workerID, workerCount)
 }
 
 func (s mongoOutboxStore) HasEarlierUnpublished(ctx context.Context, lessonID int64, createdAt time.Time, messageID string) (bool, error) {
@@ -75,6 +84,9 @@ type OutboxRelay struct {
 	store  outboxStore
 	cfg    OutboxConfig
 	wake   chan struct{}
+	// Workers are assigned a stable lesson affinity at claim time. The Mongo
+	// ordering check below remains the cross-instance safety fence.
+	lessonGates sync.Map // map[int64]chan struct{}
 
 	mu      sync.Mutex
 	started bool
@@ -89,6 +101,9 @@ func NewOutboxRelay(writer KafkaWriter, store outboxStore, cfg OutboxConfig) (*O
 	if cfg.Workers <= 0 || cfg.PollInterval <= 0 || cfg.LeaseDuration <= 0 || cfg.WriteTimeout <= 0 ||
 		cfg.RetryAttempts <= 0 || cfg.RetryBaseBackoff <= 0 || cfg.RetryMaxBackoff < cfg.RetryBaseBackoff {
 		return nil, errors.New("invalid outbox relay configuration")
+	}
+	if cfg.OrderingRetryInterval <= 0 {
+		cfg.OrderingRetryInterval = 10 * time.Millisecond
 	}
 	return &OutboxRelay{writer: writer, store: store, cfg: cfg, wake: make(chan struct{}, 1)}, nil
 }
@@ -105,7 +120,7 @@ func (r *OutboxRelay) Start(parent context.Context) {
 	instanceID := uuid.NewString()
 	for worker := 0; worker < r.cfg.Workers; worker++ {
 		r.wg.Add(1)
-		go r.runWorker(ctx, fmt.Sprintf("%s-%d", instanceID, worker), worker == 0)
+		go r.runWorker(ctx, fmt.Sprintf("%s-%d", instanceID, worker), worker, worker == 0)
 	}
 }
 
@@ -135,17 +150,17 @@ func (r *OutboxRelay) Stop(ctx context.Context) error {
 	}
 }
 
-func (r *OutboxRelay) runWorker(ctx context.Context, owner string, reportDepth bool) {
+func (r *OutboxRelay) runWorker(ctx context.Context, owner string, workerID int, reportDepth bool) {
 	defer r.wg.Done()
 	ticker := time.NewTicker(r.cfg.PollInterval)
 	defer ticker.Stop()
-	r.drain(ctx, owner)
+	r.drain(ctx, owner, workerID)
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-r.wake:
-			r.drain(ctx, owner)
+			r.drain(ctx, owner, workerID)
 		case <-ticker.C:
 			if reportDepth {
 				depthCtx, cancel := context.WithTimeout(ctx, r.cfg.WriteTimeout)
@@ -154,15 +169,15 @@ func (r *OutboxRelay) runWorker(ctx context.Context, owner string, reportDepth b
 				}
 				cancel()
 			}
-			r.drain(ctx, owner)
+			r.drain(ctx, owner, workerID)
 		}
 	}
 }
 
-func (r *OutboxRelay) drain(ctx context.Context, owner string) {
+func (r *OutboxRelay) drain(ctx context.Context, owner string, workerID int) {
 	for ctx.Err() == nil {
 		claimCtx, cancel := context.WithTimeout(ctx, r.cfg.WriteTimeout)
-		message, err := r.store.ClaimNext(claimCtx, owner, time.Now().UTC(), r.cfg.LeaseDuration)
+		message, err := r.claimNext(claimCtx, owner, time.Now().UTC(), workerID)
 		cancel()
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return
@@ -172,12 +187,35 @@ func (r *OutboxRelay) drain(ctx context.Context, owner string) {
 			return
 		}
 		chatOutboxClaimedTotal.Inc()
+		gate := r.lessonGate(message.LessonID)
+		select {
+		case gate <- struct{}{}:
+		case <-ctx.Done():
+			return
+		default:
+			// Another local worker is already publishing this lesson. Release
+			// the claim quickly so it can serve a different lesson; the short
+			// ordering retry interval avoids waiting for the coarse poll tick.
+			next := time.Now().UTC().Add(r.cfg.OrderingRetryInterval)
+			deferCtx, deferCancel := context.WithTimeout(context.Background(), r.cfg.WriteTimeout)
+			deferErr := r.store.DeferForOrdering(deferCtx, message.MessageID, owner, next)
+			deferCancel()
+			if deferErr != nil {
+				log.Printf("[ChatOutbox] local ordering defer failed: message_id=%s err=%v", message.MessageID, deferErr)
+			}
+			chatOutboxOrderingDeferredTotal.Inc()
+			continue
+		}
 
 		orderCtx, orderCancel := context.WithTimeout(ctx, r.cfg.WriteTimeout)
+		chatOutboxOrderingChecksTotal.Inc()
 		blocked, orderErr := r.store.HasEarlierUnpublished(orderCtx, message.LessonID, message.CreatedAt, message.MessageID)
 		orderCancel()
 		if orderErr != nil || blocked {
-			next := time.Now().UTC().Add(r.cfg.PollInterval)
+			<-gate
+			// Ordering waits are distinct from an empty-queue poll. A long poll
+			// interval here turns a hot lesson into roughly one message per poll.
+			next := time.Now().UTC().Add(r.cfg.OrderingRetryInterval)
 			deferCtx, deferCancel := context.WithTimeout(context.Background(), r.cfg.WriteTimeout)
 			deferErr := r.store.DeferForOrdering(deferCtx, message.MessageID, owner, next)
 			deferCancel()
@@ -191,6 +229,7 @@ func (r *OutboxRelay) drain(ctx context.Context, owner string) {
 			continue
 		}
 		if err := r.writeWithRetry(ctx, message); err != nil {
+			<-gate
 			next := time.Now().UTC().Add(r.retryDelay(message.Outbox.Attempts + 1))
 			markCtx, markCancel := context.WithTimeout(context.Background(), r.cfg.WriteTimeout)
 			markErr := r.store.MarkRetry(markCtx, message.MessageID, owner, truncateError(err), next)
@@ -206,13 +245,31 @@ func (r *OutboxRelay) drain(ctx context.Context, owner string) {
 		err = r.store.MarkPublished(markCtx, message.MessageID, owner, time.Now().UTC())
 		markCancel()
 		if err != nil {
+			<-gate
 			// Kafka may already contain the record. The expired lease deliberately
 			// causes a repeat; API consumers deduplicate by message_id.
 			log.Printf("[ChatOutbox] published but mark failed: message_id=%s err=%v", message.MessageID, err)
 			continue
 		}
 		chatOutboxPublishedTotal.Inc()
+		<-gate
+		// A successful predecessor may make a deferred message immediately
+		// eligible. Wake a worker instead of waiting for the coarse poll ticker.
+		r.Notify()
 	}
+}
+
+func (r *OutboxRelay) claimNext(ctx context.Context, owner string, now time.Time, workerID int) (model.Message, error) {
+	if store, ok := r.store.(affinityOutboxStore); ok {
+		return store.ClaimNextForWorker(ctx, owner, now, r.cfg.LeaseDuration, workerID, r.cfg.Workers)
+	}
+	return r.store.ClaimNext(ctx, owner, now, r.cfg.LeaseDuration)
+}
+
+func (r *OutboxRelay) lessonGate(lessonID int64) chan struct{} {
+	gate := make(chan struct{}, 1)
+	actual, _ := r.lessonGates.LoadOrStore(lessonID, gate)
+	return actual.(chan struct{})
 }
 
 func (r *OutboxRelay) writeWithRetry(ctx context.Context, message model.Message) error {

@@ -22,13 +22,14 @@ type FaultInjectionConfig struct {
 }
 
 type KafkaOutboxConfig struct {
-	Workers          int
-	PollInterval     time.Duration
-	LeaseDuration    time.Duration
-	WriteTimeout     time.Duration
-	RetryAttempts    int
-	RetryBaseBackoff time.Duration
-	RetryMaxBackoff  time.Duration
+	Workers               int
+	PollInterval          time.Duration
+	OrderingRetryInterval time.Duration
+	LeaseDuration         time.Duration
+	WriteTimeout          time.Duration
+	RetryAttempts         int
+	RetryBaseBackoff      time.Duration
+	RetryMaxBackoff       time.Duration
 }
 
 type MongoConfig struct {

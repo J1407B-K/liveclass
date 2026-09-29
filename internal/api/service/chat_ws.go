@@ -140,7 +140,7 @@ func consumeChat(ctx context.Context, reader ChatReader) error {
 			_ = reader.CommitMessages(ctx, m)
 			continue
 		}
-		if err = global2.ChatRooms.BroadcastChat(msg.LessonID, msg.MessageID, msg); err != nil {
+		if err = global2.ChatRooms.BroadcastChat(msg.LessonID, msg.MessageID, msg, msg.LessonSeq); err != nil {
 			log.Printf("chat consumer broadcast marshal failed: offset=%d err=%v", m.Offset, err)
 		}
 
@@ -298,13 +298,16 @@ func replayMissedMessages(ctx context.Context, client *chatroom.Client, userID, 
 		}
 		for _, message := range messages {
 			payload, err := json.Marshal(message)
-			if err != nil || !client.EnqueueReplay(message.MessageID, payload) {
+			if err != nil || !client.EnqueueReplay(message.MessageID, payload, message.LessonSeq) {
 				status.Type = "resume_error"
 				status.Error = "resume send queue full"
 				return status
 			}
 			status.Recovered++
 			status.AfterMessageID = message.MessageID
+			if message.LessonSeq > status.LastLessonSeq {
+				status.LastLessonSeq = message.LessonSeq
+			}
 		}
 		if !resp.GetHasMore() {
 			return status

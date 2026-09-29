@@ -42,13 +42,14 @@ func main() {
 	global.KafkaWriter = initialize.InitKafkaWriter()
 	defer global.KafkaWriter.Close()
 	outboxRelay, err := NewOutboxRelay(global.KafkaWriter, mongoOutboxStore{collection: dao.MessagesCollection(client)}, OutboxConfig{
-		Workers:          global.Config.KafkaOutbox.Workers,
-		PollInterval:     global.Config.KafkaOutbox.PollInterval,
-		LeaseDuration:    global.Config.KafkaOutbox.LeaseDuration,
-		WriteTimeout:     global.Config.KafkaOutbox.WriteTimeout,
-		RetryAttempts:    global.Config.KafkaOutbox.RetryAttempts,
-		RetryBaseBackoff: global.Config.KafkaOutbox.RetryBaseBackoff,
-		RetryMaxBackoff:  global.Config.KafkaOutbox.RetryMaxBackoff,
+		Workers:               global.Config.KafkaOutbox.Workers,
+		PollInterval:          global.Config.KafkaOutbox.PollInterval,
+		OrderingRetryInterval: global.Config.KafkaOutbox.OrderingRetryInterval,
+		LeaseDuration:         global.Config.KafkaOutbox.LeaseDuration,
+		WriteTimeout:          global.Config.KafkaOutbox.WriteTimeout,
+		RetryAttempts:         global.Config.KafkaOutbox.RetryAttempts,
+		RetryBaseBackoff:      global.Config.KafkaOutbox.RetryBaseBackoff,
+		RetryMaxBackoff:       global.Config.KafkaOutbox.RetryMaxBackoff,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -95,6 +96,7 @@ func main() {
 		chatOutboxPublishedTotal,
 		chatOutboxRetryTotal,
 		chatOutboxOrderingDeferredTotal,
+		chatOutboxOrderingChecksTotal,
 		chatAcceptedTotal,
 	)
 

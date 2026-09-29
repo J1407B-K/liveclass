@@ -37,6 +37,10 @@ var (
 		Name: "chat_outbox_ordering_deferred_total",
 		Help: "Claimed outbox records deferred behind an earlier message in the same lesson.",
 	})
+	chatOutboxOrderingChecksTotal = prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "chat_outbox_ordering_checks_total",
+		Help: "Outbox ordering fence checks performed before Kafka publication.",
+	})
 	chatAcceptedTotal = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "chat_accepted_total",
 		Help: "Persisted chat messages by realtime delivery status.",

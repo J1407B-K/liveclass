@@ -87,6 +87,7 @@ type Client struct {
 
 type chatDelivery struct {
 	messageID string
+	lessonSeq int64
 	payload   []byte
 }
 
@@ -122,12 +123,16 @@ func (m *Manager) BroadcastJSON(lessonID int64, message any) error {
 	return nil
 }
 
-func (m *Manager) BroadcastChat(lessonID int64, messageID string, message any) error {
+func (m *Manager) BroadcastChat(lessonID int64, messageID string, message any, sequence ...int64) error {
 	payload, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
-	m.broadcastChat(lessonID, messageID, payload)
+	seq := int64(0)
+	if len(sequence) > 0 {
+		seq = sequence[0]
+	}
+	m.broadcastChat(lessonID, messageID, seq, payload)
 	return nil
 }
 
@@ -160,7 +165,7 @@ func (m *Manager) Broadcast(lessonID int64, payload []byte) {
 	}
 }
 
-func (m *Manager) broadcastChat(lessonID int64, messageID string, payload []byte) {
+func (m *Manager) broadcastChat(lessonID int64, messageID string, lessonSeq int64, payload []byte) {
 	started := time.Now()
 	defer func() { observability.ChatFanoutLatency.Observe(time.Since(started).Seconds()) }()
 
@@ -177,7 +182,7 @@ func (m *Manager) broadcastChat(lessonID int64, messageID string, payload []byte
 	}
 	room.mu.RUnlock()
 	for _, client := range clients {
-		if !client.EnqueueChat(messageID, payload) {
+		if !client.EnqueueChat(messageID, payload, lessonSeq) {
 			if client.close(slowConsumerCloseReason) {
 				observability.DroppedMessagesTotal.Inc()
 				observability.SlowConsumerTotal.Inc()
@@ -269,9 +274,13 @@ func (c *Client) Enqueue(payload []byte) bool {
 	}
 }
 
-func (c *Client) EnqueueChat(messageID string, payload []byte) bool {
+func (c *Client) EnqueueChat(messageID string, payload []byte, sequence ...int64) bool {
 	c.deliveryMu.Lock()
 	defer c.deliveryMu.Unlock()
+	lessonSeq := int64(0)
+	if len(sequence) > 0 {
+		lessonSeq = sequence[0]
+	}
 	if _, duplicate := c.seenMessageIDs[messageID]; messageID != "" && duplicate {
 		observability.DuplicateDeliveriesSuppressedTotal.Inc()
 		return true
@@ -280,7 +289,7 @@ func (c *Client) EnqueueChat(messageID string, payload []byte) bool {
 		if len(c.pendingLive) >= c.manager.cfg.SendQueueSize {
 			return false
 		}
-		c.pendingLive = append(c.pendingLive, chatDelivery{messageID: messageID, payload: payload})
+		c.pendingLive = append(c.pendingLive, chatDelivery{messageID: messageID, lessonSeq: lessonSeq, payload: payload})
 		c.rememberMessageLocked(messageID)
 		return true
 	}
@@ -291,22 +300,17 @@ func (c *Client) EnqueueChat(messageID string, payload []byte) bool {
 	return true
 }
 
-func (c *Client) EnqueueReplay(messageID string, payload []byte) bool {
+func (c *Client) EnqueueReplay(messageID string, payload []byte, sequence ...int64) bool {
 	c.deliveryMu.Lock()
 	defer c.deliveryMu.Unlock()
 	if _, duplicate := c.seenMessageIDs[messageID]; messageID != "" && duplicate {
 		return true
 	}
-	select {
-	case c.send <- payload:
-		observability.ChatQueueDepth.Inc()
-		c.rememberMessageLocked(messageID)
-		return true
-	case <-c.ctx.Done():
-		return false
-	case <-time.After(c.manager.cfg.WriteWait):
+	if !c.Enqueue(payload) {
 		return false
 	}
+	c.rememberMessageLocked(messageID)
+	return true
 }
 
 func (c *Client) FinishResume() bool {
@@ -317,6 +321,7 @@ func (c *Client) FinishResume() bool {
 		if !c.Enqueue(delivery.payload) {
 			return false
 		}
+		c.rememberMessageLocked(delivery.messageID)
 	}
 	c.pendingLive = nil
 	return true

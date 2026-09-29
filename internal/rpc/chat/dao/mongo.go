@@ -49,6 +49,10 @@ func EnsureMessageIndexes(ctx context.Context, client *mongo.Client) error {
 			Options: options.Index().SetName("lesson_created_message"),
 		},
 		{
+			Keys:    bson.D{{Key: "lesson_id", Value: 1}, {Key: "lesson_seq", Value: 1}},
+			Options: options.Index().SetName("lesson_sequence"),
+		},
+		{
 			Keys: bson.D{
 				{Key: "outbox.status", Value: 1},
 				{Key: "outbox.next_attempt_at", Value: 1},
@@ -78,6 +82,20 @@ func EnsureMessageIndexes(ctx context.Context, client *mongo.Client) error {
 }
 
 func ClaimNextOutbox(ctx context.Context, collection *mongo.Collection, owner string, now time.Time, lease time.Duration) (model.Message, error) {
+	return claimNextOutbox(ctx, collection, owner, now, lease, nil)
+}
+
+func ClaimNextOutboxForWorker(ctx context.Context, collection *mongo.Collection, owner string, now time.Time, lease time.Duration, workerID, workerCount int) (model.Message, error) {
+	if workerCount <= 0 || workerID < 0 || workerID >= workerCount {
+		return model.Message{}, errors.New("invalid outbox worker affinity")
+	}
+	affinity := bson.E{Key: "$expr", Value: bson.D{{Key: "$eq", Value: bson.A{
+		bson.D{{Key: "$mod", Value: bson.A{"$lesson_id", workerCount}}}, workerID,
+	}}}}
+	return claimNextOutbox(ctx, collection, owner, now, lease, &affinity)
+}
+
+func claimNextOutbox(ctx context.Context, collection *mongo.Collection, owner string, now time.Time, lease time.Duration, affinity *bson.E) (model.Message, error) {
 	leaseUntil := now.Add(lease)
 	filter := bson.D{{Key: "$or", Value: bson.A{
 		bson.D{
@@ -89,6 +107,9 @@ func ClaimNextOutbox(ctx context.Context, collection *mongo.Collection, owner st
 			{Key: "outbox.lease_until", Value: bson.D{{Key: "$lte", Value: now}}},
 		},
 	}}}
+	if affinity != nil {
+		filter = append(filter, *affinity)
+	}
 	update := bson.D{{Key: "$set", Value: bson.D{
 		{Key: "outbox.status", Value: model.OutboxPublishing},
 		{Key: "outbox.lease_owner", Value: owner},
@@ -175,6 +196,26 @@ func CountPendingOutbox(ctx context.Context, collection *mongo.Collection) (int6
 func InsertMongo(ctx context.Context, collection *mongo.Collection, message model.Message) error {
 	_, err := collection.InsertOne(ctx, message)
 	return err
+}
+
+func SetLessonSeq(ctx context.Context, collection *mongo.Collection, messageID string, seq int64) error {
+	_, err := collection.UpdateOne(ctx, bson.D{{Key: "message_id", Value: messageID}}, bson.D{{Key: "$set", Value: bson.D{{Key: "lesson_seq", Value: seq}}}})
+	return err
+}
+
+// AllocateLessonSeq uses Mongo's durable atomic counter. It remains safe when
+// Redis is unavailable or loses its dataset; gaps are acceptable, collisions are not.
+func AllocateLessonSeq(ctx context.Context, client *mongo.Client, lessonID int64) (int64, error) {
+	counters := client.Database(global.Config.Database).Collection("lesson_counters")
+	var result struct {
+		Seq int64 `bson:"seq"`
+	}
+	err := counters.FindOneAndUpdate(ctx,
+		bson.D{{Key: "_id", Value: lessonID}},
+		bson.D{{Key: "$inc", Value: bson.D{{Key: "seq", Value: int64(1)}}}},
+		options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After),
+	).Decode(&result)
+	return result.Seq, err
 }
 
 // InsertMessageIdempotent persists a chat message once for a sender-provided

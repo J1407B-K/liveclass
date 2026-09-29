@@ -32,6 +32,8 @@ import (
 type config struct {
 	URL                   string
 	Token                 string
+	Tokens                []string
+	TokensFile            string
 	LessonID              int64
 	LessonIDs             []int64
 	LessonIDsRaw          string
@@ -61,6 +63,7 @@ type receivedMessage struct {
 	Type           string `json:"type"`
 	Content        string `json:"content"`
 	DeliveryStatus string `json:"delivery_status"`
+	Error          string `json:"error"`
 }
 
 type openedConnection struct {
@@ -84,6 +87,11 @@ type workloadResult struct {
 	ExpectedDeliveries     int64                `json:"fanout_deliveries_expected"`
 	SendErrors             int64                `json:"send_errors"`
 	ReadErrors             int64                `json:"read_errors"`
+	ProtocolErrors         int64                `json:"protocol_errors"`
+	RejectedAcks           int64                `json:"rejected_acknowledgements"`
+	Duplicates             int64                `json:"duplicate_deliveries"`
+	DeliveredDuringLoad    int64                `json:"deliveries_during_load"`
+	ActualSendRate         float64              `json:"actual_send_rate"`
 	ErrorRate              float64              `json:"delivery_error_rate_percent"`
 	Throughput             float64              `json:"fanout_deliveries_per_second"`
 	Latency                latencySummary       `json:"fanout_latency_ms"`
@@ -121,6 +129,7 @@ type workload struct {
 	Warmup                string  `json:"warmup"`
 	Drain                 string  `json:"drain"`
 	RepeatClientMessageID bool    `json:"repeat_client_message_id"`
+	TokenCount            int     `json:"token_count"`
 }
 
 type latencySummary struct {
@@ -132,13 +141,14 @@ type latencySummary struct {
 }
 
 type metricRun struct {
-	Samples                  int                `json:"samples"`
-	WindowSeconds            float64            `json:"window_seconds"`
-	ProcessCPUSecondsDelta   float64            `json:"process_cpu_seconds_delta,omitempty"`
-	AverageProcessCPUPercent float64            `json:"average_process_cpu_percent,omitempty"`
-	First                    map[string]float64 `json:"first,omitempty"`
-	Last                     map[string]float64 `json:"last,omitempty"`
-	Peak                     map[string]float64 `json:"peak,omitempty"`
+	Samples                  int                  `json:"samples"`
+	WindowSeconds            float64              `json:"window_seconds"`
+	ProcessCPUSecondsDelta   float64              `json:"process_cpu_seconds_delta,omitempty"`
+	AverageProcessCPUPercent float64              `json:"average_process_cpu_percent,omitempty"`
+	First                    map[string]float64   `json:"first,omitempty"`
+	Last                     map[string]float64   `json:"last,omitempty"`
+	Peak                     map[string]float64   `json:"peak,omitempty"`
+	Timeline                 []map[string]float64 `json:"timeline,omitempty"`
 }
 
 type metricCollector struct {
@@ -170,6 +180,8 @@ var selectedMetrics = map[string]struct{}{
 	"chat_outbox_claimed_total":                   {},
 	"chat_outbox_published_total":                 {},
 	"chat_outbox_retry_total":                     {},
+	"chat_outbox_ordering_deferred_total":         {},
+	"chat_outbox_ordering_checks_total":           {},
 	"chat_duplicate_deliveries_suppressed_total":  {},
 	"chat_messages_total":                         {},
 	"websocket_write_errors_total":                {},
@@ -219,6 +231,7 @@ func parseFlags() config {
 	var cfg config
 	flag.StringVar(&cfg.URL, "url", "ws://127.0.0.1:8080/ws/live_chat", "chat WebSocket URL")
 	flag.StringVar(&cfg.Token, "token", "", "valid access token (or set LIVECLASS_CHAT_TOKEN)")
+	flag.StringVar(&cfg.TokensFile, "tokens-file", "", "file with one access token per line; rotate users across connections")
 	flag.Int64Var(&cfg.LessonID, "lesson-id", 0, "lesson containing the token user")
 	flag.StringVar(&cfg.LessonIDsRaw, "lesson-ids", "", "comma-separated lesson IDs; connections and sends are distributed round-robin")
 	flag.IntVar(&cfg.Connections, "connections", 100, "number of WebSocket clients")
@@ -245,6 +258,14 @@ func parseFlags() config {
 	if cfg.Token == "" {
 		cfg.Token = os.Getenv("LIVECLASS_CHAT_TOKEN")
 	}
+	if cfg.TokensFile != "" {
+		data, err := os.ReadFile(cfg.TokensFile)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "read tokens file:", err)
+			os.Exit(1)
+		}
+		cfg.Tokens = strings.Fields(string(data))
+	}
 	if cfg.LessonIDsRaw != "" {
 		for _, value := range splitNonEmpty(cfg.LessonIDsRaw) {
 			lessonID, err := strconv.ParseInt(value, 10, 64)
@@ -261,7 +282,7 @@ func parseFlags() config {
 }
 
 func validate(cfg config) error {
-	if cfg.Token == "" {
+	if cfg.Token == "" && len(cfg.Tokens) == 0 {
 		return errors.New("-token or LIVECLASS_CHAT_TOKEN is required")
 	}
 	if len(cfg.LessonIDs) == 0 || cfg.Connections <= 0 || cfg.ConnectWorkers <= 0 || cfg.QPS <= 0 || cfg.Duration <= 0 {
@@ -293,7 +314,7 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 			MongoDB: cfg.MongoDeployment, Kafka: cfg.KafkaDeployment},
 		Workload: workload{URL: cfg.URL, LessonID: cfg.LessonIDs[0], LessonIDs: cfg.LessonIDs, Connections: cfg.Connections, Scenario: cfg.Scenario,
 			SlowConsumers: cfg.SlowConsumers, DisconnectBeforeLoad: cfg.DisconnectBeforeLoad, MessageBytes: cfg.MessageBytes, ConnectWorkers: cfg.ConnectWorkers,
-			QPS: cfg.QPS, Duration: cfg.Duration.String(), Warmup: cfg.Warmup.String(), Drain: cfg.Drain.String(), RepeatClientMessageID: cfg.RepeatClientMessageID},
+			QPS: cfg.QPS, Duration: cfg.Duration.String(), Warmup: cfg.Warmup.String(), Drain: cfg.Drain.String(), RepeatClientMessageID: cfg.RepeatClientMessageID, TokenCount: max(1, len(cfg.Tokens))},
 	}
 
 	runCtx, cancelRun := context.WithCancel(ctx)
@@ -339,24 +360,35 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 
 	runID := strconv.FormatInt(time.Now().UnixNano(), 36)
 	var sent, received, expected, sendErrors, readErrors, acknowledgements atomic.Int64
+	var protocolErrors, rejectedAcks, duplicates atomic.Int64
 	ackStatuses := make(map[string]int64)
 	var ackMu sync.Mutex
-	var latencyMu sync.Mutex
-	latencies := make([]float64, 0, len(conns)*int(cfg.QPS*cfg.Duration.Seconds()))
+	// Fixed-size histogram avoids retaining millions of fanout latency samples.
+	latencies := newLatencyHistogram()
 	var readers sync.WaitGroup
 	for _, conn := range conns[:healthyCount] {
 		readers.Add(1)
 		go func(c *websocket.Conn) {
 			defer readers.Done()
+			seen := make([]uint64, int(cfg.QPS*cfg.Duration.Seconds())/64+2)
 			for {
 				var msg receivedMessage
-				if err := c.ReadJSON(&msg); err != nil {
+				_, payload, err := c.ReadMessage()
+				if err != nil {
 					if runCtx.Err() == nil {
 						readErrors.Add(1)
 					}
 					return
 				}
+				if json.Unmarshal(payload, &msg) != nil {
+					protocolErrors.Add(1)
+					continue
+				}
 				if msg.Type == "chat_ack" {
+					if msg.Error != "" {
+						rejectedAcks.Add(1)
+						continue
+					}
 					acknowledgements.Add(1)
 					ackMu.Lock()
 					ackStatuses[msg.DeliveryStatus]++
@@ -367,21 +399,30 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 				if !ok {
 					continue
 				}
+				parts := strings.Fields(msg.Content)
+				messageSeq, seqErr := strconv.Atoi(parts[2])
+				if seqErr != nil || messageSeq < 0 || messageSeq/64 >= len(seen) {
+					protocolErrors.Add(1)
+					continue
+				}
+				bucket, bit := messageSeq/64, uint(messageSeq%64)
+				if seen[bucket]&(uint64(1)<<bit) != 0 {
+					duplicates.Add(1)
+					continue
+				}
+				seen[bucket] |= uint64(1) << bit
 				received.Add(1)
 				ms := float64(time.Since(sentAt).Nanoseconds()) / float64(time.Millisecond)
-				latencyMu.Lock()
-				latencies = append(latencies, ms)
-				latencyMu.Unlock()
+				latencies.add(ms)
 			}
 		}(conn.conn)
 	}
 	healthyPerLesson := make(map[int64]int64)
-	senders := make(map[int64]*websocket.Conn)
+	senders := make(map[int64][]*websocket.Conn)
+	senderCursor := make(map[int64]int)
 	for _, conn := range conns[:healthyCount] {
 		healthyPerLesson[conn.lessonID]++
-		if senders[conn.lessonID] == nil {
-			senders[conn.lessonID] = conn.conn
-		}
+		senders[conn.lessonID] = append(senders[conn.lessonID], conn.conn)
 	}
 	for _, lessonID := range cfg.LessonIDs {
 		if senders[lessonID] == nil {
@@ -398,6 +439,7 @@ func run(ctx context.Context, cfg config) (workloadResult, error) {
 	ticker := time.NewTicker(interval)
 	deadline := time.NewTimer(cfg.Duration)
 	seq := int64(0)
+	loadStarted := time.Now()
 	repeatedContent := makeContent(runID, 1, time.Now(), cfg.MessageBytes)
 sendLoop:
 	for {
@@ -415,7 +457,13 @@ sendLoop:
 				content = repeatedContent
 				clientMessageID = runID + "-idempotency"
 			}
-			if err := senders[lessonID].WriteJSON(map[string]string{"content": content, "client_message_id": clientMessageID}); err != nil {
+			sender := senders[lessonID][senderCursor[lessonID]%len(senders[lessonID])]
+			if cfg.RepeatClientMessageID {
+				sender = senders[lessonID][0]
+			}
+			senderCursor[lessonID]++
+			_ = sender.SetWriteDeadline(time.Now().Add(2 * time.Second))
+			if err := sender.WriteJSON(map[string]string{"content": content, "client_message_id": clientMessageID}); err != nil {
 				sendErrors.Add(1)
 				continue
 			}
@@ -425,6 +473,8 @@ sendLoop:
 			}
 		}
 	}
+	result.ActualSendRate = float64(sent.Load()) / time.Since(loadStarted).Seconds()
+	result.DeliveredDuringLoad = received.Load()
 	ticker.Stop()
 	if !deadline.Stop() {
 		select {
@@ -448,6 +498,9 @@ sendLoop:
 	result.MessagesReceived = received.Load()
 	result.SendErrors = sendErrors.Load()
 	result.ReadErrors = readErrors.Load()
+	result.ProtocolErrors = protocolErrors.Load()
+	result.RejectedAcks = rejectedAcks.Load()
+	result.Duplicates = duplicates.Load()
 	result.Acknowledgements = acknowledgements.Load()
 	result.AckStatuses = ackStatuses
 	result.ExpectedDeliveries = expected.Load()
@@ -458,8 +511,8 @@ sendLoop:
 		}
 		result.ErrorRate = float64(missing) * 100 / float64(result.ExpectedDeliveries)
 	}
-	result.Throughput = float64(result.MessagesReceived) / cfg.Duration.Seconds()
-	result.Latency = summarize(latencies)
+	result.Throughput = float64(result.DeliveredDuringLoad) / cfg.Duration.Seconds()
+	result.Latency = latencies.summary()
 	result.Metrics = collector.summary(result.FinishedAt.Sub(result.StartedAt))
 	return result, nil
 }
@@ -487,7 +540,11 @@ func openConnections(ctx context.Context, cfg config) ([]openedConnection, int) 
 		go func() {
 			defer wg.Done()
 			for job := range jobs {
-				conn, _, err := dial(ctx, cfg, job.lessonID)
+				dialCfg := cfg
+				if len(cfg.Tokens) > 0 {
+					dialCfg.Token = cfg.Tokens[job.index%len(cfg.Tokens)]
+				}
+				conn, _, err := dial(ctx, dialCfg, job.lessonID)
 				results <- dialResult{index: job.index, lessonID: job.lessonID, conn: conn, err: err}
 			}
 		}()
@@ -598,6 +655,7 @@ func (c *metricCollector) collect(ctx context.Context, endpoints []string) {
 func (c *metricCollector) sample(ctx context.Context, endpoints []string) {
 	for _, endpoint := range endpoints {
 		if sample, err := scrape(ctx, endpoint); err == nil {
+			sample["sample_unix_seconds"] = float64(time.Now().UnixMilli()) / 1000
 			c.mu.Lock()
 			c.samples[endpoint] = append(c.samples[endpoint], sample)
 			c.mu.Unlock()
@@ -681,6 +739,17 @@ func (c *metricCollector) summary(window time.Duration) map[string]metricRun {
 			Samples: len(samples), WindowSeconds: window.Seconds(), ProcessCPUSecondsDelta: cpuDelta,
 			AverageProcessCPUPercent: averageCPU, First: samples[0], Last: samples[len(samples)-1], Peak: peak,
 		}
+		run := result[endpoint]
+		for _, sample := range samples {
+			point := make(map[string]float64)
+			for _, key := range []string{"sample_unix_seconds", "chat_outbox_pending", "chat_outbox_published_total", "chat_outbox_ordering_deferred_total", "chat_outbox_ordering_checks_total", "chat_publish_queue_depth", "chat_messages_total", "active_websocket_connections", "go_memstats_heap_alloc_bytes", "process_cpu_seconds_total"} {
+				if value, exists := sample[key]; exists {
+					point[key] = value
+				}
+			}
+			run.Timeline = append(run.Timeline, point)
+		}
+		result[endpoint] = run
 	}
 	return result
 }

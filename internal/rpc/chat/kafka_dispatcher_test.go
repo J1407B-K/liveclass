@@ -223,6 +223,29 @@ func (s *orderedOutboxStore) ClaimNext(_ context.Context, owner string, now time
 	return model.Message{}, mongo.ErrNoDocuments
 }
 
+func (s *orderedOutboxStore) ClaimNextForWorker(ctx context.Context, owner string, now time.Time, lease time.Duration, workerID, workerCount int) (model.Message, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for index := range s.messages {
+		message := s.messages[index]
+		if int(message.LessonID%int64(workerCount)) != workerID {
+			continue
+		}
+		state := &s.messages[index].Outbox
+		eligible := state.Status == model.OutboxPending && !state.NextAttemptAt.After(now)
+		if state.Status == model.OutboxPublishing && state.LeaseUntil != nil && !state.LeaseUntil.After(now) {
+			eligible = true
+		}
+		if !eligible {
+			continue
+		}
+		until := now.Add(lease)
+		state.Status, state.LeaseOwner, state.LeaseUntil = model.OutboxPublishing, owner, &until
+		return s.messages[index], nil
+	}
+	return model.Message{}, mongo.ErrNoDocuments
+}
+
 func (s *orderedOutboxStore) HasEarlierUnpublished(_ context.Context, lessonID int64, createdAt time.Time, messageID string) (bool, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

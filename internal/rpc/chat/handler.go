@@ -98,6 +98,16 @@ func (s *ChatServiceImpl) LiveChat(ctx context.Context, req *chat.LiveChatReq) (
 	if mongoErr != nil {
 		return nil, mongoErr
 	}
+	if persisted.LessonSeq == 0 {
+		seq, seqErr := dao.AllocateLessonSeq(ctx, s.mongoClient, req.Lessonid)
+		if seqErr != nil {
+			return nil, fmt.Errorf("allocate lesson sequence: %w", seqErr)
+		}
+		if seqErr = dao.SetLessonSeq(ctx, coll, persisted.MessageID, seq); seqErr != nil {
+			return nil, fmt.Errorf("persist lesson sequence: %w", seqErr)
+		}
+		persisted.LessonSeq = seq
+	}
 
 	if s.outboxRelay != nil {
 		s.outboxRelay.Notify()

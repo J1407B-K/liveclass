@@ -192,6 +192,40 @@ func TestBroadcastChatDeduplicatesPerClient(t *testing.T) {
 	<-done
 }
 
+func TestBroadcastChatKeepsArrivalOrderAndCarriesSequence(t *testing.T) {
+	manager, err := NewManager(testConfig(8))
+	if err != nil {
+		t.Fatal(err)
+	}
+	socket := newFakeSocket()
+	client := manager.NewClient(context.Background(), 81, socket)
+	done := make(chan error, 1)
+	go func() { done <- client.Serve(func(context.Context, int, []byte) error { return nil }) }()
+	waitFor(t, func() bool { return manager.ConnectionCount(81) == 1 })
+	for _, item := range []struct {
+		id  string
+		seq int64
+	}{{"m1", 1}, {"m3", 3}, {"m2", 2}} {
+		if err := manager.BroadcastChat(81, item.id, map[string]any{"message_id": item.id}, item.seq); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, want := range []string{"m1", "m3", "m2"} {
+		select {
+		case payload := <-socket.writes:
+			var got map[string]any
+			_ = json.Unmarshal(payload, &got)
+			if got["message_id"] != want {
+				t.Fatalf("got %v, want %s", got["message_id"], want)
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("timed out waiting for %s", want)
+		}
+	}
+	client.Close("test complete")
+	<-done
+}
+
 func TestSlowConsumerDoesNotBlockBroadcast(t *testing.T) {
 	manager, err := NewManager(testConfig(1))
 	if err != nil {
